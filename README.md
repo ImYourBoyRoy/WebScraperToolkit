@@ -50,11 +50,19 @@
 
 ## 🚀 Installation
 
+### PyPI (Recommended)
+```bash
+pip install web_scraper_toolkit
+playwright install  # Required to download browser binaries
+```
+
+### From Source
 ```bash
 # Clone and install
 git clone https://github.com/imyourboyroy/WebScraperToolkit.git
 cd WebScraperToolkit
 pip install -e .
+playwright install
 ```
 
 > Requires Python 3.10+.
