@@ -179,8 +179,9 @@ async def _arun_scrape_markdown(
 
             # Max Length Truncation
             if max_length and len(markdown) > max_length:
-                markdown = markdown[:max_length] + "\n\n... [Truncated due to max_length]"
-
+                markdown = (
+                    markdown[:max_length] + "\n\n... [Truncated due to max_length]"
+                )
 
             output = f"=== SCRAPED FROM: {final_url} (MARKDOWN) ===\n\n"
             output += markdown
@@ -226,9 +227,13 @@ def read_website_markdown(
             )
             return future.result()
         else:
-            return asyncio.run(_arun_scrape_markdown(website_url, config, selector, max_length))
+            return asyncio.run(
+                _arun_scrape_markdown(website_url, config, selector, max_length)
+            )
     except RuntimeError:
-        return asyncio.run(_arun_scrape_markdown(website_url, config, selector, max_length))
+        return asyncio.run(
+            _arun_scrape_markdown(website_url, config, selector, max_length)
+        )
 
 
 def extract_metadata(
