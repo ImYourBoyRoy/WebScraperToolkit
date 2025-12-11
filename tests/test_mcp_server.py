@@ -70,10 +70,17 @@ class TestMCPServer(unittest.TestCase):
         to verify it's called with the correct internal function.
         """
         mock_run.return_value = "Mocked Result"
+        import json
 
         # 1. Scrape URL
         res = self.loop.run_until_complete(mcp_server.scrape_url("https://example.com"))
-        self.assertEqual(res, "Mocked Result")
+
+        # Parse standard JSON envelope
+        res_json = json.loads(res)
+        self.assertEqual(res_json["status"], "success")
+        self.assertEqual(res_json["data"], "Mocked Result")
+        self.assertEqual(res_json["meta"]["url"], "https://example.com")
+
         # Verify it called run_in_process w/ read_website_markdown
         args, _ = mock_run.call_args
         # args[0] is the function passed to run_in_process
@@ -82,6 +89,8 @@ class TestMCPServer(unittest.TestCase):
 
         # 2. Search
         res = self.loop.run_until_complete(mcp_server.search_web("query"))
+        res_json = json.loads(res)
+        self.assertEqual(res_json["data"], "Mocked Result")
         args, _ = mock_run.call_args
         self.assertEqual(args[0].__name__, "general_web_search")
 
@@ -89,6 +98,8 @@ class TestMCPServer(unittest.TestCase):
         res = self.loop.run_until_complete(
             mcp_server.get_sitemap("https://example.com")
         )
+        res_json = json.loads(res)
+        self.assertEqual(res_json["data"], "Mocked Result")
         args, _ = mock_run.call_args
         self.assertEqual(args[0].__name__, "get_sitemap_urls")
 
@@ -96,6 +107,8 @@ class TestMCPServer(unittest.TestCase):
         res = self.loop.run_until_complete(
             mcp_server.screenshot("https://example.com", "path.png")
         )
+        res_json = json.loads(res)
+        self.assertEqual(res_json["data"], "Mocked Result")
         args, _ = mock_run.call_args
         self.assertEqual(args[0].__name__, "capture_screenshot")
 

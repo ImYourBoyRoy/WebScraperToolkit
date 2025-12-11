@@ -1,4 +1,4 @@
-# Web Scraper Toolkit & MCP Server
+# 🕷️ Web Scraper Toolkit & MCP Server
 
 ![PyPI - Version](https://img.shields.io/pypi/v/web-scraper-toolkit?style=flat-square)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/web-scraper-toolkit?style=flat-square)
@@ -8,20 +8,21 @@
 **Status**: Production Ready  
 **Expertly Crafted by**: [Roy Dawson IV](https://github.com/imyourboyroy)
 
+> A production-grade, multimodal scraping engine designed for **AI Agents**. Converts the web into LLM-ready assets (Markdown, JSON, PDF) with robust anti-bot evasion.
+
 ---
 
 ## 🚀 The "Why": AI-First Scraping
 
-**Web Scraper Toolkit** is a production-grade, autonomous scraping engine designed specifically for **AI Agents** and **LLMs**.
-
 In the era of Agentic AI, tools need to be more than just Python scripts. They need to be **Token-Efficient**, **Self-Rectifying**, and **Structured**.
 
-### Key Features
+### ✨ Core Design Goals
 *   **🤖 Hyper Model-Friendly**: All tools return standardized **JSON Envelopes**, separating metadata from content to prevent "context pollution."
-*   **📦 Batch Efficiency**: The explicit `batch_scrape` tool handles parallel processing found in high-performance agent workflows.
+*   **�️ Robust Failover**: Smart detection of anti-bot challenges (Cloudflare/403s) automatically triggers a switch from Headless to Visible browser mode to pass checks.
 *   **🎯 Precision Control**: Use CSS Selectors (`selector`) and token limits (`max_length`) to extract *exactly* what you need, saving tokens and money.
-*   **🛡️ Robust & stealthy**: Built on top of `Playwright-Stealth` with smart "Headless -> Headed" auto-recovery to bypass blocks (403/429).
+*   **� Batch Efficiency**: The explicit `batch_scrape` tool handles parallel processing found in high-performance agent workflows.
 *   **⚡ MCP Native**: Exposes a full Model Context Protocol (MCP) server for instant integration with Claude Desktop, Cursor, and other agentic IDEs.
+*   **🔒 Privacy & Stealth**: Uses `playwright-stealth` and randomized user agents to mimic human behavior.
 
 ---
 
@@ -32,6 +33,7 @@ Install directly into your environment or agent container.
 
 ```bash
 pip install web-scraper-toolkit
+playwright install
 ```
 
 ### Option B: From Source (Developers)
@@ -39,6 +41,7 @@ pip install web-scraper-toolkit
 git clone https://github.com/imyourboyroy/WebScraperToolkit.git
 cd WebScraperToolkit
 pip install -e .
+playwright install
 ```
 
 ---
@@ -52,8 +55,6 @@ Once installed, simply run:
 ```bash
 web-scraper-server --verbose
 ```
-*   `--verbose`: Enables detailed logging.
-*   `--workers <N>`: Set specific worker count (default: 1).
 
 ### Connecting to Claude Desktop / Cursor
 Add the following to your agent configuration:
@@ -88,62 +89,88 @@ To ensure high reliability for Language Models, all tools return data in this st
 ```
 **Why?** This allows the model to instantly check `.status` and handle errors gracefully without hallucinating based on error text mixed with content.
 
----
+### 🛠️ Available MCP Tools
 
-## 🛠️ Available Tools
-
-The MCP Server exposes the following tools to the AI Agent:
-
-### 1. `scrape_url(url, format="markdown", selector=None, max_length=20000)`
-**The Workhorse.** Scrapes a single page with anti-bot protection.
-*   `selector`: (Optional) CSS selector (e.g., `article`, `#main-content`) to scrape ONLY that element. **Highly recommended for token efficiency.**
-*   `max_length`: (Optional) Hard limit on returned characters.
-
-### 2. `batch_scrape(urls: List[str], format="markdown")`
-**The Time Saver.** Accepts a list of URLs and processes them in parallel using the server's process pool.
-*   Returns a map: `{ "https://a.com": "content...", "https://b.com": "content..." }`
-
-### 3. `deep_research(query: str)`
-**The Agent.** Performs an autonomous deep dive:
-1.  Searches DuckDuckGo/Google.
-2.  Parses SERP results.
-3.  **Crawls** the top 3 high-authority results.
-4.  Returns a consolidated research report.
-
-### 4. `search_web(query: str)`
-Standard search tool. Returns a list of search results with snippets.
-
-### 5. `crawl_site(url: str)` (or `get_sitemap`)
-Discovery tool. Parses `sitemap.xml` or crawls the home page to find all valid sub-pages. Essential for mapping a domain before scraping.
-
-### 6. `save_pdf(url: str, path: str)`
-High-fidelity PDF renderer. Captures the page exactly as it renders, including layout and images.
-
-### 7. `configure_scraper(headless=True, user_agent=None)`
-Dynamic configuration. Allows the agent to toggle "Headed" mode for debugging or change identity on the fly.
+| Tool | Description | Key Args |
+| :--- | :--- | :--- |
+| `scrape_url` | **The Workhorse.** Scrapes a single page. | `url`, `selector` (CSS), `max_length` |
+| `batch_scrape` | **The Time Saver.** Parallel processing. | `urls` (List), `format` |
+| `deep_research` | **The Agent.** Search + Crawl + Report. | `query` |
+| `search_web` | Standard Search (DDG/Google). | `query` |
+| `crawl_site` | Discovery tool for Sitemaps. | `url` |
+| `save_pdf` | High-fidelity PDF renderer. | `url`, `path` |
+| `configure_scraper` | Dynamic configuration. | `headless` (bool), `user_agent` |
 
 ---
 
 ## 💻 CLI Usage (Standalone)
 
-For manual scraping or testing:
+For manual scraping or testing without the MCP server:
 
 ```bash
-# Scrape a single URL to Markdown
-web-scraper --url https://example.com
+# Basic Markdown Extraction (Best for RAG)
+web-scraper --url https://example.com --format markdown
 
-# Scrape and save as PDF
-web-scraper --url https://example.com --format pdf --workers 2
+# High-Fidelity PDF with Auto-Scroll
+web-scraper --url https://example.com --format pdf
 
 # Batch process a list of URLs from a file
 web-scraper --input urls.txt --format json --workers 4
+
+# Sitemap to JSON (Site Mapping)
+web-scraper --input https://example.com/sitemap.xml --site-tree --format json
+```
+
+### 🛠️ CLI Reference
+
+| Option | Shorthand | Description | Default |
+| :--- | :--- | :--- | :--- |
+| `--url` | `-u` | Single target URL to scrape. | `None` |
+| `--input` | `-i` | Input file (`.txt`, `.csv`, `.json`, sitemap `.xml`) or URL. | `None` |
+| `--format` | `-f` | Output: `markdown`, `pdf`, `screenshot`, `json`, `html`. | `markdown` |
+| `--headless` | | Run browser in headless mode. (Off/Visible by default for stability). | `False` |
+| `--workers` | `-w` | Number of concurrent workers. Pass `max` for CPU - 1. | `1` |
+| `--merge` | `-m` | Merge all outputs into a single file. | `False` |
+| `--site-tree` | | Extract URLs from sitemap input without crawling. | `False` |
+| `--verbose` | `-v` | Enable verbose logging. | `False` |
+
+---
+
+## 🤖 Python API
+
+Integrate the `WebCrawler` directly into your Python applications.
+
+```python
+import asyncio
+from web_scraper_toolkit import WebCrawler, ScraperConfig
+
+async def agent_task():
+    # 1. Configure
+    config = ScraperConfig.load({
+        "scraper_settings": {"headless": True}, 
+        "workers": 2
+    })
+    
+    # 2. Instantiate
+    crawler = WebCrawler(config=config)
+    
+    # 3. Run
+    results = await crawler.run(
+        urls=["https://example.com"],
+        output_format="markdown",
+        output_dir="./memory"
+    )
+    print(results)
+
+if __name__ == "__main__":
+    asyncio.run(agent_task())
 ```
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Server Configuration
 
-You can configure the server via Environment Variables:
+You can configure the MCP server via Environment Variables:
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
@@ -156,4 +183,4 @@ You can configure the server via Environment Variables:
 MIT License.
 
 ---
-*Generated with ❤️ by the Intelligence of Roy Dawson IV's Agent Swarm.*
+*Created with ❤️ by the Intelligence of Roy Dawson IV.*
