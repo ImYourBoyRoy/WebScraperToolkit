@@ -52,7 +52,7 @@
 
 ### PyPI (Recommended)
 ```bash
-pip install web_scraper_toolkit
+pip install web-scraper-toolkit
 playwright install  # Required to download browser binaries
 ```
 

@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "web_scraper_toolkit"
+name = "web-scraper-toolkit"
 version = "0.1.0"
 description = "A powerful, standalone web scraping toolkit using Playwright and various parsers."
 readme = "README.md"
