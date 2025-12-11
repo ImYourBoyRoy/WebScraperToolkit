@@ -143,13 +143,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📦 Versioning & Release
 
-* **Versioning**: Follows Semantic Versioning (`0.1.0`), derived from Git tags.
-* **CI/CD**: Automated testing and PyPI publication via GitHub Actions.
-* **Release**: Create a tag (e.g. `v0.1.0`) to trigger a PyPI release.
-
----
 
 ## ✅ Verified Outputs
 
