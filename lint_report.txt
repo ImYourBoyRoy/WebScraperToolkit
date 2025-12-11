@@ -1,0 +1,87 @@
+E701 Multiple statements on one line (colon)
+  --> scripts\verify_mcp_gap_fill.py:34:57
+   |
+32 |         else:
+33 |              print("❌ MISSING functions in mcp_server.")
+34 |              if not hasattr(mcp_server, 'deep_research'): print("   - deep_research missing")
+   |                                                         ^
+35 |              if not hasattr(mcp_server, 'save_pdf'): print("   - save_pdf missing")
+36 |              sys.exit(1)
+   |
+
+E701 Multiple statements on one line (colon)
+  --> scripts\verify_mcp_gap_fill.py:35:52
+   |
+33 |              print("❌ MISSING functions in mcp_server.")
+34 |              if not hasattr(mcp_server, 'deep_research'): print("   - deep_research missing")
+35 |              if not hasattr(mcp_server, 'save_pdf'): print("   - save_pdf missing")
+   |                                                    ^
+36 |              sys.exit(1)
+37 |     except ImportError as e:
+   |
+
+E722 Do not use bare `except`
+  --> scripts\verify_mcp_gap_fill.py:79:9
+   |
+77 |         try:
+78 |             os.remove(pdf_path)
+79 |         except:
+   |         ^^^^^^
+80 |             pass
+81 |     else:
+   |
+
+F841 Local variable `results` is assigned to but never used
+   --> src\web_scraper_toolkit\server\mcp_server.py:190:9
+    |
+189 |         # Run crawler (returns list of results)
+190 |         results = await crawler.run(
+    |         ^^^^^^^
+191 |             urls=urls, 
+192 |             output_format=format,
+    |
+help: Remove assignment to unused variable `results`
+
+E402 Module level import not at top of file
+   --> src\web_scraper_toolkit\server\mcp_server.py:357:1
+    |
+357 | import argparse
+    | ^^^^^^^^^^^^^^^
+358 | import signal
+359 | import sys
+    |
+
+E402 Module level import not at top of file
+   --> src\web_scraper_toolkit\server\mcp_server.py:358:1
+    |
+357 | import argparse
+358 | import signal
+    | ^^^^^^^^^^^^^
+359 | import sys
+    |
+
+E402 Module level import not at top of file
+   --> src\web_scraper_toolkit\server\mcp_server.py:359:1
+    |
+357 | import argparse
+358 | import signal
+359 | import sys
+    | ^^^^^^^^^^
+360 |
+361 | # Try imports for Rich
+    |
+
+F401 `rich.print` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   --> src\web_scraper_toolkit\server\mcp_server.py:366:31
+    |
+364 |     from rich.table import Table
+365 |     from rich.panel import Panel
+366 |     from rich import print as rprint
+    |                               ^^^^^^
+367 | except ImportError:
+368 |     # Fallback if rich not installed (though it is a dep)
+    |
+help: Remove unused import: `rich.print`
+
+Found 8 errors.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).

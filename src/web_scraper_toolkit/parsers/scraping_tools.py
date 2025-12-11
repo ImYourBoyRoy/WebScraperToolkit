@@ -148,7 +148,10 @@ def read_website_content(
 
 
 async def _arun_scrape_markdown(
-    website_url: str, config: Optional[Union[Dict[str, Any], ScraperConfig]] = None
+    website_url: str,
+    config: Optional[Union[Dict[str, Any], ScraperConfig]] = None,
+    selector: Optional[str] = None,
+    max_length: Optional[int] = None,
 ) -> str:
     """Async helper for scraping and converting to Markdown."""
     manager = None
@@ -162,8 +165,22 @@ async def _arun_scrape_markdown(
         content, final_url, status_code = await manager.smart_fetch(url=website_url)
 
         if status_code == 200 and content:
+            # Selector filtering (BeautifulSoup)
+            if selector:
+                soup = BeautifulSoup(content, "lxml")
+                selected_tag = soup.select_one(selector)
+                if selected_tag:
+                    content = str(selected_tag)
+                else:
+                    return f"Error: Selector '{selector}' not found on {website_url}"
+
             # Convert to Markdown
             markdown = MarkdownConverter.to_markdown(content, base_url=final_url)
+
+            # Max Length Truncation
+            if max_length and len(markdown) > max_length:
+                markdown = markdown[:max_length] + "\n\n... [Truncated due to max_length]"
+
 
             output = f"=== SCRAPED FROM: {final_url} (MARKDOWN) ===\n\n"
             output += markdown
@@ -185,28 +202,33 @@ async def _arun_scrape_markdown(
 
 
 def read_website_markdown(
-    website_url: str, config: Optional[Union[Dict[str, Any], ScraperConfig]] = None
+    website_url: str,
+    config: Optional[Union[Dict[str, Any], ScraperConfig]] = None,
+    selector: Optional[str] = None,
+    max_length: Optional[int] = None,
 ) -> str:
     """
     Reads the full content from a website and converts it to clean Markdown.
-    This preserves headers, lists, and tables, which is excellent for LLM analysis.
+    Supports CSS selectors to scrape specific parts and max_length to limit tokens.
 
     Args:
         website_url (str): The full URL of the website to read.
         config (dict, optional): Configuration dictionary.
+        selector (str): Optional CSS selector to extract only specific content.
+        max_length (int): Optional character limit for the output.
     """
     logger.info(f"Executing read_website_markdown for URL: {website_url}")
     try:
         loop = asyncio.get_running_loop()
         if loop.is_running():
             future = asyncio.run_coroutine_threadsafe(
-                _arun_scrape_markdown(website_url, config), loop
+                _arun_scrape_markdown(website_url, config, selector, max_length), loop
             )
             return future.result()
         else:
-            return asyncio.run(_arun_scrape_markdown(website_url, config))
+            return asyncio.run(_arun_scrape_markdown(website_url, config, selector, max_length))
     except RuntimeError:
-        return asyncio.run(_arun_scrape_markdown(website_url, config))
+        return asyncio.run(_arun_scrape_markdown(website_url, config, selector, max_length))
 
 
 def extract_metadata(
