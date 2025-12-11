@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "web_scraper_toolkit"
+version = "0.1.0"
+description = "A powerful, standalone web scraping toolkit using Playwright and various parsers."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "playwright",
+    "beautifulsoup4",
+    "requests",
+    "lxml",
+    "pypdf",
+    "rich",
+    "playwright-stealth>=2.0.0",
+    "fastmcp"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+authors = [
+    {name = "Roy Dawson IV"}
+]
+license = {text = "MIT"}
+
+[project.urls]
+"Homepage" = "https://github.com/imyourboyroy/WebScraperToolkit"
+"Repository" = "https://github.com/imyourboyroy/WebScraperToolkit"
+
+[project.scripts]
+web-scraper = "web_scraper_toolkit.cli:main"
+web-scraper-server = "web_scraper_toolkit.server.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
