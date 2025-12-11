@@ -45,10 +45,11 @@ async def verify_environment() -> Dict[str, Any]:
     # 1. Check Playwright Import
     try:
         from importlib.util import find_spec
+
         if find_spec("playwright"):
-             report["playwright_installed"] = True
+            report["playwright_installed"] = True
         else:
-             report["errors"].append("Playwright package not found.")
+            report["errors"].append("Playwright package not found.")
     except ImportError:
         report["errors"].append("Playwright package not installed.")
         return report

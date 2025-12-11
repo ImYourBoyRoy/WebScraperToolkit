@@ -86,9 +86,6 @@ def parse_sitemap_urls(content: str) -> List[str]:
     return urls
 
 
-
-
-
 async def extract_sitemap_tree(input_source: str) -> List[str]:
     """
     Fetch/Read and parse a sitemap (local or remote).
