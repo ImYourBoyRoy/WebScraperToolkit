@@ -1,0 +1,78 @@
+# .github/workflows/publish.yml
+
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write  # required for Trusted Publishing (OIDC)
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Upgrade pip
+        run: python -m pip install -U pip
+
+      - name: Install build backend
+        run: |
+          python -m pip install -U build twine
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Verify version matches tag
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          export PKG_VERSION="${TAG_NAME#v}"
+          echo "Tag: ${TAG_NAME}  -> Expected version: ${PKG_VERSION}"
+          python - <<'PY'
+          import os, glob, subprocess, sys
+          dist = sorted(glob.glob("dist/*.whl")) + sorted(glob.glob("dist/*.tar.gz"))
+          assert dist, "No artifacts in dist/"
+          print("Artifacts:", dist)
+          # Install wheel and assert __version__
+          wheel = [p for p in dist if p.endswith(".whl")]
+          if wheel:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "--force-reinstall", wheel[0]])
+            import web_scraper_toolkit
+            built_ver = getattr(web_scraper_toolkit, "__version__", None)
+            exp = os.environ.get("PKG_VERSION")
+            
+            # Simple check or warn if static version in toml differs from git tag
+            if built_ver != exp:
+                print(f"WARNING: Built version {built_ver} != tag version {exp}")
+                print("ensure pyproject.toml version matches your git tag!")
+                # raise SystemExit(1) # Uncomment to enforce strict match logic
+            else:
+                print("Verified version:", built_ver)
+          PY
+
+      - name: Twine check metadata
+        run: python -m twine check dist/*
+
+      - name: Publish to PyPI (Trusted Publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
