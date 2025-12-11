@@ -317,7 +317,6 @@ class MarkdownConverter:
             ).strip()
             # Handle nested lists
             nested_list = child.find(["ul", "ol"])
-            nested_md = ""
             if nested_list:
                 # remove the text content that belongs to the nested list so we don't duplicate
                 # actually _get_inner_text handles recursion, so 'content' already includes the nested list markdown!

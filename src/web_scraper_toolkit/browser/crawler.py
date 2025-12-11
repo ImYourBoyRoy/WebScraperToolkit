@@ -95,9 +95,9 @@ async def load_urls_from_source(input_source: str) -> List[str]:
             lines = content_text.splitlines()
             valid = []
             for line in lines:
-                l = line.strip().strip(",").strip('"').strip("'")
-                if l.lower().startswith(("http://", "https://", "www.")):
-                    valid.append(l)
+                cleaned_line = line.strip().strip(",").strip('"').strip("'")
+                if cleaned_line.lower().startswith(("http://", "https://", "www.")):
+                    valid.append(cleaned_line)
             urls.extend(valid)
 
         elif ext == ".csv":

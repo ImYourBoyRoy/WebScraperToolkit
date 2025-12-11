@@ -17,6 +17,7 @@ Key Functions:
 
 import re
 import logging
+import os
 import requests
 from typing import List, Optional
 # Moved PlaywrightManager import to function scope to avoid circular dependency
@@ -85,7 +86,7 @@ def parse_sitemap_urls(content: str) -> List[str]:
     return urls
 
 
-import os
+
 
 
 async def extract_sitemap_tree(input_source: str) -> List[str]:

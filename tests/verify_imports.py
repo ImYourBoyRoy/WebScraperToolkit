@@ -38,5 +38,5 @@ if __name__ == "__main__":
     try:
         importlib.import_module("web_scraper_toolkit.parsers.scraping_tools")
         print("✅ scraping_tools OK")
-    except:
+    except Exception:
         traceback.print_exc()

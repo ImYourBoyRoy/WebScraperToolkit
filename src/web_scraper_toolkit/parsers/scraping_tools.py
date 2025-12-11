@@ -216,7 +216,6 @@ def extract_metadata(
     Extracts semantic metadata (JSON-LD, OpenGraph, Twitter Cards) from a URL.
     This provides highly structured data often missed by text scrapers.
     """
-    manager = None
     config = config or {}
     try:
         # We use sync wrapper pattern matching other tools
@@ -259,7 +258,7 @@ async def _arun_extract_metadata(
                     data = script.string
                     if data:
                         output += f"--- JSON-LD #{i + 1} ---\n{data.strip()}\n\n"
-                except:
+                except Exception:
                     pass
         else:
             output += "## No JSON-LD found.\n\n"

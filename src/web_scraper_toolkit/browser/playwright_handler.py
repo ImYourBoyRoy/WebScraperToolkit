@@ -20,8 +20,11 @@ Key Features:
 import asyncio
 import random
 import logging
-from typing import Optional, Dict, Any, Tuple, Union
+from typing import Optional, Dict, Any, Tuple, Union, TYPE_CHECKING
 from urllib.parse import urlparse
+
+if TYPE_CHECKING:
+    from ..core.config import ScraperConfig
 
 from playwright.async_api import (
     async_playwright,
@@ -294,7 +297,7 @@ class PlaywrightManager:
                 # Check Safe Title
                 try:
                     current_title = await page.title()
-                except:
+                except Exception:
                     current_title = "Redirecting..."
 
                 # --- 2. Cloudflare Detection & Solving ---
@@ -373,7 +376,7 @@ class PlaywrightManager:
                         ):
                             label = frame.get_by_text("Verifying you are human")
                             break
-                    except:
+                    except Exception:
                         continue
 
             if await label.count() > 0:
@@ -420,7 +423,7 @@ class PlaywrightManager:
                                     f"Playwright: Success! Redirected to {title}"
                                 )
                                 return True
-                        except:
+                        except Exception:
                             continue
             else:
                 logger.info(
@@ -430,7 +433,7 @@ class PlaywrightManager:
                 try:
                     if "Just a moment" not in (await page.title()):
                         return True
-                except:
+                except Exception:
                     pass
 
             return False
@@ -479,7 +482,7 @@ class PlaywrightManager:
                         title = await page.title()
                         if "Just a moment" in title or "Attention Required" in title:
                             is_blocked = True
-                    except:
+                    except Exception:
                         pass
 
             # FALLBACK LOGIC
@@ -514,12 +517,12 @@ class PlaywrightManager:
             if page:
                 try:
                     await page.close()
-                except:
+                except Exception:
                     pass
             if context:
                 try:
                     await context.close()
-                except:
+                except Exception:
                     pass
 
     async def _auto_scroll(self, page: Page):

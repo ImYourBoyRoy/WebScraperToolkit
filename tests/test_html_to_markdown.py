@@ -16,12 +16,11 @@ class TestMarkdownConverter(unittest.TestCase):
         if os.path.exists(cache_path):
             try:
                 shutil.rmtree(cache_path)
-            except:
+            except Exception:
                 pass
 
     def test_basic_conversion(self):
         html = "<h1>Title</h1><p>Body text.</p>"
-        expected = "\n\n# Title\n\n\n\nBody text.\n\n"
         # We strip to avoid whitespace nitpicking on exact newlines
         self.assertEqual(
             MarkdownConverter.to_markdown(html).strip(), "# Title\n\nBody text."

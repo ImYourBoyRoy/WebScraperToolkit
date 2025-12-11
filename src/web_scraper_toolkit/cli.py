@@ -39,6 +39,7 @@ from . import (
     ScraperConfig,
     setup_logger,
 )
+from .core.verify_deps import verify_dependencies
 
 from rich.console import Console
 from rich.panel import Panel
@@ -48,8 +49,6 @@ from rich.table import Table
 console = Console()
 
 # Dependency Check
-from .core.verify_deps import verify_dependencies
-
 if not verify_dependencies():
     # We proceed but warn, or exit?
     # User said "gently fail", which usually means "don't crash with traceback".

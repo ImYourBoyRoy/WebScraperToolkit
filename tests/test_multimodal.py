@@ -24,7 +24,7 @@ class TestMultimodal(unittest.TestCase):
         if os.path.exists(cache_path):
             try:
                 shutil.rmtree(cache_path)
-            except:
+            except Exception:
                 pass
 
         self.output_dir = "test_outputs"

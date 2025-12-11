@@ -20,7 +20,7 @@ class TestPlaywrightManager(unittest.TestCase):
         if os.path.exists(cache_path):
             try:
                 shutil.rmtree(cache_path)
-            except:
+            except Exception:
                 pass
 
         self.loop = asyncio.new_event_loop()
