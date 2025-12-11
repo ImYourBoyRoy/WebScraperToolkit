@@ -12,8 +12,11 @@ from web_scraper_toolkit.browser.playwright_handler import PlaywrightManager
 logger = logging.getLogger(__name__)
 
 
-class TestCloudflareBypass(unittest.IsolatedAsyncioTestCase):
-    async def asyncSetUp(self):
+SKIP_CF_TEST = os.getenv("SKIP_CF_TEST", "1") == "1"
+
+@pytest.mark.skipif(SKIP_CF_TEST, reason="Cloudflare bypass test disabled in CI")
+class TestCloudflareBypass:
+    async def test_cloudflare_bypass(self):
         # Cache Scrub logic if needed, similar to other tests
         import shutil
 
