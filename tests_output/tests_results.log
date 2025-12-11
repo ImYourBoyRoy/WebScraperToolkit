@@ -1,6 +1,0 @@
-2025-12-11 15:52:32,766 - asyncio - DEBUG - Using proactor: IocpProactor
-2025-12-11 15:52:32,771 - asyncio - DEBUG - Using proactor: IocpProactor
-2025-12-11 15:52:32,772 - mcp_server - INFO - Tool Call: scrape_url (format=markdown) for https://example.com
-2025-12-11 15:52:32,773 - mcp_server - INFO - Tool Call: search_web for 'query'
-2025-12-11 15:52:32,773 - mcp_server - INFO - Tool Call: get_sitemap for https://example.com
-2025-12-11 15:52:32,774 - mcp_server - INFO - Tool Call: screenshot https://example.com -> path.png
