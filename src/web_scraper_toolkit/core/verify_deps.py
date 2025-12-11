@@ -18,12 +18,12 @@ Key Outputs:
     - Printed instructions for the user.
 """
 
-import sys
 import importlib.metadata
 from packaging import version
 from .logger import setup_logger
 
 logger = setup_logger()
+
 
 def verify_dependencies():
     """
@@ -32,18 +32,20 @@ def verify_dependencies():
     """
     required = {
         "playwright-stealth": "2.0.0",
-        "playwright": "1.40.0" # User mentioned 1.56, but let's be safe. 1.40 is stable base. 
-                               # Actually user said "playwright>=1.56.0". Let's use that.
+        "playwright": "1.40.0",  # User mentioned 1.56, but let's be safe. 1.40 is stable base.
+        # Actually user said "playwright>=1.56.0". Let's use that.
     }
     required["playwright"] = "1.56.0"
 
     all_good = True
-    
+
     for package, min_ver in required.items():
         try:
             installed_ver = importlib.metadata.version(package)
             if version.parse(installed_ver) < version.parse(min_ver):
-                logger.error(f"❌ Dependency Error: {package} {installed_ver} is too old. Required: >={min_ver}")
+                logger.error(
+                    f"❌ Dependency Error: {package} {installed_ver} is too old. Required: >={min_ver}"
+                )
                 print(f"\n[!] Critical Dependency Update Required for '{package}':")
                 print(f"    Current: {installed_ver}")
                 print(f"    Required: >={min_ver}")
@@ -54,5 +56,5 @@ def verify_dependencies():
             print(f"\n[!] Missing Critical Dependency: '{package}'")
             print(f"    Selected: pip install {package}\n")
             all_good = False
-            
+
     return all_good

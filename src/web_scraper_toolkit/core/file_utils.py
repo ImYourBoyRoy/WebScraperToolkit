@@ -16,7 +16,6 @@ Key Functions:
 """
 
 import os
-import re
 import hashlib
 import logging
 from urllib.parse import urlparse
@@ -24,13 +23,17 @@ from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
+
 def ensure_directory(path: str):
     """Ensure directory exists, create if not."""
     if path and path != "." and not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
         logger.info(f"Created directory: {path}")
 
-def generate_safe_filename(url: str, output_dir: str, extension: str, specific_name: Optional[str] = None) -> str:
+
+def generate_safe_filename(
+    url: str, output_dir: str, extension: str, specific_name: Optional[str] = None
+) -> str:
     """
     Generate a safe, unique filename or use specific name if provided.
     Always joins with output_dir.
@@ -42,8 +45,9 @@ def generate_safe_filename(url: str, output_dir: str, extension: str, specific_n
     safe_name = "".join(x for x in domain if x.isalnum() or x in "._-")
     url_hash = hashlib.md5(url.encode()).hexdigest()[:8]
     filename = f"{safe_name}_{url_hash}.{extension.lstrip('.')}"
-    
+
     return os.path.join(output_dir, filename)
+
 
 def get_unique_filepath(base_path: str) -> str:
     """
@@ -64,18 +68,21 @@ def get_unique_filepath(base_path: str) -> str:
             return new_path
         counter += 1
 
+
 def merge_content_files(outputs: List[str], format_type: str, output_filename: str):
     """Merge collected outputs into a single file."""
-    if not outputs: return
+    if not outputs:
+        return
 
-    if format_type == 'pdf':
+    if format_type == "pdf":
         try:
             from pypdf import PdfWriter
+
             merger = PdfWriter()
             for pdf_file in outputs:
                 if os.path.exists(pdf_file):
                     merger.append(pdf_file)
-            
+
             with open(output_filename, "wb") as f_out:
                 merger.write(f_out)
             logger.info(f"Merged PDF saved to {output_filename}")
@@ -88,7 +95,7 @@ def merge_content_files(outputs: List[str], format_type: str, output_filename: s
         # Text/Markdown/HTML merge
         with open(output_filename, "w", encoding="utf-8") as f:
             for i, content in enumerate(outputs):
-                f.write(f"\n\n=== SOURCE {i+1} ===\n\n")
+                f.write(f"\n\n=== SOURCE {i + 1} ===\n\n")
                 f.write(content)
-                f.write(f"\n\n=== END SOURCE {i+1} ===\n\n")
+                f.write(f"\n\n=== END SOURCE {i + 1} ===\n\n")
         logger.info(f"Merged content saved to {output_filename}")

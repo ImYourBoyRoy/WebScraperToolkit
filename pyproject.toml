@@ -7,7 +7,7 @@ name = "web_scraper_toolkit"
 version = "0.1.0"
 description = "A powerful, standalone web scraping toolkit using Playwright and various parsers."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "playwright",
     "beautifulsoup4",

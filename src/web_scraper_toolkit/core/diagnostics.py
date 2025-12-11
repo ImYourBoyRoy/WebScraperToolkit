@@ -16,17 +16,17 @@ Outputs:
 import asyncio
 import logging
 import sys
-import shutil
 from typing import Dict, Any
 
 from playwright.async_api import async_playwright
 
 logger = logging.getLogger(__name__)
 
+
 async def verify_environment() -> Dict[str, Any]:
     """
     Checks the scraping environment for necessary dependencies and functionality.
-    
+
     Returns:
         Dict containing status of:
         - python_version
@@ -39,12 +39,13 @@ async def verify_environment() -> Dict[str, Any]:
         "playwright_installed": False,
         "browser_launch_successful": False,
         "browsers_found": [],
-        "errors": []
+        "errors": [],
     }
 
     # 1. Check Playwright Import
     try:
         from playwright.sync_api import sync_playwright
+
         report["playwright_installed"] = True
     except ImportError:
         report["errors"].append("Playwright package not installed.")
@@ -68,36 +69,41 @@ async def verify_environment() -> Dict[str, Any]:
                 report["browsers_found"].append("firefox")
                 await browser.close()
             except Exception:
-                pass # Firefox might not be installed, that's okay
+                pass  # Firefox might not be installed, that's okay
 
     except Exception as e:
         report["errors"].append(f"Playwright runtime error: {e}")
 
     return report
 
+
 def print_diagnostics():
     """Runs the verification and prints a human-readable report."""
     print("Running WebScraperToolkit Diagnostics...")
     try:
         results = asyncio.run(verify_environment())
-        
+
         print(f"\nPython Version: {results['python_version'].split()[0]}")
-        print(f"Playwright Installed: {'✅' if results['playwright_installed'] else '❌'}")
-        
-        if results['playwright_installed']:
-            if results['browser_launch_successful']:
-                print(f"Browser Launch: ✅ (Chromium)")
+        print(
+            f"Playwright Installed: {'✅' if results['playwright_installed'] else '❌'}"
+        )
+
+        if results["playwright_installed"]:
+            if results["browser_launch_successful"]:
+                print("Browser Launch: ✅ (Chromium)")
             else:
-                print(f"Browser Launch: ❌")
-            
+                print("Browser Launch: ❌")
+
             print(f"Browsers Detected: {', '.join(results['browsers_found'])}")
-        
-        if results['errors']:
+
+        if results["errors"]:
             print("\n⚠️ Issues Found:")
-            for err in results['errors']:
+            for err in results["errors"]:
                 print(f"  - {err}")
-            
-            if "Executable doesn't exist" in str(results['errors']):
-                print("\nSuggestion: Run `playwright install` to download necessary browsers.")
+
+            if "Executable doesn't exist" in str(results["errors"]):
+                print(
+                    "\nSuggestion: Run `playwright install` to download necessary browsers."
+                )
     except Exception as e:
         print(f"Diagnostics failed to run: {e}")

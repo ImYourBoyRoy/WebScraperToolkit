@@ -9,6 +9,7 @@ Automatically handles path configuration so you can run it directly from the roo
 Usage:
     python run_server.py
 """
+
 import sys
 import os
 
@@ -17,6 +18,7 @@ sys.path.insert(0, os.path.abspath("src"))
 
 try:
     from web_scraper_toolkit.server.mcp_server import main
+
     print("🚀 Starting WebScraperToolkit MCP Server...")
     main()
 except ImportError as e:

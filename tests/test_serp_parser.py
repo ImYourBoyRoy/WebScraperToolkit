@@ -3,12 +3,12 @@ import sys
 import os
 
 # Ensure src is in path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 from web_scraper_toolkit.parsers.serp_parser import SerpParser
 
+
 class TestSerpParser(unittest.TestCase):
-    
     def test_parse_ddg_html_sample(self):
         # Simulated DuckDuckGo HTML structure
         html = """
@@ -31,9 +31,9 @@ class TestSerpParser(unittest.TestCase):
         """
         results = SerpParser.parse_ddg_html(html, "https://duckduckgo.com")
         self.assertEqual(len(results), 2)
-        self.assertEqual(results[0]['url'], "https://example.com/foo")
-        self.assertEqual(results[0]['title'], "Example Domain")
-        self.assertIn("sample snippet", results[0]['snippet'])
+        self.assertEqual(results[0]["url"], "https://example.com/foo")
+        self.assertEqual(results[0]["title"], "Example Domain")
+        self.assertIn("sample snippet", results[0]["snippet"])
 
     def test_parse_google_style_sample(self):
         # Simulated Google HTML structure (div.g)
@@ -53,13 +53,14 @@ class TestSerpParser(unittest.TestCase):
         """
         results = SerpParser.parse_google_direct_links_style(html, "https://google.com")
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['url'], "https://example.com/result")
-        self.assertEqual(results[0]['title'], "Google Result Title")
-        self.assertEqual(results[0]['snippet'], "Google snippet text...")
+        self.assertEqual(results[0]["url"], "https://example.com/result")
+        self.assertEqual(results[0]["title"], "Google Result Title")
+        self.assertEqual(results[0]["snippet"], "Google snippet text...")
 
     def test_empty_content(self):
         results = SerpParser.parse_ddg_html("", "https://duckduckgo.com")
         self.assertEqual(results, [])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

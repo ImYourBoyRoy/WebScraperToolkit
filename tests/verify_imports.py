@@ -5,7 +5,8 @@ import importlib
 import traceback
 
 # Add src to path so we can import as if installed
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+
 
 def verify_package(package_name):
     print(f"🔍 Verifying package: {package_name}")
@@ -27,9 +28,10 @@ def verify_package(package_name):
             importlib.import_module(name)
             print("✅ OK")
         except Exception as e:
-            print(f"❌ FAILED")
+            print("❌ FAILED")
             print(f"   Error: {e}")
             # traceback.print_exc()
+
 
 if __name__ == "__main__":
     # verify_package("web_scraper_toolkit")
