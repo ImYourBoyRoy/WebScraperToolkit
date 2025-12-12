@@ -46,6 +46,24 @@ playwright install
 
 ---
 
+## 🏗️ Architecture & Best Practices
+
+We support two distinct integration patterns depending on your needs:
+
+### Pattern 1: The "Agentic" Way (MCP Server)
+**Best for**: Claude Desktop, Cursor, Custom Agent Swarms.
+*   **Mechanism**: Runs as a standalone process (stdio transport).
+*   **Benefit**: **True Sandbox**. If the browser crashes, your Agent survives.
+*   **Usage**: Use `web-scraper-server`.
+
+### Pattern 2: The "Pythonic" Way (Library)
+**Best for**: data pipelines, cron jobs, tight integration.
+*   **Mechanism**: Direct import of `WebCrawler`.
+*   **Benefit**: Simplicity. No subprocess management.
+*   **Safety**: Internal scraping logic *still* uses `ProcessPoolExecutor` for isolation!
+
+---
+
 ## 🔌 MCP Server Integration
 
 This is the primary way to use the toolkit with AI models. The server runs locally and exposes tools via the [Model Context Protocol](https://github.com/modelcontextprotocol).

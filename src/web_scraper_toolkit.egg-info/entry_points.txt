@@ -1,3 +1,0 @@
-[console_scripts]
-web-scraper = web_scraper_toolkit.cli:main
-web-scraper-server = web_scraper_toolkit.server.mcp_server:main

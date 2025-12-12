@@ -1,8 +1,0 @@
-playwright
-beautifulsoup4
-requests
-lxml
-pypdf
-rich
-playwright-stealth>=2.0.0
-fastmcp
