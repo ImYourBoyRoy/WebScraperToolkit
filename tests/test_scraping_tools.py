@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import patch, AsyncMock
 import sys
 import os
 import asyncio
@@ -75,31 +75,34 @@ class TestScrapingTools(unittest.TestCase):
         self.assertIn("John Doe", result)  # Leadership extraction
         self.assertIn("contact@example.com", result)  # Email extraction
 
-    def test_sitemap_extraction(self):
-        # Should simulate sitemap structure, but get_sitemap_urls uses requests.get
-        # We can mock requests.get
-        with patch("requests.get") as mock_get:
-            mock_resp = MagicMock()
-            mock_resp.status_code = 200
-            # Simple sitemap XML
-            mock_resp.content = b"""
-            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-                <url><loc>https://example.com/about</loc></url>
-                <url><loc>https://example.com/contact</loc></url>
-                <url><loc>https://example.com/product/123</loc></url> <!-- Should be excluded if logic holds -->
-            </urlset>
-            """
-            mock_get.return_value = mock_resp
+    @patch(
+        "web_scraper_toolkit.parsers.scraping_tools.extract_sitemap_tree",
+        new_callable=AsyncMock,
+    )
+    @patch(
+        "web_scraper_toolkit.parsers.scraping_tools.find_sitemap_urls",
+        new_callable=AsyncMock,
+    )
+    def test_sitemap_extraction(self, mock_find, mock_extract):
+        # Mock finding a sitemap
+        mock_find.return_value = ["https://example.com/sitemap.xml"]
 
-            result = get_sitemap_urls("https://example.com")
+        # Mock extracting URLs from it
+        mock_extract.return_value = [
+            "https://example.com/about",
+            "https://example.com/contact",
+            "https://example.com/product/123",
+        ]
 
-            self.assertIn("Found 3 unique URLs", result)
-            self.assertIn("https://example.com/about", result)
-            self.assertIn("https://example.com/contact", result)
-            # Products are usually excluded in the default logic if listed in exclude_keywords
-            # Let's check logic: '/product/' is in exclude list.
-            # However, the output string usually lists "Priority Pages".
-            self.assertNotIn("https://example.com/product/123", result)
+        result = get_sitemap_urls("https://example.com")
+
+        # The function sums up found URLs.
+        # Total unique = 3.
+        self.assertIn("Found 3 unique URLs", result)
+        self.assertIn("https://example.com/about", result)
+        self.assertIn("https://example.com/contact", result)
+        # Products are usually excluded
+        self.assertNotIn("https://example.com/product/123", result)
 
 
 if __name__ == "__main__":

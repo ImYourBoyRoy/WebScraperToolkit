@@ -18,9 +18,10 @@ In the era of Agentic AI, tools need to be more than just Python scripts. They n
 
 ### ✨ Core Design Goals
 *   **🤖 Hyper Model-Friendly**: All tools return standardized **JSON Envelopes**, separating metadata from content to prevent "context pollution."
-*   **�️ Robust Failover**: Smart detection of anti-bot challenges (Cloudflare/403s) automatically triggers a switch from Headless to Visible browser mode to pass checks.
+*   **🕷️ Smart Sitemap Discovery**: Automatically finds sitemaps via `robots.txt`, common paths (e.g. `/wp-sitemap.xml`), and homepage types/links.
+*   **🛡️ Robust Failover**: Smart detection of anti-bot challenges (Cloudflare/403s) automatically triggers a switch from Headless to Visible browser mode to pass checks.
 *   **🎯 Precision Control**: Use CSS Selectors (`selector`) and token limits (`max_length`) to extract *exactly* what you need, saving tokens and money.
-*   **� Batch Efficiency**: The explicit `batch_scrape` tool handles parallel processing found in high-performance agent workflows.
+*   **🔄 Batch Efficiency**: The explicit `batch_scrape` tool handles parallel processing found in high-performance agent workflows.
 *   **⚡ MCP Native**: Exposes a full Model Context Protocol (MCP) server for instant integration with Claude Desktop, Cursor, and other agentic IDEs.
 *   **🔒 Privacy & Stealth**: Uses `playwright-stealth` and randomized user agents to mimic human behavior.
 

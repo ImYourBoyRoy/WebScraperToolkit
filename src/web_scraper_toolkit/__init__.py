@@ -11,7 +11,7 @@ Usage:
 
 """
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 from .core.config import ScraperConfig, ScraperSettings
 from .core.logger import setup_logger
