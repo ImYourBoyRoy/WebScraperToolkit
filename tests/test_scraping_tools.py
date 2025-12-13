@@ -80,10 +80,14 @@ class TestScrapingTools(unittest.TestCase):
         new_callable=AsyncMock,
     )
     @patch(
+        "web_scraper_toolkit.parsers.sitemap_handler.peek_sitemap_index",
+        new_callable=AsyncMock,
+    )
+    @patch(
         "web_scraper_toolkit.parsers.scraping_tools.find_sitemap_urls",
         new_callable=AsyncMock,
     )
-    def test_sitemap_extraction(self, mock_find, mock_extract):
+    def test_sitemap_extraction(self, mock_find, mock_peek, mock_extract):
         # Mock finding a sitemap
         mock_find.return_value = ["https://example.com/sitemap.xml"]
 
@@ -94,15 +98,18 @@ class TestScrapingTools(unittest.TestCase):
             "https://example.com/product/123",
         ]
 
+        # Mock peeking - return what correct extract returns
+        mock_peek.return_value = {"type": "urlset", "urls": mock_extract.return_value}
+
         result = get_sitemap_urls("https://example.com")
 
         # The function sums up found URLs.
         # Total unique = 3.
-        self.assertIn("Found 3 unique URLs", result)
+        self.assertIn("Contains 3 relevant URLs", result)
         self.assertIn("https://example.com/about", result)
         self.assertIn("https://example.com/contact", result)
-        # Products are usually excluded
-        self.assertNotIn("https://example.com/product/123", result)
+        # Products are typically included unless they are assets
+        self.assertIn("https://example.com/product/123", result)
 
 
 if __name__ == "__main__":

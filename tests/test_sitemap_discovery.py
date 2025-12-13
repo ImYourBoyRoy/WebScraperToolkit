@@ -115,7 +115,7 @@ class TestSitemapDiscovery(unittest.IsolatedAsyncioTestCase):
             new_callable=AsyncMock,
         ) as mock_fetch:
             # Use side_effect to return different content for different URLs
-            def fetch_side_effect(url):
+            def fetch_side_effect(url, **kwargs):
                 if url == "https://example.com/index.xml":
                     return """
                     <sitemapindex>
