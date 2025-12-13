@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "web-scraper-toolkit"
-version = "0.1.3"
+version = "0.1.4"
 description = "A powerful, standalone web scraping toolkit using Playwright and various parsers."
 readme = "README.md"
 requires-python = ">=3.10"

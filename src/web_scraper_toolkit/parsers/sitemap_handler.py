@@ -17,9 +17,8 @@ Key Functions:
 
 import asyncio
 import logging
-import os
 import re
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -49,10 +48,11 @@ COMMON_SITEMAP_PATHS = [
 ]
 
 
-async def fetch_sitemap_content(url: str) -> Optional[str]:
+async def fetch_sitemap_content(url: str, manager=None) -> Optional[str]:
     """
     Fetch sitemap content from valid URL.
     Tries requests first, falls back to Playwright for JS/Cloudflare.
+    If 'manager' (PlaywrightManager) is provided, it is reused for efficiency.
     """
     # 1. Try Requests
     try:
@@ -72,11 +72,15 @@ async def fetch_sitemap_content(url: str) -> Optional[str]:
     try:
         from ..browser.playwright_handler import PlaywrightManager
 
-        manager = PlaywrightManager(config={"scraper_settings": {"headless": True}})
-        # We need to start/stop the manager properly.
-        # Ideally, we should pass an existing manager if available, but for now we create one.
-        await manager.start()
+        should_close = False
+        if not manager:
+            manager = PlaywrightManager(config={"scraper_settings": {"headless": True}})
+            should_close = True
+
         try:
+            # Ensure started (idempotent)
+            await manager.start()
+
             content, _, status = await manager.smart_fetch(url)
             if status == 200:
                 return content
@@ -84,103 +88,208 @@ async def fetch_sitemap_content(url: str) -> Optional[str]:
                 logger.error(f"Playwright sitemap fetch failed: {status}")
                 return None
         finally:
-            await manager.stop()
+            if should_close:
+                await manager.stop()
 
     except Exception as pe:
         logger.error(f"Failed to fetch sitemap via Playwright: {pe}")
         return None
 
 
+# Global semaphore to limit concurrent sitemap crawls
+# We default to 4 which is safe for most laptops (like the user's 4-cpu one)
+
+
 def parse_sitemap_urls(content: str) -> List[str]:
     """
     Extract URLs from sitemap XML using robust regex.
-    Handles standard <loc> tags.
+    Handles standard <loc> tags and CDATA.
     """
-    # Simple regex for ANY <loc>
-    found_urls = re.findall(
-        r"(?:<|&lt;)loc(?:>|&gt;)(.*?)(?:<|&lt;)/loc(?:>|&gt;)", content, re.IGNORECASE
+    # Regex to capture content inside <loc>...</loc>, ignoring namespace prefixes
+    # and handling potential CDATA usage.
+    # Logic:
+    # 1. Match <loc> or <ns:loc>
+    # 2. Capture nested content
+    # 3. Handle closing tag
+
+    # This non-greedy match finds content within loc OR link tags (for RSS sitemaps)
+    raw_matches = re.findall(
+        r"(?:<|&lt;)(?:[\w]+:)?(?:loc|link)(?:>|&gt;)(.*?)(?:<|&lt;)/(?:[\w]+:)?(?:loc|link)(?:>|&gt;)",
+        content,
+        re.IGNORECASE | re.DOTALL,
     )
-    return [u.strip() for u in found_urls if u.strip()]
+
+    cleaned_urls = []
+    for raw in raw_matches:
+        cleaned = raw.strip()
+
+        # Robustly remove CDATA wrapper if present (case insensitive)
+        if "<![CDATA[" in cleaned.upper():
+            # Use regex for case-insensitive replacement to be safe
+            cleaned = re.sub(r"<!\[CDATA\[", "", cleaned, flags=re.IGNORECASE)
+            cleaned = re.sub(r"\]\]>", "", cleaned, flags=re.IGNORECASE)
+
+        cleaned_urls.append(cleaned.strip())
+
+    return [u for u in cleaned_urls if u]
 
 
-async def extract_sitemap_tree(input_source: str, depth: int = 0) -> List[str]:
+# SITEMAP_CONCURRENCY_LIMIT removed. Semaphores are now created per-request to avoid loop binding issues.
+
+
+async def extract_sitemap_tree(
+    input_source: str, depth: int = 0, semaphore: asyncio.Semaphore = None, manager=None
+) -> List[str]:
     """
-    Fetch/Read and parse a sitemap (local or remote).
-    Recursively follows sitemap indices.
-    Returns list of PAGE URLs (ignoring nested sitemap URLs in the final output,
-    but traversing them).
+    Recursively extracts all URLs from a sitemap or sitemap index.
     """
-    if depth > 3:  # prevent infinite recursion
-        logger.warning(f"Sitemap recursion depth limit reached at {input_source}")
+    if depth > 3:  # Safety break
+        logger.warning(f"Max sitemap depth reached at {input_source}")
         return []
 
-    if os.path.exists(input_source):
-        # Local file
+    # Initialize semaphore if this is the root call
+    if semaphore is None:
+        semaphore = asyncio.Semaphore(4)
+
+    # Initialize Shared Browser Manager if root and not provided
+    local_manager_created = False
+    if depth == 0 and manager is None:
         try:
-            with open(input_source, "r", encoding="utf-8") as f:
-                content = f.read()
+            from ..browser.playwright_handler import PlaywrightManager
+
+            manager = PlaywrightManager(config={"scraper_settings": {"headless": True}})
+            # We don't start it yet - let fetch_sitemap_content start it lazily if requests fails
+            local_manager_created = True
         except Exception as e:
-            logger.error(f"Failed to read local sitemap: {e}")
+            logger.warning(f"Could not initialize shared PlaywrightManager: {e}")
+
+    try:
+        content = await fetch_sitemap_content(input_source, manager=manager)
+        if not content:
             return []
-    else:
-        # Remote URL
-        content = await fetch_sitemap_content(input_source)
 
-    if not content:
-        return []
+        # 1. Check for nested sitemaps (Sitemap Index)
+        # Check for <sitemap> tags which indicate an index
+        nested_sitemaps = []
 
-    # Try to determine if it is a Sitemap Index or a URL Set
-    # Regex is fast and robust against bad XML
-
-    # 1. Extract all URLs
-    all_locs = parse_sitemap_urls(content)
-    if not all_locs:
-        # Check if content looks like XML but matched nothing
-        safe_prev = content[:200].replace("\n", " ")
-        logger.warning(
-            f"No URLs found in sitemap content {input_source}. Header: {safe_prev}"
+        # Regex for sitemap locs
+        raw_sitemap_matches = re.findall(
+            r"(?:<|&lt;)sitemap(?:>|&gt;)\s*(?:<|&lt;)loc(?:>|&gt;)(.*?)(?:<|&lt;)/loc(?:>|&gt;)",
+            content,
+            re.IGNORECASE | re.DOTALL,
         )
-        return []
 
-    page_urls = []
-    nested_sitemaps = []
+        for raw in raw_sitemap_matches:
+            url = raw.strip()
+            if "<![CDATA[" in url.upper():
+                url = re.sub(r"<!\[CDATA\[", "", url, flags=re.IGNORECASE)
+                url = re.sub(r"\]\]>", "", url, flags=re.IGNORECASE)
+            nested_sitemaps.append(url.strip())
 
-    # 2. Heuristic to classify URLs
-    # If a sitemap contains links to .xml or .xml.gz, it's likely a sitemap index
-    # Standard sitemap spec says <sitemapindex> -> <sitemap> -> <loc>
-    # while <urlset> -> <url> -> <loc>
-    # But regex loses that context.
+        if nested_sitemaps:
+            logger.info(
+                f"Found sitemap index at {input_source} with {len(nested_sitemaps)} nested sitemaps."
+            )
 
-    # We will assume if "sitemap" is in the URL or it ends with .xml/.gz, it's a nested sitemap
-    # UNLESS it is significantly different.
-    # To be safer, let's look for <sitemapindex> tag in content to decide mode.
+            async def _recursive_task(url):
+                async with semaphore:
+                    return await extract_sitemap_tree(
+                        url, depth + 1, semaphore=semaphore, manager=manager
+                    )
 
-    is_index = (
-        "<sitemapindex" in content.lower() or "&lt;sitemapindex" in content.lower()
+            tasks = [_recursive_task(url) for url in nested_sitemaps]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            all_urls = []
+            for i, res in enumerate(results):
+                if isinstance(res, list):
+                    if not res:
+                        logger.debug(
+                            f"Nested sitemap {nested_sitemaps[i]} returned 0 URLs."
+                        )
+                    all_urls.extend(res)
+                else:
+                    logger.error(f"Error recursing sitemap {nested_sitemaps[i]}: {res}")
+
+            if not all_urls:
+                logger.warning(
+                    f"Sitemap Index at {input_source} had {len(nested_sitemaps)} children but yielded 0 URLs. (Possible rate limit or empty sub-sitemaps)"
+                )
+
+            return all_urls
+
+        # 2. Extract standard URLs (Leaf Node)
+        return parse_sitemap_urls(content)
+
+    finally:
+        # If we created a local manager at root, close it
+        if local_manager_created and manager:
+            await manager.stop()
+
+
+async def peek_sitemap_index(input_source: str) -> Dict[str, Any]:
+    """
+    Analyzes a sitemap index without deep recursion.
+    Returns:
+       {
+         'type': 'index' | 'urlset',
+         'sitemaps': [{'url': str, 'count': int}, ...],  # If index
+         'urls': [str, ...],                             # If urlset
+       }
+    """
+    content = await fetch_sitemap_content(input_source)
+    if not content:
+        return {"type": "error", "message": "Could not fetch content"}
+
+    # 1. Check for Index
+    raw_sitemap_matches = re.findall(
+        r"(?:<|&lt;)sitemap(?:>|&gt;)\s*(?:<|&lt;)loc(?:>|&gt;)(.*?)(?:<|&lt;)/loc(?:>|&gt;)",
+        content,
+        re.IGNORECASE | re.DOTALL,
     )
 
-    if is_index:
-        nested_sitemaps.extend(all_locs)
-    else:
-        # It's probably a urlset.
-        # However, sometimes mixed? unlikely.
-        page_urls.extend(all_locs)
+    nested_sitemaps = []
+    for raw in raw_sitemap_matches:
+        url = raw.strip()
+        if "<![CDATA[" in url.upper():
+            url = re.sub(r"<!\[CDATA\[", "", url, flags=re.IGNORECASE)
+            url = re.sub(r"\]\]>", "", url, flags=re.IGNORECASE)
+        nested_sitemaps.append(url.strip())
 
-    # 3. Recurse if index
     if nested_sitemaps:
-        logger.info(
-            f"Found sitemap index at {input_source} with {len(nested_sitemaps)} nested sitemaps."
-        )
-        tasks = [extract_sitemap_tree(url, depth + 1) for url in nested_sitemaps]
+        # It IS an index. Let's get "Quick Counts" for each child.
+        logger.info(f"Peeking at sitemap index: {len(nested_sitemaps)} children.")
+
+        # Local semaphore for this concurrency task
+        local_semaphore = asyncio.Semaphore(4)
+
+        async def _count_urls(url):
+            async with local_semaphore:
+                c = await fetch_sitemap_content(url)
+                if not c:
+                    return {"url": url, "count": 0, "error": True}
+                # Quick regex count of <loc> or <link>
+                count = len(
+                    re.findall(r"(?:<|&lt;)(?:[\w]+:)?loc(?:>|&gt;)", c, re.IGNORECASE)
+                )
+                return {"url": url, "count": count}
+
+        tasks = [_count_urls(u) for u in nested_sitemaps]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
+        sitemap_stats = []
         for res in results:
-            if isinstance(res, list):
-                page_urls.extend(res)
+            if isinstance(res, dict):
+                sitemap_stats.append(res)
             else:
-                logger.debug(f"Error recursing sitemap: {res}")
+                sitemap_stats.append({"url": "error", "count": 0})
 
-    return page_urls
+        return {"type": "index", "sitemaps": sitemap_stats}
+
+    else:
+        # It is a LEAF sitemap (Urlset)
+        urls = parse_sitemap_urls(content)
+        return {"type": "urlset", "urls": urls}
 
 
 # --- New Discovery Logic ---

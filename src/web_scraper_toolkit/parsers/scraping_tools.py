@@ -500,75 +500,151 @@ def get_sitemap_urls(*args, **kwargs) -> str:
     This version is upgraded to handle sitemap index files (which point to other sitemaps)
     as well as regular sitemaps. It dynamically finds a URL from the input.
     """
-    # 1. Find the target URL from the function arguments (this part is unchanged)
-    full_input_str = " ".join(map(str, args)) + " ".join(map(str, kwargs.values()))
-    url_pattern = re.compile(r'https?://[^\s<>"]+|www\.[^\s<>"]+')
-    match = url_pattern.search(full_input_str)
+    # 1. Parse Arguments intelligently
+    target_url = None
 
-    if not match:
+    # Check explicit kwarg
+    if "url" in kwargs:
+        target_url = kwargs["url"]
+    # Check first positional arg
+    elif args and isinstance(args[0], str) and ("http" in args[0] or "www" in args[0]):
+        target_url = args[0]
+
+    # Fallback: Search in all args (legacy support for messy LLM input)
+    if not target_url:
+        full_input_str = (
+            " ".join(map(str, args)) + " " + " ".join(map(str, kwargs.values()))
+        )
+        url_pattern = re.compile(r'https?://[^\s<>"]+|www\.[^\s<>"]+')
+        match = url_pattern.search(full_input_str)
+        if match:
+            target_url = match.group(0)
+
+    if not target_url:
         return "Error: No valid URL could be found in the input. Please provide a valid URL."
-
-    target_url = match.group(0)
-    target_url = match.group(0)
 
     # --- UPDATED LOGIC START ---
 
-    async def _async_get_sitemap_urls(t_url: str):
+    # --- UPDATED AGENT-FRIENDLY LOGIC ---
+
+    async def _async_get_sitemap_urls(
+        t_url: str, keywords: Optional[str] = None, limit: int = 50
+    ):
         # 1. Discover all potential sitemaps
         sitemap_candidates = await find_sitemap_urls(t_url)
 
-        all_found_urls = []
+        if not sitemap_candidates:
+            return f"No sitemaps found for {t_url}"
 
-        # 2. Extract URLs from each (recursively)
-        # We process them in parallel
-        if sitemap_candidates:
-            extraction_tasks = [extract_sitemap_tree(sm) for sm in sitemap_candidates]
-            results = await asyncio.gather(*extraction_tasks, return_exceptions=True)
+        # We usually pick the best candidate (e.g. sitemap.xml or sitemap_index.xml)
+        # Prioritize 'sitemap.xml' or 'sitemap_index.xml' if present to capture the Index.
+        sitemap_candidates.sort(
+            key=lambda x: 0
+            if x.endswith("/sitemap.xml") or x.endswith("/sitemap_index.xml")
+            else 1
+        )
 
-            for res in results:
-                if isinstance(res, list):
-                    all_found_urls.extend(res)
-                else:
-                    logger.warning(f"Failed to extract tree: {res}")
-        else:
-            # Fallback? No, if robust discovery failed, we failed.
-            pass
+        primary_sitemap = sitemap_candidates[0]
 
-        return all_found_urls
+        from .sitemap_handler import peek_sitemap_index
 
-    try:
-        # Run async logic
-        loop = asyncio.get_event_loop()
-        # Handle cases where loop is already running or not
-        if loop.is_running():
-            # This might be tricky if get_sitemap_urls is called from sync context.
-            # but check the file pattern, other tools use future.result()
-            # But here we define a new coro, so we can use the same pattern
-            future = asyncio.run_coroutine_threadsafe(
-                _async_get_sitemap_urls(target_url), loop
+        # MODE A: Keyword Search (Deep Search)
+        # If keywords are provided, we MUST recurse to find matches.
+        if keywords:
+            logger.info(
+                f"Sitemap Search Mode: '{keywords}' requested. Deep crawling..."
             )
-            all_urls = future.result()
+            # We use extract_sitemap_tree which recurses
+            all_urls = await extract_sitemap_tree(primary_sitemap)
 
-            # HOWEVER, if loop is running we can't block on future.result() if we are IN the loop.
-            # This wrapper seems designed to be called from a tool (sync) possibly inside an agent (async or sync).
-            # Let's stick to the pattern used in `read_website_content`.
-            pass
+            # Filter
+            matches = [u for u in all_urls if keywords.lower() in u.lower()]
+            unique_matches = sorted(list(set(matches)))
+
+            output = f"Sitemap Search Results for '{keywords}' in {primary_sitemap}:\n"
+            output += f"Found {len(unique_matches)} matching URLs.\n\n"
+
+            for i, u in enumerate(unique_matches):
+                if i >= limit:
+                    output += f"\n(Truncated. Showing top {limit} of {len(unique_matches)} matches.)"
+                    break
+                output += f"{u}\n"
+
+            if not unique_matches:
+                output += "No URLs found matching that keyword."
+
+            return output
+
+        # MODE B: Structural Overview (Agent Friendly Default)
+        # We use peek_sitemap_index to see if it's an index or a list
+        structure = await peek_sitemap_index(primary_sitemap)
+
+        if structure["type"] == "index":
+            # It's an index. Return summary.
+            sitemaps = structure.get("sitemaps", [])
+            total_sub = len(sitemaps)
+            total_est_urls = sum(s.get("count", 0) for s in sitemaps)
+
+            output = f"Found Sitemap Index at {primary_sitemap}.\n"
+            output += f"contains {total_sub} sub-sitemaps with ~{total_est_urls} total URLs.\n"
+            output += "To see specific URLs, run again with 'keywords' parameter or target a specific sub-sitemap below.\n\n"
+            output += f"=== Sub-Sitemaps (Showing {min(len(sitemaps), limit)} of {len(sitemaps)}) ===\n"
+
+            for i, sm in enumerate(sitemaps):
+                if i >= limit:
+                    output += f"... and {len(sitemaps) - limit} more.\n"
+                    break
+                output += f"- {sm['url']} (~{sm['count']} URLs)\n"
+
+            return output
+
         else:
-            all_urls = asyncio.run(_async_get_sitemap_urls(target_url))
+            # It's a flat URL list. Return URLs.
+            urls = structure.get("urls", [])
+            unique_urls = sorted(list(set(urls)))
 
-    except RuntimeError:
-        # Likely "There is no current event loop" or similar
-        all_urls = asyncio.run(_async_get_sitemap_urls(target_url))
-    except Exception:
-        # If the above fails (e.g. nested loops issue), fallback to simple sync or error
-        # Re-try with a fresh runner if possible, or just error out.
-        # But wait, checking line 136: `read_website_content` uses:
-        # loop = asyncio.get_running_loop() ... if loop.is_running(): future = ... return future.result()
-        # Creating a helper function to match that pattern exactly.
-        pass
+            # Asset filtering (images, etc)
+            ignored_extensions = (
+                ".jpg",
+                ".jpeg",
+                ".png",
+                ".gif",
+                ".webp",
+                ".svg",
+                ".ico",
+                ".pdf",
+                ".css",
+                ".js",
+                ".json",
+                ".xml",
+                ".rss",
+                ".zip",
+                ".gz",
+            )
+            filtered_urls = [
+                u for u in unique_urls if not u.lower().endswith(ignored_extensions)
+            ]
 
-    # Reworking the async calling block to be robust matching others in file:
+            output = f"Found Standard Sitemap at {primary_sitemap}.\n"
+            output += f"Contains {len(filtered_urls)} relevant URLs (Showing top {min(len(filtered_urls), limit)}).\n\n"
+
+            for i, u in enumerate(filtered_urls):
+                if i >= limit:
+                    output += f"\n(Truncated. Use 'limit' parameter to see more of the {len(filtered_urls)} URLs.)"
+                    break
+                output += f"{u}\n"
+
+            return output
+
     try:
+        # Parse kwargs
+        keywords = kwargs.get("keywords")
+        limit = kwargs.get("limit", 50)
+        try:
+            limit = int(limit)
+        except (ValueError, TypeError):
+            limit = 50
+
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
@@ -576,99 +652,14 @@ def get_sitemap_urls(*args, **kwargs) -> str:
 
         if loop and loop.is_running():
             future = asyncio.run_coroutine_threadsafe(
-                _async_get_sitemap_urls(target_url), loop
+                _async_get_sitemap_urls(target_url, keywords, limit), loop
             )
-            all_urls = future.result()
+            return future.result()
         else:
-            all_urls = asyncio.run(_async_get_sitemap_urls(target_url))
+            return asyncio.run(_async_get_sitemap_urls(target_url, keywords, limit))
 
     except Exception as e:
         return f"Error executing sitemap extraction: {e}"
-
-    if not all_urls:
-        return f"No sitemaps or sitemap URLs found for {target_url} (checked robots.txt, common paths, homepage, etc)."
-
-    # --- FILTERING LOGIC (Preserved) ---
-
-    priority_keywords = [
-        "about",
-        "contact",
-        "team",
-        "leadership",
-        "management",
-        "careers",
-        "news",
-    ]
-    exclude_keywords = [
-        # E-commerce
-        "/product/",
-        "/cart/",
-        "/checkout/",
-        "/order-",
-        # User Accounts
-        "/my-account/",
-        "/login/",
-        "/log-in",
-        "/register",
-        "/registration",
-        "/profile",
-        "/dashboard",
-        "/password",
-        # CMS & Archives
-        "/tag/",
-        "/category/",
-        "/author/",
-        "/wp-content/",
-        "/uploads/",
-        "/page/",
-        "?s=",
-        # Learning Management Systems (LMS)
-        "/courses/",
-        "/lessons/",
-        "/topic/",
-        "/quiz/",
-        "/certificates/",
-        "sfwd-",
-        "/ldgr_group_code/",
-        # Forums / Groups
-        "/groups/",
-        # Forms & Procedural
-        "/inquiry",
-        "/form/",
-        # Unlikely to contain core info
-        "/testimonials/",
-    ]
-
-    priority_urls = []
-    other_urls = []
-
-    unique_urls = sorted(list(set(all_urls)))
-
-    for url in unique_urls:
-        url_lower = url.lower()
-
-        if any(keyword in url_lower for keyword in exclude_keywords):
-            continue
-
-        if any(keyword in url_lower for keyword in priority_keywords):
-            priority_urls.append(url)
-        else:
-            other_urls.append(url)
-
-    total_found = len(unique_urls)
-    total_returned = len(priority_urls) + min(len(other_urls), 15)
-
-    output = f"Sitemap analysis complete. Found {total_found} unique URLs, returning the {total_returned} most relevant.\n\n"
-
-    if priority_urls:
-        output += "=== Priority Pages (About, Contact, Team, etc.) ===\n"
-        output += "\n".join(priority_urls) + "\n\n"
-
-    if other_urls:
-        output += "=== Other Relevant Pages (Limited to 15) ===\n"
-        output += "\n".join(other_urls[:15]) + "\n"
-
-    return output
 
 
 async def _arun_deep_research(

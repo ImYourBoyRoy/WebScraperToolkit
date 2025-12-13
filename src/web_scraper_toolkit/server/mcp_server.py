@@ -279,15 +279,22 @@ async def search_web(query: str) -> str:
 
 
 @mcp.tool()
-async def get_sitemap(url: str) -> str:
+async def get_sitemap(url: str, keywords: str = None, limit: int = 50) -> str:
     """
     Extract URLs from a website sitemap.
     Useful for discovering all pages on a site.
+
+    Args:
+        url: The sitemap URL (e.g. https://site.com/sitemap.xml).
+        keywords: Optional. If set, performs a Deep Search for URLs matching the keyword (e.g. "about").
+        limit: Optional. Max URLs to return (default 50) to prevent context overflow.
     """
     try:
-        logger.info(f"Tool Call: get_sitemap for {url}")
-        data = await run_in_process(get_sitemap_urls, url)
-        return create_envelope("success", data, meta={"url": url})
+        logger.info(f"Tool Call: get_sitemap for {url} (keywords={keywords})")
+        data = await run_in_process(
+            get_sitemap_urls, url, keywords=keywords, limit=limit
+        )
+        return create_envelope("success", data, meta={"url": url, "keywords": keywords})
     except Exception as e:
         return format_error("get_sitemap", e)
 

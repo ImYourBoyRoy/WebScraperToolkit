@@ -4,7 +4,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/web-scraper-toolkit?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 
-**Version**: 0.1.2  
+**Version**: 0.1.4  
 **Status**: Production Ready  
 **Expertly Crafted by**: [Roy Dawson IV](https://github.com/imyourboyroy)
 
@@ -18,7 +18,7 @@ In the era of Agentic AI, tools need to be more than just Python scripts. They n
 
 ### ✨ Core Design Goals
 *   **🤖 Hyper Model-Friendly**: All tools return standardized **JSON Envelopes**, separating metadata from content to prevent "context pollution."
-*   **🕷️ Smart Sitemap Discovery**: Automatically finds sitemaps via `robots.txt`, common paths (e.g. `/wp-sitemap.xml`), and homepage types/links.
+*   **🔍 Intelligent Sitemap Discovery**: **summary-first** approach prevents context flooding. Detects indices, provides counts, and offers **keyword deep-search** to find specific pages (e.g. "about", "contact") without reading the whole site.
 *   **🛡️ Robust Failover**: Smart detection of anti-bot challenges (Cloudflare/403s) automatically triggers a switch from Headless to Visible browser mode to pass checks.
 *   **🎯 Precision Control**: Use CSS Selectors (`selector`) and token limits (`max_length`) to extract *exactly* what you need, saving tokens and money.
 *   **🔄 Batch Efficiency**: The explicit `batch_scrape` tool handles parallel processing found in high-performance agent workflows.
@@ -116,9 +116,46 @@ To ensure high reliability for Language Models, all tools return data in this st
 | `batch_scrape` | **The Time Saver.** Parallel processing. | `urls` (List), `format` |
 | `deep_research` | **The Agent.** Search + Crawl + Report. | `query` |
 | `search_web` | Standard Search (DDG/Google). | `query` |
-| `crawl_site` | Discovery tool for Sitemaps. | `url` |
+| `get_sitemap` | Sitemap analysis. **Deep Search** capable. | `url`, `keywords`, `limit` |
+| `crawl_site` | Alias for sitemap discovery. | `url` |
 | `save_pdf` | High-fidelity PDF renderer. | `url`, `path` |
 | `configure_scraper` | Dynamic configuration. | `headless` (bool), `user_agent` |
+
+---
+
+## 🔍 Intelligent Sitemap Discovery (Agent Friendly)
+
+Unlike standard tools that dump thousands of URLs, this toolkit is designed for **Agent Context Windows**. 
+
+### 1. Summary First (Default)
+When a Sitemap Index is found, it returns a structural summary with estimated counts, allowing the agent to "peek" before committing tokens.
+
+**Example Output:**
+```text
+Found Sitemap Index at https://example.com/sitemap.xml.
+contains 20 sub-sitemaps with ~2012 total URLs.
+
+=== Sub-Sitemaps ===
+- https://example.com/post-sitemap.xml (~176 URLs)
+- https://example.com/page-sitemap.xml (~63 URLs)
+- https://example.com/products-sitemap.xml (~1020 URLs)
+...
+```
+
+### 2. Keyword Deep Search
+Need to find "About" pages or "Contact" info? Don't crawl the whole site. Use the `keywords` parameter.
+
+**Tool Call:** `get_sitemap(url="...", keywords="about")`
+
+**Example Output:**
+```text
+Sitemap Search Results for 'about' in https://example.com/sitemap.xml:
+Found 3 matching URLs.
+
+https://example.com/about-us/
+https://example.com/company/about-the-team/
+https://example.com/about/careers/
+```
 
 ---
 
