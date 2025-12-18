@@ -48,7 +48,7 @@ class TestContactExtraction(unittest.TestCase):
         # Should find at least one if emailtoolkit supports it
         # If emailtoolkit is mocked or real, we expect a result.
         if results:
-            self.assertEqual(results[0]["value"], "email@email.com")
+            self.assertEqual(results[0]["value"], "email@example.com")
 
     def test_extract_phones_us(self):
         """Tests phone extraction with US format."""

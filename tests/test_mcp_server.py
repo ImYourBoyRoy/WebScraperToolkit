@@ -95,13 +95,22 @@ class TestMCPServer(unittest.TestCase):
         self.assertEqual(args[0].__name__, "general_web_search")
 
         # 3. Sitemap
+        # smart_discover_urls returns a dict
+        mock_run.return_value = {
+            "priority_urls": [{"url": "http://p.com"}],
+            "general_urls": [],
+        }
         res = self.loop.run_until_complete(
             mcp_server.get_sitemap("https://example.com")
         )
         res_json = json.loads(res)
-        self.assertEqual(res_json["data"], "Mocked Result")
+        # The tool returns an envelope with data having "priority_urls" list of strings
+        self.assertEqual(res_json["data"]["priority_urls"], ["http://p.com"])
         args, _ = mock_run.call_args
-        self.assertEqual(args[0].__name__, "get_sitemap_urls")
+        self.assertEqual(args[0].__name__, "smart_discover_urls")
+
+        # Reset mock for next test
+        mock_run.return_value = "Mocked Result"
 
         # 4. Screenshot
         res = self.loop.run_until_complete(

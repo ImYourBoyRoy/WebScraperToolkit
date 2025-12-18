@@ -26,7 +26,7 @@ class TestSmartDiscovery(unittest.IsolatedAsyncioTestCase):
         # Mock extract side effect
         async def extract_side_effect(url, depth, *args, **kwargs):
             if "post-sitemap" in url:
-                return ["http://test.com/about-us", "http://test.com/random-page"]
+                return ["http://test.com/about-us", "http://test.com/random-stuff"]
             return []
 
         mock_extract.side_effect = extract_side_effect
@@ -44,7 +44,7 @@ class TestSmartDiscovery(unittest.IsolatedAsyncioTestCase):
 
         # Check general classification
         general_urls = [u["url"] for u in general]
-        self.assertIn("http://test.com/random-page", general_urls)
+        self.assertIn("http://test.com/random-stuff", general_urls)
 
         # Verify product-sitemap content was NOT returned (since it returns [] in default side effect unless post-sitemap)
         # But wait, logic says "product" in default exclude keywords.
