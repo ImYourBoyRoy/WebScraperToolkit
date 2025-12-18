@@ -1,12 +1,11 @@
 import unittest
 import logging
-import sys
 import os
 
 import pytest
 
 # Ensure project root is in path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+# sys.path handled by run_tests.py
 
 from web_scraper_toolkit.browser.playwright_handler import PlaywrightManager
 

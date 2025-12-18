@@ -1,9 +1,7 @@
 import unittest
-import sys
-import os
 
 # Ensure src is in path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+# sys.path handled by run_tests.py
 
 from web_scraper_toolkit.parsers.serp_parser import SerpParser
 

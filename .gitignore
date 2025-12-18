@@ -96,3 +96,4 @@ tests_output/
 debug_*.html
 debug_*.png
 mcp_server.log
+REFERENCE_ONLY/

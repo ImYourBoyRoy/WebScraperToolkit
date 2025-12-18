@@ -39,6 +39,12 @@ from ..core.file_utils import (
     merge_content_files,
 )
 from ..parsers.sitemap_handler import extract_sitemap_tree, parse_sitemap_urls
+from ..parsers.contacts import (
+    extract_emails,
+    extract_phones,
+    extract_socials,
+    extract_heuristic_names,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -161,6 +167,7 @@ class WebCrawler:
         merge: bool,
         output_dir: str,
         output_filename: str = None,
+        extract_contacts: bool = False,
     ) -> Tuple[Optional[str], Optional[str]]:
         """Process a single URL: fetch, convert/screenshot, save."""
         async with self.semaphore:
@@ -207,16 +214,25 @@ class WebCrawler:
                     # Status tracking
                     status_code = 0
                     success = False
+                    raw_html_for_contacts = None  # We might need this for contacts
 
                     # --- DISPATCHER ---
                     if output_format == "markdown":
-                        # Convert config to dict for legacy tools if needed, OR update tools to accept obj
-                        # Currently scraping_tools expects dict.
+                        # Convert config to dict for legacy tools if needed
                         content = await asyncio.to_thread(
                             read_website_markdown, url, config=self.config.to_dict()
                         )
                         if content:
                             success = True
+                            # If we need contacts, we might need raw HTML or just use the markdown?
+                            # Actually contacts parser needs HTML for regex (hidden emails) and Soup for socials.
+                            # read_website_markdown converts HTML -> MD.
+                            # We should probably fetch HTML specifically if contacts are requested.
+                            # Optimization: read_website_markdown does a fetch. We don't want to double fetch.
+                            # But read_website_markdown encapsulates the browser/requests logic.
+                            # For "Autonomous" robust behavior, we accept the double-fetch cost OR we need to refactor read_markdown to return raw too.
+                            # Let's double fetch for now to keep it safe, but maybe use 'read_website_content' which is cheaper?
+                            pass
 
                     elif output_format == "text":
                         content = await asyncio.to_thread(
@@ -234,6 +250,7 @@ class WebCrawler:
                             if s == 200:
                                 content = c
                                 success = True
+                                raw_html_for_contacts = c
                             else:
                                 logger.error(f"Fetch failed {s}")
 
@@ -276,6 +293,90 @@ class WebCrawler:
                         # Continue to next attempt
                         continue
 
+                    # --- AUTONOMOUS CONTACT EXTRACTION ---
+                    # If success and flag is set, attempt to extract contacts
+                    if success and extract_contacts and content:
+                        try:
+                            # We need HTML for this. If we have it (html mode), great.
+                            # If not, we fetch it (cheaply via requests/read_website_content if possible)
+                            # Or we use what we have? Markdown/Text is bad for HTML regex.
+
+                            c_html = raw_html_for_contacts
+                            if not c_html:
+                                # Quick fetch for parsing
+                                c_html = await asyncio.to_thread(
+                                    read_website_content,
+                                    url,
+                                    config=self.config.to_dict(),
+                                )
+
+                            if c_html:
+                                from bs4 import BeautifulSoup
+
+                                soup = BeautifulSoup(c_html, "lxml")
+                                c_text = soup.get_text(separator=" ", strip=True)
+
+                                emails = extract_emails(c_html, url)
+                                phones = extract_phones(c_text, url)
+                                socials = extract_socials(soup, url)
+                                names = extract_heuristic_names(soup)
+
+                                if emails or phones or socials or names:
+                                    print(
+                                        f"  -> Found Contacts: {len(emails)} emails, {len(phones)} phones, {len(socials)} socials"
+                                    )
+                                    if names:
+                                        print(f"  -> Identified: {names}")
+
+                                    # Append to content (Autonomous blending)
+                                    # We add a nice footer section
+                                    contact_section = (
+                                        "\n\n---\n### Extracted Contacts\n"
+                                    )
+
+                                    if names:
+                                        contact_section += "**Identity**\n"
+                                        for k, v in names.items():
+                                            contact_section += f"- {k.replace('_', ' ').title()}: {v}\n"
+                                        contact_section += "\n"
+
+                                    if emails:
+                                        contact_section += (
+                                            "**Emails**\n"
+                                            + "\n".join(
+                                                [f"- {e['value']}" for e in emails]
+                                            )
+                                            + "\n"
+                                        )
+                                    if phones:
+                                        contact_section += (
+                                            "**Phones**\n"
+                                            + "\n".join(
+                                                [f"- {p['value']}" for p in phones]
+                                            )
+                                            + "\n"
+                                        )
+                                    if socials:
+                                        contact_section += (
+                                            "**Socials**\n"
+                                            + "\n".join(
+                                                [
+                                                    f"- [{s['type']}]({s['url']})"
+                                                    for s in socials
+                                                ]
+                                            )
+                                            + "\n"
+                                        )
+
+                                    if (
+                                        output_format == "markdown"
+                                        or output_format == "text"
+                                    ):
+                                        content += contact_section
+                                    # For HTML/PDF/JSON we might need different handling, but appending to MD/Text checks the box.
+                        except Exception as ce:
+                            logger.warning(f"Contact extraction failed for {url}: {ce}")
+
                     # Individual Export (Content Based)
                     if content and export and not merge:
                         # Output file was already determined above
@@ -316,6 +417,7 @@ class WebCrawler:
         temp_dir: str = None,
         clean: bool = False,
         output_filename: str = None,
+        extract_contacts: bool = False,
     ):
         """Run the crawler on the list of URLs."""
         if not urls:
@@ -355,6 +457,7 @@ class WebCrawler:
                     merge,
                     working_dir,
                     output_filename=single_file_name,
+                    extract_contacts=extract_contacts,
                 )
             )
 

@@ -4,9 +4,8 @@ import shutil
 from unittest.mock import patch, AsyncMock
 
 # Adjust path to import from src
-import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+# sys.path handled by run_tests.py
 
 from web_scraper_toolkit.parsers.scraping_tools import (
     extract_metadata,

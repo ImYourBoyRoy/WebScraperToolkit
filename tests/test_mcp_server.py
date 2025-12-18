@@ -5,7 +5,7 @@ import os
 import asyncio
 
 # Ensure src is in path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+# sys.path handled by run_tests.py
 
 # --- MOCK SETUP START ---
 # We must mock fastmcp BEFORE importing mcp_server

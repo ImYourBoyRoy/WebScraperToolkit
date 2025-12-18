@@ -11,7 +11,7 @@ Usage:
 
 """
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 
 from .core.config import ScraperConfig, ScraperSettings
 from .core.logger import setup_logger
@@ -24,6 +24,7 @@ from .parsers.sitemap_handler import (
     parse_sitemap_urls as parse_sitemap,
     extract_sitemap_tree,
 )
+from .parsers.discovery import smart_discover_urls
 from .parsers.scraping_tools import (
     read_website_markdown,
     read_website_content,
@@ -31,6 +32,11 @@ from .parsers.scraping_tools import (
     capture_screenshot,
     save_as_pdf,
     extract_metadata,
+)
+from .parsers.contacts import (
+    extract_emails,
+    extract_phones,
+    extract_socials,
 )
 
 __all__ = [
@@ -46,10 +52,14 @@ __all__ = [
     "fetch_sitemap",
     "parse_sitemap",
     "extract_sitemap_tree",
+    "smart_discover_urls",
     "read_website_markdown",
     "read_website_content",
     "clean_text",
     "capture_screenshot",
     "save_as_pdf",
     "extract_metadata",
+    "extract_emails",
+    "extract_phones",
+    "extract_socials",
 ]

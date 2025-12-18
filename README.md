@@ -4,8 +4,6 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/web-scraper-toolkit?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 
-**Version**: 0.1.4  
-**Status**: Production Ready  
 **Expertly Crafted by**: [Roy Dawson IV](https://github.com/imyourboyroy)
 
 > A production-grade, multimodal scraping engine designed for **AI Agents**. Converts the web into LLM-ready assets (Markdown, JSON, PDF) with robust anti-bot evasion.
@@ -116,45 +114,46 @@ To ensure high reliability for Language Models, all tools return data in this st
 | `batch_scrape` | **The Time Saver.** Parallel processing. | `urls` (List), `format` |
 | `deep_research` | **The Agent.** Search + Crawl + Report. | `query` |
 | `search_web` | Standard Search (DDG/Google). | `query` |
-| `get_sitemap` | Sitemap analysis. **Deep Search** capable. | `url`, `keywords`, `limit` |
+| `get_sitemap` | **Smart Discovery**. Auto-filters noise. | `url`, `keywords` (e.g. "team"), `limit` |
+| `extract_contacts` | Autonomous Contact Extraction. | `url` |
 | `crawl_site` | Alias for sitemap discovery. | `url` |
 | `save_pdf` | High-fidelity PDF renderer. | `url`, `path` |
 | `configure_scraper` | Dynamic configuration. | `headless` (bool), `user_agent` |
 
 ---
 
-## 🔍 Intelligent Sitemap Discovery (Agent Friendly)
+## 🔍 Intelligent Sitemap Discovery
 
 Unlike standard tools that dump thousands of URLs, this toolkit is designed for **Agent Context Windows**. 
 
-### 1. Summary First (Default)
-When a Sitemap Index is found, it returns a structural summary with estimated counts, allowing the agent to "peek" before committing tokens.
+### 1. Summary First
+Returns a structural summary of Sitemaps before extraction.
+
+### 2. Context-Aware Filtering
+Use `get_sitemap(url, keywords="contact")` to find specific pages without crawling the entire site. The system recursively checks nested sitemaps but filters out low-value content (products, archives) automatically.
+
+---
+
+## 📞 Autonomous Contact Extraction
+
+Built-in logic to extract business intelligence from any page.
+
+**Capabilities:**
+- **Emails**: Decodes Cloudflare-protected emails automatically.
+- **Phones**: Extracts and formats international phone numbers.
+- **Socials**: Identifies social media profiles (LinkedIn, Twitter, etc.).
+
+**MCP Usage:**
+`extract_contacts(url="https://example.com/contact")`
 
 **Example Output:**
-```text
-Found Sitemap Index at https://example.com/sitemap.xml.
-contains 20 sub-sitemaps with ~2012 total URLs.
+```markdown
+**Identity**
+- Business Name: Northern Pipes Glass
+- Author Name: Roy Dawson
 
-=== Sub-Sitemaps ===
-- https://example.com/post-sitemap.xml (~176 URLs)
-- https://example.com/page-sitemap.xml (~63 URLs)
-- https://example.com/products-sitemap.xml (~1020 URLs)
-...
-```
-
-### 2. Keyword Deep Search
-Need to find "About" pages or "Contact" info? Don't crawl the whole site. Use the `keywords` parameter.
-
-**Tool Call:** `get_sitemap(url="...", keywords="about")`
-
-**Example Output:**
-```text
-Sitemap Search Results for 'about' in https://example.com/sitemap.xml:
-Found 3 matching URLs.
-
-https://example.com/about-us/
-https://example.com/company/about-the-team/
-https://example.com/about/careers/
+**Emails**
+- contact@example.com
 ```
 
 ---
@@ -187,6 +186,7 @@ web-scraper --input https://example.com/sitemap.xml --site-tree --format json
 | `--headless` | | Run browser in headless mode. (Off/Visible by default for stability). | `False` |
 | `--workers` | `-w` | Number of concurrent workers. Pass `max` for CPU - 1. | `1` |
 | `--merge` | `-m` | Merge all outputs into a single file. | `False` |
+| `--contacts` | | Autonomously extract emails/phones to output. | `False` |
 | `--site-tree` | | Extract URLs from sitemap input without crawling. | `False` |
 | `--verbose` | `-v` | Enable verbose logging. | `False` |
 

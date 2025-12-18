@@ -1,11 +1,10 @@
 import unittest
 from unittest.mock import patch, AsyncMock
-import sys
 import os
 import asyncio
 
 # Ensure src is in path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+# sys.path handled by run_tests.py
 
 # We need to test specific logic inside scraping_tools.
 # Since the logic is inside _arun_scrape, we can mock PlaywrightManager

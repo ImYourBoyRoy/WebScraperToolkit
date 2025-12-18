@@ -90,6 +90,11 @@ def parse_arguments(args=None):
     parser.add_argument(
         "--merge", "-m", action="store_true", help="Merge all outputs into one file."
     )
+    parser.add_argument(
+        "--contacts",
+        action="store_true",
+        help="Autonomously extract emails, phones, and socials.",
+    )
 
     # Output format
     parser.add_argument(
@@ -297,6 +302,7 @@ async def main_async():
         temp_dir=args.temp_dir,
         clean=args.clean,
         output_filename=args.output_name,
+        extract_contacts=args.contacts,
     )
 
 

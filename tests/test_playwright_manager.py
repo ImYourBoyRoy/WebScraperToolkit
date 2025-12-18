@@ -1,11 +1,10 @@
 import unittest
 from unittest.mock import MagicMock, patch, AsyncMock
-import sys
 import os
 import asyncio
 
 # Ensure src is in path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+# sys.path handled by run_tests.py
 
 from web_scraper_toolkit.browser.playwright_handler import PlaywrightManager
 from web_scraper_toolkit.core.config import ScraperConfig

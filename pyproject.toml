@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "web-scraper-toolkit"
-version = "0.1.5"
+version = "0.1.6"
 description = "A powerful, standalone web scraping toolkit using Playwright and various parsers."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -16,7 +16,9 @@ dependencies = [
     "pypdf",
     "rich",
     "playwright-stealth>=2.0.0",
-    "fastmcp"
+    "fastmcp",
+    "emailtoolkit",
+    "phonenumbers"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

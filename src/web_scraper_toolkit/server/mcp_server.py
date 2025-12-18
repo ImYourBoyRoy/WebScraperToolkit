@@ -48,6 +48,15 @@ from ..parsers.scraping_tools import (
     save_as_pdf,
 )
 
+# New Smart Parsers
+from ..parsers.discovery import smart_discover_urls
+from ..parsers.contacts import (
+    extract_emails,
+    extract_phones,
+    extract_socials,
+    extract_heuristic_names,
+)
+
 from ..browser.crawler import WebCrawler
 from ..core.config import ScraperConfig
 import json
@@ -281,22 +290,97 @@ async def search_web(query: str) -> str:
 @mcp.tool()
 async def get_sitemap(url: str, keywords: str = None, limit: int = 50) -> str:
     """
-    Extract URLs from a website sitemap.
-    Useful for discovering all pages on a site.
+    Smartly discover URLs from a website (Sitemap + Heuristics).
+    Automatically prioritizes "high value" pages (about, contact, team).
 
     Args:
-        url: The sitemap URL (e.g. https://site.com/sitemap.xml).
-        keywords: Optional. If set, performs a Deep Search for URLs matching the keyword (e.g. "about").
-        limit: Optional. Max URLs to return (default 50) to prevent context overflow.
+        url: The homepage or sitemap URL.
+        keywords: Optional comma-separated keywords to prioritize (e.g. "pricing,docs").
+        limit: Max URLs to return.
     """
     try:
-        logger.info(f"Tool Call: get_sitemap for {url} (keywords={keywords})")
-        data = await run_in_process(
-            get_sitemap_urls, url, keywords=keywords, limit=limit
+        logger.info(f"Tool Call: get_sitemap for {url}")
+
+        # Parse keywords if provided
+        priority_kw = [k.strip() for k in keywords.split(",")] if keywords else None
+
+        # Use the new Smart Discovery logic
+        # We run it in process because it might do heavy recursion
+        result = await run_in_process(
+            smart_discover_urls,
+            url,
+            max_priority=limit,
+            max_general=limit,  # We accept a bit more and filter later if needed
+            priority_keywords=priority_kw,
         )
-        return create_envelope("success", data, meta={"url": url, "keywords": keywords})
+
+        # Format for the agent
+        # We want to present it clearly
+        priority = [item["url"] for item in result.get("priority_urls", [])]
+        general = [item["url"] for item in result.get("general_urls", [])]
+
+        # Combined list respecting limit
+        combined = priority + general
+        combined = combined[:limit]
+
+        data = {
+            "total_found": len(combined),
+            "priority_urls": priority,
+            "other_urls": general[: max(0, limit - len(priority))],
+        }
+
+        return create_envelope(
+            "success", data, meta={"url": url, "strategy": "smart_discovery"}
+        )
     except Exception as e:
         return format_error("get_sitemap", e)
+
+
+@mcp.tool()
+async def extract_contacts(url: str) -> str:
+    """
+    Extract contact information (Emails, Phones, Socials) from a URL.
+    Handles Cloudflare-protected emails automatically.
+
+    Args:
+        url: Target URL to scrape and analyze.
+    """
+    try:
+        logger.info(f"Tool Call: extract_contacts for {url}")
+
+        # 1. Scrape content (HTML)
+        # We use 'read_website_content' to get raw HTML for parsing
+        html_content = await run_in_process(
+            read_website_content, url, config=GLOBAL_CONFIG.to_dict()
+        )
+
+        if not html_content:
+            return create_envelope(
+                "error", "Failed to retrieve content", meta={"url": url}
+            )
+
+        # 2. Extract
+        # We need BeautifulSoup for socials, text for regex
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html_content, "lxml")
+        text = soup.get_text(separator=" ", strip=True)
+
+        emails = extract_emails(html_content, url)  # Pass raw HTML for CF decryption!
+        phones = extract_phones(text, url)
+        socials = extract_socials(soup, url)
+        names = extract_heuristic_names(soup)
+
+        data = {
+            "emails": emails,
+            "phones": phones,
+            "socials": socials,
+            "names": names or None,  # Only return if we found something
+        }
+
+        return create_envelope("success", data, meta={"url": url})
+    except Exception as e:
+        return format_error("extract_contacts", e)
 
 
 @mcp.tool()
@@ -417,7 +501,8 @@ def print_banner(verbose: bool):
         ("deep_research", "Deep research (Search + Crawl + Report)"),
         ("save_pdf", "Save URL as high-fidelity PDF"),
         ("search_web", "Google/DDG Search integration"),
-        ("get_sitemap", "Sitemap parsing and link discovery"),
+        ("get_sitemap", "Smart Discovery of site structure"),
+        ("extract_contacts", "Extract Emails/Phones/Socials"),
         ("crawl_site", "Alias for sitemap discovery"),
         ("screenshot", "Capture page screenshot"),
     ]
