@@ -149,7 +149,7 @@ Built-in logic to extract business intelligence from any page.
 **Example Output:**
 ```markdown
 **Identity**
-- Business Name: Northern Pipes Glass
+- Business Name: Busy People
 - Author Name: Roy Dawson
 
 **Emails**
