@@ -58,6 +58,7 @@ async def health_check() -> Dict[str, Any]:
         # Get version dynamically from package
         try:
             from web_scraper_toolkit import __version__
+
             version = __version__
         except ImportError:
             version = "unknown"
