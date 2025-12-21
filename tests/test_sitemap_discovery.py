@@ -6,14 +6,14 @@ Test suite for sitemap discovery logic.
 import unittest
 from unittest.mock import patch, MagicMock, AsyncMock
 
-from web_scraper_toolkit.parsers.sitemap_handler import (
+from web_scraper_toolkit.parsers.sitemap.detection import (
     find_sitemap_urls,
-    extract_sitemap_tree,
-    parse_sitemap_urls,
     _check_robots_txt,
     _check_common_paths,
     _check_homepage_for_sitemap,
 )
+from web_scraper_toolkit.parsers.sitemap.fetching import extract_sitemap_tree
+from web_scraper_toolkit.parsers.sitemap.parsing import parse_sitemap_urls
 
 
 class TestSitemapDiscovery(unittest.IsolatedAsyncioTestCase):
@@ -104,15 +104,15 @@ class TestSitemapDiscovery(unittest.IsolatedAsyncioTestCase):
         # We mock the internal helper functions to verify orchestration
         with (
             patch(
-                "web_scraper_toolkit.parsers.sitemap_handler._check_robots_txt",
+                "web_scraper_toolkit.parsers.sitemap.detection._check_robots_txt",
                 new_callable=AsyncMock,
             ) as mock_robots,
             patch(
-                "web_scraper_toolkit.parsers.sitemap_handler._check_common_paths",
+                "web_scraper_toolkit.parsers.sitemap.detection._check_common_paths",
                 new_callable=AsyncMock,
             ) as mock_common,
             patch(
-                "web_scraper_toolkit.parsers.sitemap_handler._check_homepage_for_sitemap",
+                "web_scraper_toolkit.parsers.sitemap.detection._check_homepage_for_sitemap",
                 new_callable=AsyncMock,
             ) as mock_home,
         ):
@@ -135,7 +135,7 @@ class TestSitemapDiscovery(unittest.IsolatedAsyncioTestCase):
 
         # Mock fetch_sitemap_content
         with patch(
-            "web_scraper_toolkit.parsers.sitemap_handler.fetch_sitemap_content",
+            "web_scraper_toolkit.parsers.sitemap.fetching.fetch_sitemap_content",
             new_callable=AsyncMock,
         ) as mock_fetch:
             # Use side_effect to return different content for different URLs

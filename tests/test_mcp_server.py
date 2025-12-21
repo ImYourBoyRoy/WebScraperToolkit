@@ -1,125 +1,99 @@
+"""
+Test MCP Server Module
+======================
+
+Tests for the modular MCP server architecture.
+"""
+
 import unittest
-from unittest.mock import MagicMock, patch
-import sys
-import os
-import asyncio
-
-# Ensure src is in path
-# sys.path handled by run_tests.py
-
-# --- MOCK SETUP START ---
-# We must mock fastmcp BEFORE importing mcp_server
-sys.modules["fastmcp"] = MagicMock()
 
 
-# Define the identity decorator
-def identity_decorator(*args, **kwargs):
-    def wrapper(func):
-        return func
+class TestMCPServer(unittest.IsolatedAsyncioTestCase):
+    """Test MCP server initialization and tool registration."""
 
-    return wrapper
+    async def test_server_loads(self):
+        """Verify MCP server module loads without errors."""
+        from web_scraper_toolkit.server import mcp_server
 
+        self.assertIsNotNone(mcp_server.mcp)
+        self.assertEqual(mcp_server.mcp.name, "Web Scraper Toolkit")
 
-# Configure the mock to return this decorator when @mcp.tool() is called
-# FastMCP("name") returns an instance. That instance.tool() is the decorator.
-mock_mcp_instance = sys.modules["fastmcp"].FastMCP.return_value
-mock_mcp_instance.tool.side_effect = identity_decorator
+    async def test_tools_registered(self):
+        """Verify all tool categories are registered."""
+        from web_scraper_toolkit.server import mcp_server
 
-# --- MOCK SETUP END ---
+        tools = await mcp_server.mcp.get_tools()
+        tool_names = set(tools.keys())
 
-# Mock the underlying tools so imports don't fail or do weird things
-with (
-    patch("web_scraper_toolkit.server.mcp_server.read_website_markdown"),
-    patch("web_scraper_toolkit.server.mcp_server.read_website_content"),
-    patch("web_scraper_toolkit.server.mcp_server.general_web_search"),
-    patch("web_scraper_toolkit.server.mcp_server.get_sitemap_urls"),
-    patch("web_scraper_toolkit.server.mcp_server.capture_screenshot"),
-):
-    from web_scraper_toolkit.server import mcp_server
+        # Check for key tools from each category
+        self.assertIn("scrape_url", tool_names)  # Scraping
+        self.assertIn("get_sitemap", tool_names)  # Discovery
+        self.assertIn("fill_form", tool_names)  # Forms
+        self.assertIn("chunk_text", tool_names)  # Content
+        self.assertIn("clear_cache", tool_names)  # Management
+        self.assertIn("run_playbook", tool_names)  # Playbook
 
+        # Verify count (should be ~33)
+        self.assertGreaterEqual(len(tool_names), 30)
 
-class TestMCPServer(unittest.TestCase):
-    def setUp(self):
-        # Cache Scrub
-        import shutil
-
-        cache_path = os.path.join(os.path.dirname(__file__), "__pycache__")
-        if os.path.exists(cache_path):
-            try:
-                shutil.rmtree(cache_path)
-            except Exception:
-                pass
-
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
-
-    def tearDown(self):
-        self.loop.close()
-
-    def test_server_initialization(self):
-        # Verify FastMCP was instantiated with correct name
-        self.assertTrue(mcp_server.mcp)
-        sys.modules["fastmcp"].FastMCP.assert_called_with("WebScraperToolkit")
-
-    @patch("web_scraper_toolkit.server.mcp_server.run_in_process")
-    def test_tool_methods_call_wrapper(self, mock_run):
-        """
-        Since we mocked the decorator to be identity, calling scrape_url(...)
-        calls the actual async function defined in mcp_server.py.
-        That function calls `run_in_process`. We mock `run_in_process`
-        to verify it's called with the correct internal function.
-        """
-        mock_run.return_value = "Mocked Result"
+    async def test_envelope_format(self):
+        """Verify response envelope format."""
+        from web_scraper_toolkit.server.mcp_server import create_envelope
         import json
 
-        # 1. Scrape URL
-        res = self.loop.run_until_complete(mcp_server.scrape_url("https://example.com"))
+        result = create_envelope("success", {"key": "value"}, meta={"test": True})
+        parsed = json.loads(result)
 
-        # Parse standard JSON envelope
-        res_json = json.loads(res)
-        self.assertEqual(res_json["status"], "success")
-        self.assertEqual(res_json["data"], "Mocked Result")
-        self.assertEqual(res_json["meta"]["url"], "https://example.com")
+        self.assertEqual(parsed["status"], "success")
+        self.assertEqual(parsed["data"]["key"], "value")
+        self.assertIn("timestamp", parsed["meta"])
+        self.assertTrue(parsed["meta"]["test"])
 
-        # Verify it called run_in_process w/ read_website_markdown
-        args, _ = mock_run.call_args
-        # args[0] is the function passed to run_in_process
-        self.assertEqual(args[0].__name__, "read_website_markdown")
-        self.assertEqual(args[1], "https://example.com")
+    async def test_error_format(self):
+        """Verify error envelope format."""
+        from web_scraper_toolkit.server.mcp_server import format_error
+        import json
 
-        # 2. Search
-        res = self.loop.run_until_complete(mcp_server.search_web("query"))
-        res_json = json.loads(res)
-        self.assertEqual(res_json["data"], "Mocked Result")
-        args, _ = mock_run.call_args
-        self.assertEqual(args[0].__name__, "general_web_search")
+        result = format_error("test_func", ValueError("Test error"))
+        parsed = json.loads(result)
 
-        # 3. Sitemap
-        # smart_discover_urls returns a dict
-        mock_run.return_value = {
-            "priority_urls": [{"url": "http://p.com"}],
-            "general_urls": [],
-        }
-        res = self.loop.run_until_complete(
-            mcp_server.get_sitemap("https://example.com")
-        )
-        res_json = json.loads(res)
-        # The tool returns an envelope with data having "priority_urls" list of strings
-        self.assertEqual(res_json["data"]["priority_urls"], ["http://p.com"])
-        args, _ = mock_run.call_args
-        self.assertEqual(args[0].__name__, "smart_discover_urls")
+        self.assertEqual(parsed["status"], "error")
+        self.assertIn("test_func", parsed["data"])
+        self.assertEqual(parsed["meta"]["error_type"], "ValueError")
 
-        # Reset mock for next test
-        mock_run.return_value = "Mocked Result"
 
-        # 4. Screenshot
-        res = self.loop.run_until_complete(
-            mcp_server.screenshot("https://example.com", "path.png")
-        )
-        res_json = json.loads(res)
-        self.assertEqual(res_json["data"], "Mocked Result")
-        args, _ = mock_run.call_args
-        self.assertEqual(args[0].__name__, "capture_screenshot")
+class TestMCPToolModules(unittest.TestCase):
+    """Test individual tool modules load correctly."""
+
+    def test_scraping_module(self):
+        """Verify scraping tools module is importable."""
+        from web_scraper_toolkit.server.mcp_tools import register_scraping_tools
+
+        self.assertTrue(callable(register_scraping_tools))
+
+    def test_discovery_module(self):
+        """Verify discovery tools module is importable."""
+        from web_scraper_toolkit.server.mcp_tools import register_discovery_tools
+
+        self.assertTrue(callable(register_discovery_tools))
+
+    def test_forms_module(self):
+        """Verify forms tools module is importable."""
+        from web_scraper_toolkit.server.mcp_tools import register_form_tools
+
+        self.assertTrue(callable(register_form_tools))
+
+    def test_content_module(self):
+        """Verify content tools module is importable."""
+        from web_scraper_toolkit.server.mcp_tools import register_content_tools
+
+        self.assertTrue(callable(register_content_tools))
+
+    def test_management_module(self):
+        """Verify management tools module is importable."""
+        from web_scraper_toolkit.server.mcp_tools import register_management_tools
+
+        self.assertTrue(callable(register_management_tools))
 
 
 if __name__ == "__main__":

@@ -18,7 +18,9 @@ dependencies = [
     "playwright-stealth>=2.0.0",
     "fastmcp",
     "emailtoolkit",
-    "phonenumbers"
+    "phonenumbers",
+    "aiohttp",
+    "aiohttp-socks"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -44,3 +46,8 @@ web-scraper-server = "web_scraper_toolkit.server.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+exclude = ["FOR_REFERENCE_ONLY"]
+line-length = 88
+

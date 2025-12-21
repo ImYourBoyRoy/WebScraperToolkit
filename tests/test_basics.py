@@ -4,7 +4,7 @@ import unittest
 # sys.path handled by run_tests.py
 
 from web_scraper_toolkit.parsers.utils import normalize_url, truncate_text
-from web_scraper_toolkit.parsers.serp_parser import SerpParser
+from web_scraper_toolkit.parsers import SerpParser
 
 
 class TestUtils(unittest.TestCase):

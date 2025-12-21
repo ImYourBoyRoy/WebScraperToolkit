@@ -3,7 +3,7 @@ import unittest
 # Ensure src is in path
 # sys.path handled by run_tests.py
 
-from web_scraper_toolkit.parsers.serp_parser import SerpParser
+from web_scraper_toolkit.parsers import SerpParser
 
 
 class TestSerpParser(unittest.TestCase):

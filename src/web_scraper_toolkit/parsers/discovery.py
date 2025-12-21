@@ -20,7 +20,7 @@ Dependencies:
 from typing import List, Dict, Any, Optional
 import logging
 
-from .sitemap_handler import find_sitemap_urls, peek_sitemap_index, extract_sitemap_tree
+from .sitemap import find_sitemap_urls, peek_sitemap_index, extract_sitemap_tree
 
 logger = logging.getLogger(__name__)
 

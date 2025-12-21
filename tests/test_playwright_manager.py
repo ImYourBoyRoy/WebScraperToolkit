@@ -7,7 +7,7 @@ import asyncio
 # sys.path handled by run_tests.py
 
 from web_scraper_toolkit.browser.playwright_handler import PlaywrightManager
-from web_scraper_toolkit.core.config import ScraperConfig
+from web_scraper_toolkit.browser.config import BrowserConfig
 
 
 class TestPlaywrightManager(unittest.TestCase):
@@ -30,25 +30,18 @@ class TestPlaywrightManager(unittest.TestCase):
 
     def test_initialization_defaults(self):
         # Test default config
-        config = ScraperConfig.load({})
+        config = BrowserConfig()
         pm = PlaywrightManager(config=config)
         self.assertEqual(pm.browser_type_name, "chromium")
-        # Default headless is now False (Visible) as per recent validaton
-        self.assertFalse(pm.headless)
+        # Default headless is now True (default in BrowserConfig)
+        self.assertTrue(pm.headless)
 
     def test_initialization_custom(self):
-        overrides = {
-            "scraper_settings": {
-                "browser_type": "firefox",
-                "headless": True,
-                "retry_attempts": 5,
-            }
-        }
-        config = ScraperConfig.load(overrides)
+        config = BrowserConfig(browser_type="firefox", headless=True)
         pm = PlaywrightManager(config)
         self.assertEqual(pm.browser_type_name, "firefox")
         self.assertTrue(pm.headless)
-        self.assertEqual(pm.default_action_retries, 5)
+        # BrowserConfig doesn't have default_action_retries, removed assertion
 
     @patch("web_scraper_toolkit.browser.playwright_handler.async_playwright")
     def test_start_stop_logic(self, mock_playwright_fn):

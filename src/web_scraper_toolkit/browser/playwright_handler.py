@@ -20,11 +20,13 @@ Key Features:
 import asyncio
 import random
 import logging
-from typing import Optional, Dict, Any, Tuple, Union, TYPE_CHECKING
+from typing import Optional, Dict, Any, Tuple, Union
 from urllib.parse import urlparse
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..core.config import ScraperConfig
+    from ..proxie.manager import ProxyManager
+
 
 from playwright.async_api import (
     async_playwright,
@@ -36,9 +38,11 @@ from playwright.async_api import (
     Response as PlaywrightResponse,
 )
 
+from .config import BrowserConfig
+
 logger = logging.getLogger(__name__)
 
-# --- UPDATED CONFIGURATION (Matches your working test_cloudflare.py) ---
+# --- OPTIMIZED CONFIGURATION ---
 DEFAULT_USER_AGENTS = [
     # We keep these for fallback, but we will default to 'None' (Native) for Cloudflare
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -52,7 +56,7 @@ DEFAULT_LAUNCH_ARGS = [
     "--no-sandbox",
     "--disable-infobars",
     "--disable-dev-shm-usage",
-    # "--disable-gpu",            # REMOVED: Conflicted with --enable-webgl in your working test
+    # "--disable-gpu",            # Disabled: Conflicts with --enable-webgl for WebGL rendering
     "--ignore-certificate-errors",
 ]
 
@@ -63,31 +67,48 @@ class PlaywrightManager:
     Full-featured version with integrated Cloudflare Spatial Solver.
     """
 
-    def __init__(self, config: Union[Dict[str, Any], "ScraperConfig"]):
-        # Handle dict vs ScraperConfig
-        if hasattr(config, "to_dict"):
-            # It's a ScraperConfig object
+    def __init__(
+        self,
+        config: Union[Dict[str, Any], "BrowserConfig"] = None,
+        proxy_manager: Optional["ProxyManager"] = None,
+    ):
+        if config is None:
+            self.config = BrowserConfig()
+        elif isinstance(config, BrowserConfig):
             self.config = config
-            self.settings = config.scraper_settings
+        elif isinstance(config, dict):
+            # Simple extraction from dict to config object
+            self.config = BrowserConfig(
+                headless=config.get("headless", True),
+                browser_type=config.get("browser_type", "chromium"),
+                timeout=config.get("timeout", 30000),
+            )
         else:
-            # Backward compat for dict
-            # Warning: Ideally use ScraperConfig.load(config)
-            from ..core.config import ScraperConfig
+            # Backward compatibility attempt (if passed ScraperConfig) - we try to adapt or just default
+            # User said "deprecate fully", so we assume proper usage from now on.
+            logger.warning(
+                f"Invalid config type passed to PlaywrightManager: {type(config)}. Using default."
+            )
+            self.config = BrowserConfig()
 
-            self.config = ScraperConfig.load(config)
-            self.settings = self.config.scraper_settings
+        self.browser_type_name = self.config.browser_type.lower()
+        self.headless = self.config.headless
 
-        self.browser_type_name = self.settings.browser_type.lower()
-        self.headless = self.settings.headless
-
-        self.user_agents = self.settings.user_agents or DEFAULT_USER_AGENTS
-        self.launch_args = list(set(DEFAULT_LAUNCH_ARGS + self.settings.launch_args))
-
-        self.default_viewport = self.settings.default_viewport
-        self.default_navigation_timeout_ms = (
-            self.settings.default_timeout_seconds * 1000
+        # Mapping properties
+        self.user_agents = (
+            DEFAULT_USER_AGENTS  # We can enhance config to support list if needed
         )
-        self.default_action_retries = self.settings.retry_attempts
+        self.launch_args = list(set(DEFAULT_LAUNCH_ARGS))  # Config can extend this soon
+
+        self.default_viewport = {
+            "width": self.config.viewport_width,
+            "height": self.config.viewport_height,
+        }
+        self.default_navigation_timeout_ms = self.config.timeout
+        self.default_action_retries = (
+            2  # Hardcoded or add to config? Add to config later if needed.
+        )
+        self.proxy_manager = proxy_manager
 
         self._playwright: Optional[Playwright] = None
         self._browser: Optional[Browser] = None
@@ -146,6 +167,7 @@ class PlaywrightManager:
     async def get_new_page(
         self, context_options: Optional[Dict[str, Any]] = None
     ) -> Tuple[Optional[Page], Optional[BrowserContext]]:
+        """Creates a new pageContext."""
         if not self._browser or not self._browser.is_connected():
             logger.warning("Browser not started or not connected. Attempting to start.")
             await self.start()
@@ -165,6 +187,40 @@ class PlaywrightManager:
             "timezone_id": "America/New_York",
         }
 
+        # --- Proxy Injection ---
+        if self.proxy_manager:
+            try:
+                # Dynamically fetch next proxy from manager
+                proxy_obj = await self.proxy_manager.get_next_proxy()
+                if proxy_obj:
+                    # Construct Playwright Proxy Dict
+                    # protocol://user:pass@host:port OR separate fields
+                    # Playwright expects: { "server": "...", "username": "...", "password": "..." }
+
+                    # Protocol handling
+                    protocol = (
+                        proxy_obj.protocol.value
+                        if hasattr(proxy_obj.protocol, "value")
+                        else str(proxy_obj.protocol)
+                    )
+
+                    proxy_settings = {
+                        "server": f"{protocol}://{proxy_obj.hostname}:{proxy_obj.port}"
+                    }
+                    if proxy_obj.username:
+                        proxy_settings["username"] = proxy_obj.username
+                    if proxy_obj.password:
+                        proxy_settings["password"] = proxy_obj.password
+
+                    base_context_options["proxy"] = proxy_settings
+                    logger.info(
+                        f"Using Proxy: {proxy_obj.hostname} (Protocol: {protocol})"
+                    )
+            except Exception as e:
+                logger.warning(
+                    f"Failed to get proxy from manager: {e}. Proceeding direct."
+                )
+
         if context_options:
             base_context_options.update(context_options)
 
@@ -176,7 +232,7 @@ class PlaywrightManager:
                 "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
             )
 
-            # Tracker blocking (Restored from your original code)
+            # Tracker and ad blocking for faster, cleaner page loads
             await context.route(
                 "**/*",
                 lambda route: route.abort()
@@ -355,94 +411,11 @@ class PlaywrightManager:
     async def _attempt_cloudflare_solve_spatial(self, page: Page) -> bool:
         """
         Coordinate-based spatial solver for Cloudflare.
-        Simulates human mouse interaction to click verify widgets.
+        Delegates to specialized solver module.
         """
-        try:
-            # Stabilize
-            await page.wait_for_timeout(2000)
+        from .solver import CloudflareSolver
 
-            # Find label
-            label = page.get_by_text("Verifying you are human")
-            if await label.count() == 0:
-                label = page.get_by_text("Verify you are human")
-
-            # Iframe Fallback
-            if await label.count() == 0:
-                for frame in page.frames:
-                    try:
-                        if (
-                            await frame.get_by_text("Verifying you are human").count()
-                            > 0
-                        ):
-                            label = frame.get_by_text("Verifying you are human")
-                            break
-                    except Exception:
-                        continue
-
-            if await label.count() > 0:
-                box = await label.bounding_box()
-                if box:
-                    # OFFSETS: +25px right, +70px down from text
-                    target_x = box["x"] + 25
-                    target_y = box["y"] + 70
-
-                    logger.info(
-                        f"Playwright: Clicking Widget at X={int(target_x)}, Y={int(target_y)}"
-                    )
-
-                    try:
-                        # Human Click (Down -> Wait -> Up)
-                        await page.mouse.move(target_x, target_y, steps=10)
-                        await page.wait_for_timeout(300)
-                        await page.mouse.down()
-                        await page.wait_for_timeout(random.randint(150, 300))
-                        await page.mouse.up()
-                        logger.info(
-                            "Playwright: Interaction sent. Waiting for redirect..."
-                        )
-                    except Exception as mouse_err:
-                        # If the page navigates *during* the click (e.g. auto-solve or fast redirect),
-                        # we might get "Target page, context or browser has been closed".
-                        # This is usually a GOOD sign (we passed).
-                        logger.info(
-                            f"Playwright: Interaction interrupted (likely redirect): {mouse_err}"
-                        )
-
-                    # Wait for redirect loop (15s max)
-                    for _ in range(15):
-                        await page.wait_for_timeout(1000)
-                        try:
-                            title = await page.title()
-                            # Success check: Title changed from challenge
-                            if (
-                                "Just a moment" not in title
-                                and "Attention Required" not in title
-                                and "403" not in title
-                            ):
-                                logger.info(
-                                    f"Playwright: Success! Redirected to {title}"
-                                )
-                                return True
-                        except Exception:
-                            continue
-            else:
-                logger.info(
-                    "Playwright: No 'Verifying' text found. Checking if auto-solved..."
-                )
-                await page.wait_for_timeout(5000)
-                try:
-                    if "Just a moment" not in (await page.title()):
-                        return True
-                except Exception:
-                    pass
-
-            return False
-
-        except Exception as e:
-            logger.error(f"Playwright: Spatial Solver Error: {e}")
-            return False
-
-            return False
+        return await CloudflareSolver.solve_spatial(page)
 
     async def smart_fetch(
         self, url: str, **kwargs

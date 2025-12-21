@@ -36,7 +36,7 @@ from . import (
     load_urls_from_source,
     WebCrawler,
     print_diagnostics,
-    ScraperConfig,
+    BrowserConfig,
     setup_logger,
 )
 from .core.verify_deps import verify_dependencies
@@ -44,15 +44,33 @@ from .core.verify_deps import verify_dependencies
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+import json
+
+# New Imports for Autonomous Mode
+from .proxie import ProxyManager, ProxieConfig
+from .crawler import AutonomousCrawler
+from .playbook import Playbook
 
 # Initialize Rich Console for pretty printing
 console = Console()
 
+
+def load_global_config(path="config.json"):
+    """Loads the global config.json if it exists."""
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.warning(f"Failed to load config.json: {e}")
+    return {}
+
+
 # Dependency Check
 if not verify_dependencies():
     # We proceed but warn, or exit?
-    # User said "gently fail", which usually means "don't crash with traceback".
-    # Since verify_deps prints critical instructions, let's pause or exit gracefully.
+    # Proceed with execution but warn the user.
+    # While dependencies are missing, core functionality might still be available in limited capacity.
     console.print("[yellow]⚠️  Proceeding with potential instability...[/yellow]")
     # sys.exit(1) # Uncomment to enforce strict mode
 
@@ -60,7 +78,9 @@ if not verify_dependencies():
 logger = setup_logger(verbose=False)
 
 
-def parse_arguments(args=None):
+def parse_arguments(args=None, defaults=None):
+    defaults = defaults or {}
+
     parser = argparse.ArgumentParser(description="Web Scraper Toolkit CLI")
 
     # Mode selection
@@ -88,12 +108,14 @@ def parse_arguments(args=None):
         "--export", "-e", action="store_true", help="Export individual files."
     )
     parser.add_argument(
-        "--merge", "-m", action="store_true", help="Merge all outputs into one file."
-    )
-    parser.add_argument(
         "--contacts",
         action="store_true",
         help="Autonomously extract emails, phones, and socials.",
+    )
+    parser.add_argument(
+        "--playbook",
+        type=str,
+        help="Path to a Playbook JSON file (enables Autonomous Mode).",
     )
 
     # Output format
@@ -116,12 +138,24 @@ def parse_arguments(args=None):
         help="Output format.",
     )
 
+    parser.add_argument(
+        "--no-proxy",
+        action="store_true",
+        help="Force Direct Mode (ignore proxies.json even if present).",
+    )
+
     # Configuration
     parser.add_argument(
         "--headless",
         action="store_true",
         default=False,
         help="Run browser in headless mode (default: False/Visible).",
+    )
+
+    parser.add_argument(
+        "--merge",
+        action="store_true",
+        help="Merge all output content into a single file.",
     )
 
     # Crawler options
@@ -138,6 +172,9 @@ def parse_arguments(args=None):
         default=0.0,
         help="Delay (seconds) between requests per worker (default: 0).",
     )
+
+    # Set default for headless from config if not specified (we can't easily do store_true default change in argparse
+    # without making it a store_true/store_false pair, so we'll handle override in main logic)
 
     # Workflow options
     parser.add_argument(
@@ -170,7 +207,10 @@ def parse_arguments(args=None):
 
 
 async def main_async():
-    args = parse_arguments()
+    # 0. Load Global Config
+    global_config = load_global_config()
+
+    args = parse_arguments(defaults=global_config)
 
     # --- SITEMAP TREE MODE ---
     if args.site_tree and args.input:
@@ -224,6 +264,76 @@ async def main_async():
         )
         return
 
+        return
+
+    # --- AUTONOMOUS PLAYBOOK MODE ---
+    if args.playbook:
+        try:
+            console.print(
+                Panel(
+                    f"[bold cyan]Launching Autonomous Playbook:[/bold cyan] {args.playbook}",
+                    title="System Startup",
+                )
+            )
+
+            # 1. Load Playbook
+            with open(args.playbook, "r", encoding="utf-8") as f:
+                playbook_data = json.load(f)
+            playbook = Playbook(**playbook_data)
+
+            # 2. Configure Proxie (Optional)
+            manager = None
+            proxie_config = None
+
+            # Merge config.json 'proxie' settings with defaults (always load config)
+            proxie_cfg_dict = global_config.get("proxie", {})
+            proxie_config = ProxieConfig.from_dict(proxie_cfg_dict)
+
+            # Check for proxy file (unless disabled)
+            proxy_file = os.environ.get("PROXY_FILE", "proxies.json")
+            if os.path.exists(proxy_file) and not args.no_proxy:
+                # Load Proxies
+                with open(proxy_file, "r") as f:
+                    # basic list of dicts or {"proxies": []}
+                    data = json.load(f)
+                    p_list = (
+                        data.get("proxies", data) if isinstance(data, dict) else data
+                    )
+                    proxies = [p for p in p_list]
+
+                manager = ProxyManager(proxie_config, proxies)
+                console.print(
+                    f"[green]Proxy System Active: Loaded {len(proxies)} proxies.[/green]"
+                )
+                # Ideally initialize manager here if needed: await manager.initialize()
+            else:
+                msg = "Running in Direct (No-Proxy) Mode."
+                if args.no_proxy:
+                    msg += " (Forced by --no-proxy)"
+                elif not os.path.exists(proxy_file):
+                    msg += " (No proxies.json found)"
+                console.print(f"[dim]{msg}[/dim]")
+
+            # 3. Launch Crawler
+            # AutonomousCrawler handles Playwright + Optional Proxy internally
+            crawler = AutonomousCrawler(playbook, proxy_manager=manager)
+            await crawler.run()
+
+            console.print(
+                Panel(
+                    f"[bold green]Playbook Completed![/bold green]\nResults saved to: {crawler.results_filename}",
+                    title="Success",
+                )
+            )
+            return
+
+        except Exception as e:
+            console.print(f"[bold red]Playbook Failed:[/bold red] {e}")
+            logger.exception("Playbook execution failed")
+            sys.exit(1)
+
+    # --- STANDARD MODE (Legacy/Direct) ---
+
     # Determine worker count
     worker_count = 1
     if args.workers.lower() == "max":
@@ -266,15 +376,29 @@ async def main_async():
         sys.exit(1)
 
     # 2. Configuration Setup
-    overrides = {
-        "scraper_settings": {"headless": args.headless, "browser_type": "chromium"},
-        "workers": worker_count,
-        "delay": args.delay,
-        "output_dir": args.output_dir,
-        "temp_dir": args.temp_dir,
-    }
+    # Merge global config with CLI args
 
-    config = ScraperConfig.load(overrides)
+    # CLI args take precedence over config.json
+    # Logic: If CLI arg is False (default) BUT config is True, valid?
+    # Logic: Config.json defines the BASE configuration.
+    # Argparse overrides if the flag is explicitly set (True).
+    # Browser Mode Logic:
+    # CLI --headless flag takes precedence. If not specified, config.json default is used.
+    # For max reliability, smart_fetch() auto-switches to headed mode if anti-bot is detected.
+
+    browser_defaults = global_config.get("browser", {})
+
+    # If args.headless is explicitly True, use it. Else use config default.
+    # (Simplified logic: OR logic might be safer for "headless" if default is visible)
+
+    final_headless = args.headless or browser_defaults.get("headless", False)
+    # Headless Mode: smart_fetch() handles automatic failover to headed mode when needed.
+
+    b_config = BrowserConfig(
+        headless=final_headless,
+        browser_type=browser_defaults.get("browser_type", "chromium"),
+        timeout=browser_defaults.get("timeout", 30000),
+    )
 
     # Print Active Config (Only in Verbose Mode - Rich Style)
     if args.verbose:
@@ -284,15 +408,15 @@ async def main_async():
         config_table.add_column("Key", style="cyan")
         config_table.add_column("Value", style="green")
 
-        config_table.add_row("Workers", str(config.workers))
-        config_table.add_row("Delay", str(config.delay))
-        config_table.add_row("Headless", str(config.scraper_settings.headless))
-        config_table.add_row("Output Dir", overrides["output_dir"])
+        config_table.add_row("Workers", str(worker_count))
+        config_table.add_row("Delay", str(args.delay))
+        config_table.add_row("Headless", str(b_config.headless))
+        config_table.add_row("Output Dir", args.output_dir)
 
         console.print(config_table)
 
     # 3. Instantiate and Run Crawler
-    crawler = WebCrawler(config=config, workers=config.workers, delay=config.delay)
+    crawler = WebCrawler(config=b_config, workers=worker_count, delay=args.delay)
     await crawler.run(
         urls=target_urls,
         output_format=args.format,

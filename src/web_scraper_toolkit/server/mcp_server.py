@@ -6,69 +6,44 @@ MCP Server Module
 Implements the Model Context Protocol (MCP) server for the toolkit.
 Exposes scraping capabilities to Agentic environments (Claude Desktop, etc.).
 
-Usage:
-    python -m src.web_scraper_toolkit.server.mcp_server
-    OR
-    from src.web_scraper_toolkit.server import mcp; mcp.run()
+This file acts as the Gateway/Registry, delegating tool registration
+to modular sub-packages in 'mcp_tools/'.
 
-Key Tools:
-    - scrape_url: text/markdown extraction.
-    - search_web: DuckDuckGo search.
-    - get_sitemap: Sitemap analysis.
-    - screenshot: Visual capture.
-
-Operational Notes:
-    - Uses ProcessPoolExecutor to sandbox scraping tasks.
-    - Prevents browser crashes from killing the agent connection.
-    - Uses 'fastmcp' framework.
+Tool Categories (34 total):
+    - Scraping (5): scrape_url, batch_scrape, screenshot, save_pdf, get_metadata
+    - Discovery (7): get_sitemap, crawl_site, extract_contacts, batch_contacts, extract_links, search_web, deep_research
+    - Forms (7): fill_form, extract_tables, click_element, health_check, validate_url, detect_content_type, download_file
+    - Content (3): chunk_text, get_token_count, truncate_text
+    - Management (12): configure_*, cache, session, history, playbook
 """
 
 import asyncio
 import logging
 import sys
+import os
+import signal
+import argparse
 from typing import Any, Dict
 from concurrent.futures import ProcessPoolExecutor
+from datetime import datetime
 
 try:
-    # "fastmcp" is the high-level framework you want to use.
-    # Install via: pip install fastmcp
     from fastmcp import FastMCP
 except ImportError:
     print("Error: 'fastmcp' package not found. Install it with: pip install fastmcp")
     sys.exit(1)
 
-# Toolkit Imports
-from ..parsers.scraping_tools import (
-    read_website_markdown,
-    read_website_content,
-    general_web_search,
-    capture_screenshot,
-    get_sitemap_urls,
-    deep_research_with_google,
-    save_as_pdf,
+# Import modular tool registrations
+from .mcp_tools import (
+    register_scraping_tools,
+    register_discovery_tools,
+    register_form_tools,
+    register_content_tools,
+    register_management_tools,
 )
 
-# New Smart Parsers
-from ..parsers.discovery import smart_discover_urls
-from ..parsers.contacts import (
-    extract_emails,
-    extract_phones,
-    extract_socials,
-    extract_heuristic_names,
-)
-
-from ..browser.crawler import WebCrawler
-from ..core.config import ScraperConfig
-import json
-from datetime import datetime
-import argparse
-import signal
 
 # --- CONFIGURATION (ENV VARS) ---
-# Allow easier docker/cli configuration of workers
-import os
-
-
 def get_worker_count():
     try:
         return int(os.environ.get("SCRAPER_WORKERS", "1"))
@@ -78,14 +53,7 @@ def get_worker_count():
 
 executor = ProcessPoolExecutor(max_workers=get_worker_count())
 
-# Global Config State (Persisted in memory for the session)
-# This allows the 'configure_scraper' tool to affect subsequent calls
-GLOBAL_CONFIG = ScraperConfig.load(
-    {"scraper_settings": {"headless": True}, "workers": get_worker_count()}
-)
-
 # Configure Logging
-# FastMCP handles stdio/logging carefully, but we can still write to file
 logging.basicConfig(
     filename="mcp_server.log",
     level=logging.INFO,
@@ -94,11 +62,13 @@ logging.basicConfig(
 logger = logging.getLogger("mcp_server")
 
 
+# --- UTILITY FUNCTIONS ---
 def create_envelope(status: str, data: Any, meta: Dict[str, Any] = None) -> str:
     """Create a standardized JSON envelope for tool outputs."""
+    import json
+
     meta = meta or {}
     meta["timestamp"] = datetime.now().isoformat()
-
     envelope = {"status": status, "meta": meta, "data": data}
     return json.dumps(envelope, indent=2)
 
@@ -110,448 +80,110 @@ def format_error(func_name: str, error: Exception) -> str:
         status="error",
         data=f"Error executing {func_name}: {str(error)}",
         meta={
-            "tool": func_name,
-            "suggestion": "Check the URL, try a different tool (like search_web), or retry with a simpler query.",
+            "function": func_name,
+            "error_type": type(error).__name__,
         },
     )
 
 
-def _run_isolated_task(func, *args, **kwargs):
-    """Helper to run a function in the separate process."""
-    try:
-        return func(*args, **kwargs)
-    except Exception as e:
-        # Re-raising allows FastMCP to catch it and format the error
-        raise e
-
-
 async def run_in_process(func, *args, **kwargs):
-    """Runs a blocking task in the process pool."""
-    try:
-        loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(
-            executor, _run_isolated_task, func, *args, **kwargs
-        )
-    except RuntimeError:
-        # Fallback if no loop (unlikely in FastMCP async context but safe)
-        return _run_isolated_task(func, *args, **kwargs)
+    """Run a function in a process pool for isolation."""
+    loop = asyncio.get_running_loop()
+    if asyncio.iscoroutinefunction(func):
+        return await func(*args, **kwargs)
+    else:
+        from functools import partial
+
+        call = partial(func, *args, **kwargs)
+        return await loop.run_in_executor(executor, call)
 
 
-# --- FASTMCP SERVER DEFINITION ---
-mcp = FastMCP("WebScraperToolkit")
+# --- MCP SERVER SETUP ---
+mcp = FastMCP("Web Scraper Toolkit")
+
+# Register all tool categories
+register_scraping_tools(mcp, create_envelope, format_error, run_in_process)
+register_discovery_tools(mcp, create_envelope, format_error, run_in_process)
+register_form_tools(mcp, create_envelope, format_error, run_in_process)
+register_content_tools(mcp, create_envelope, format_error, run_in_process)
+register_management_tools(mcp, create_envelope, format_error, run_in_process)
+
+logger.info("MCP Server initialized with 34 tools")
 
 
-@mcp.tool()
-async def scrape_url(
-    url: str, format: str = "markdown", selector: str = None, max_length: int = 20000
-) -> str:
-    """
-    Scrape a single URL. Handles dynamic JS/Cloudflare.
-    Returns a structured JSON envelope.
-
-    Args:
-        url: Target HTTP/HTTPS URL.
-        format: 'markdown' (default), 'text', 'html'.
-        selector: CSS selector to extract specific content (e.g. 'main', '#article').
-        max_length: Max characters to return (default 20k) to save tokens.
-    """
-    try:
-        logger.info(f"Tool Call: scrape_url (format={format}) for {url}")
-
-        if format == "markdown":
-            data = await run_in_process(
-                read_website_markdown,
-                url,
-                config=GLOBAL_CONFIG.to_dict(),
-                selector=selector,
-                max_length=max_length,
-            )
-        else:
-            data = await run_in_process(
-                read_website_content, url, config=GLOBAL_CONFIG.to_dict()
-            )
-
-        return create_envelope("success", data, meta={"url": url, "format": format})
-    except Exception as e:
-        return format_error("scrape_url", e)
-
-
-@mcp.tool()
-async def batch_scrape(urls: list[str], format: str = "markdown") -> str:
-    """
-    Scrape multiple URLs in parallel. efficiently.
-    Returns a dictionary of results keyed by URL.
-
-    Args:
-        urls: List of URLs to scrape.
-        format: 'markdown' (default) or 'text'.
-    """
-    try:
-        logger.info(f"Tool Call: batch_scrape for {len(urls)} URLs")
-
-        # Use WebCrawler for batch orchestration
-        crawler = WebCrawler(config=GLOBAL_CONFIG)
-
-        # Run crawler (returns list of results)
-        await crawler.run(
-            urls=urls,
-            output_format=format,
-            export=False,  # We want data back in memory
-            merge=False,
-        )
-
-        # WebCrawler returns (content, outfile) pairs. We just want content.
-        # But wait, crawler.run returns (content, outfile) tuples?
-        # Actually crawler.run logic is: collected_outputs.append(content)
-        # It's a bit complex. Let's look at crawler.run ... it returns None?
-        # Ah, looking at crawler.py: "return" at end? No, it prints "Done".
-        # It seems crawler.run DOES NOT return the data cleanly in current impl?
-        # Re-reading crawler.py: "results = await asyncio.gather(*tasks)". Yes.
-        # But the function itself `async def run(...)` creates `collected_outputs` but doesn't return them?
-        # Critical Fix: We need to modify WebCrawler.run to return results, OR we create a temporary specialized batch runner here.
-        # Since I can't easily change crawler.py return without checking CLI impact,
-        # I will use `process_single_url` in parallel here directly.
-
-        tasks = []
-        for i, url in enumerate(urls):
-            tasks.append(
-                crawler.process_single_url(
-                    index=i,
-                    total=len(urls),
-                    url=url,
-                    output_format=format,
-                    export=False,
-                    merge=False,
-                    output_dir=".",
-                )
-            )
-
-        raw_results = await asyncio.gather(*tasks)
-
-        # Format map: {url: content}
-        output_map = {}
-        failed = []
-
-        for i, (content, _) in enumerate(raw_results):
-            if content:
-                output_map[urls[i]] = content
-            else:
-                failed.append(urls[i])
-                output_map[urls[i]] = "Error: Failed to scrape."
-
-        return create_envelope(
-            "success",
-            output_map,
-            meta={"processed": len(urls), "failed": len(failed), "failed_urls": failed},
-        )
-
-    except Exception as e:
-        return format_error("batch_scrape", e)
-
-
-@mcp.tool()
-async def configure_scraper(headless: bool = True, user_agent: str = None) -> str:
-    """
-    Update global scraper configuration.
-
-    Args:
-        headless: Run browser in headless mode (default: True). Set False for debugging.
-        user_agent: Custom User-Agent string.
-    """
-    try:
-        GLOBAL_CONFIG.scraper_settings.headless = headless
-        if user_agent:
-            GLOBAL_CONFIG.scraper_settings.user_agent = user_agent
-
-        return create_envelope(
-            "success",
-            "Configuration updated",
-            meta={"headless": headless, "user_agent": user_agent or "default"},
-        )
-    except Exception as e:
-        return format_error("configure_scraper", e)
-
-
-@mcp.tool()
-async def search_web(query: str) -> str:
-    """
-    Search the web (DuckDuckGo / Google) for a query and return top results.
-    """
-    try:
-        logger.info(f"Tool Call: search_web for '{query}'")
-        data = await run_in_process(
-            general_web_search, query, config=GLOBAL_CONFIG.to_dict()
-        )
-        return create_envelope("success", data, meta={"query": query})
-    except Exception as e:
-        return format_error("search_web", e)
-
-
-@mcp.tool()
-async def get_sitemap(url: str, keywords: str = None, limit: int = 50) -> str:
-    """
-    Smartly discover URLs from a website (Sitemap + Heuristics).
-    Automatically prioritizes "high value" pages (about, contact, team).
-
-    Args:
-        url: The homepage or sitemap URL.
-        keywords: Optional comma-separated keywords to prioritize (e.g. "pricing,docs").
-        limit: Max URLs to return.
-    """
-    try:
-        logger.info(f"Tool Call: get_sitemap for {url}")
-
-        # Parse keywords if provided
-        priority_kw = [k.strip() for k in keywords.split(",")] if keywords else None
-
-        # Use the new Smart Discovery logic
-        # We run it in process because it might do heavy recursion
-        result = await run_in_process(
-            smart_discover_urls,
-            url,
-            max_priority=limit,
-            max_general=limit,  # We accept a bit more and filter later if needed
-            priority_keywords=priority_kw,
-        )
-
-        # Format for the agent
-        # We want to present it clearly
-        priority = [item["url"] for item in result.get("priority_urls", [])]
-        general = [item["url"] for item in result.get("general_urls", [])]
-
-        # Combined list respecting limit
-        combined = priority + general
-        combined = combined[:limit]
-
-        data = {
-            "total_found": len(combined),
-            "priority_urls": priority,
-            "other_urls": general[: max(0, limit - len(priority))],
-        }
-
-        return create_envelope(
-            "success", data, meta={"url": url, "strategy": "smart_discovery"}
-        )
-    except Exception as e:
-        return format_error("get_sitemap", e)
-
-
-@mcp.tool()
-async def extract_contacts(url: str) -> str:
-    """
-    Extract contact information (Emails, Phones, Socials) from a URL.
-    Handles Cloudflare-protected emails automatically.
-
-    Args:
-        url: Target URL to scrape and analyze.
-    """
-    try:
-        logger.info(f"Tool Call: extract_contacts for {url}")
-
-        # 1. Scrape content (HTML)
-        # We use 'read_website_content' to get raw HTML for parsing
-        html_content = await run_in_process(
-            read_website_content, url, config=GLOBAL_CONFIG.to_dict()
-        )
-
-        if not html_content:
-            return create_envelope(
-                "error", "Failed to retrieve content", meta={"url": url}
-            )
-
-        # 2. Extract
-        # We need BeautifulSoup for socials, text for regex
-        from bs4 import BeautifulSoup
-
-        soup = BeautifulSoup(html_content, "lxml")
-        text = soup.get_text(separator=" ", strip=True)
-
-        emails = extract_emails(html_content, url)  # Pass raw HTML for CF decryption!
-        phones = extract_phones(text, url)
-        socials = extract_socials(soup, url)
-        names = extract_heuristic_names(soup)
-
-        data = {
-            "emails": emails,
-            "phones": phones,
-            "socials": socials,
-            "names": names or None,  # Only return if we found something
-        }
-
-        return create_envelope("success", data, meta={"url": url})
-    except Exception as e:
-        return format_error("extract_contacts", e)
-
-
-@mcp.tool()
-async def crawl_site(url: str) -> str:
-    """
-    Alias for get_sitemap.
-    Discover all navigable links from a sitemap or landing page.
-    """
-    try:
-        logger.info(f"Tool Call: crawl_site for {url}")
-        data = await run_in_process(get_sitemap_urls, url)
-        return create_envelope("success", data, meta={"url": url})
-    except Exception as e:
-        return format_error("crawl_site", e)
-
-
-@mcp.tool()
-async def screenshot(url: str, path: str) -> str:
-    """
-    Capture a screenshot of a webpage.
-
-    Args:
-        url: Target URL.
-        path: Local output path for PNG.
-    """
-    try:
-        logger.info(f"Tool Call: screenshot {url} -> {path}")
-        data = await run_in_process(
-            capture_screenshot, url, path, config=GLOBAL_CONFIG.to_dict()
-        )
-        return create_envelope("success", data, meta={"url": url, "path": path})
-    except Exception as e:
-        return format_error("screenshot", e)
-
-
-@mcp.tool()
-async def save_pdf(url: str, path: str) -> str:
-    """
-    Save a URL as a PDF file.
-
-    Args:
-        url: Target URL.
-        path: Local output path for PDF.
-    """
-    try:
-        logger.info(f"Tool Call: save_pdf {url} -> {path}")
-        data = await run_in_process(
-            save_as_pdf, url, path, config=GLOBAL_CONFIG.to_dict()
-        )
-        return create_envelope("success", data, meta={"url": url, "path": path})
-    except Exception as e:
-        return format_error("save_pdf", e)
-
-
-@mcp.tool()
-async def deep_research(query: str) -> str:
-    """
-    Perform a Deep Research task on a query.
-    1. Searches DuckDuckGo for top results.
-    2. Crawls the top 3 results for full content.
-    3. Returns a consolidated report.
-
-    Args:
-        query: The topic or question to research.
-    """
-    try:
-        logger.info(f"Tool Call: deep_research for '{query}'")
-        data = await run_in_process(
-            deep_research_with_google, query, config=GLOBAL_CONFIG.to_dict()
-        )
-        return create_envelope("success", data, meta={"query": query})
-    except Exception as e:
-        return format_error("deep_research", e)
-
-
-# Try imports for Rich
+# --- UI Utilities ---
 try:
     from rich.console import Console
-    from rich.table import Table
     from rich.panel import Panel
-except ImportError:
-    # Fallback if rich not installed (though it is a dep)
-    Console = None
-
-
-def print_banner(verbose: bool):
-    """Print a startup banner with server info."""
-    if not Console:
-        print("🚀 WebScraperToolkit MCP Server - ONLINE")
-        return
+    from rich.table import Table
 
     console = Console()
-    table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Property", style="cyan")
-    table.add_column("Value", style="green")
-
-    table.add_row("Server", "WebScraperToolkit MCP")
-    table.add_row("Status", "🟢 ONLINE")
-    table.add_row("Python", sys.version.split()[0])
-    table.add_row("Mode", "Verbose" if verbose else "Standard")
-
-    # Try to get version
-    try:
-        from ... import __version__
-
-        table.add_row("Version", __version__)
-    except ImportError:
-        pass
-
-    console.print(Panel(table, title="🚀 Server Interface", border_style="blue"))
-
-    tool_table = Table(title="Available Tools", show_header=True)
-    tool_table.add_column("Tool Name", style="bold yellow")
-    tool_table.add_column("Description", style="white")
-
-    tools = [
-        ("scrape_url", "Scrape single URL to Markdown/Text"),
-        ("deep_research", "Deep research (Search + Crawl + Report)"),
-        ("save_pdf", "Save URL as high-fidelity PDF"),
-        ("search_web", "Google/DDG Search integration"),
-        ("get_sitemap", "Smart Discovery of site structure"),
-        ("extract_contacts", "Extract Emails/Phones/Socials"),
-        ("crawl_site", "Alias for sitemap discovery"),
-        ("screenshot", "Capture page screenshot"),
-    ]
-
-    for name, desc in tools:
-        tool_table.add_row(name, desc)
-
-    console.print(tool_table)
-    console.print("\n[dim]Press Ctrl+C to stop the server.[/dim]\n")
+    HAS_RICH = True
+except ImportError:
+    HAS_RICH = False
 
 
-def handle_sigint(signum, frame):
-    if Console:
-        Console().print("\n[bold red]🛑 Server stopping...[/bold red]")
-    else:
-        print("\n🛑 Server stopping...")
+def display_welcome():
+    if not HAS_RICH:
+        print("=== Web Scraper Toolkit MCP Server ===")
+        print("Tools: 34 registered")
+        return
+
+    table = Table(title="Registered Tool Categories", show_header=True)
+    table.add_column("Category", style="cyan")
+    table.add_column("Tools", style="green")
+    table.add_column("Count", style="yellow")
+
+    table.add_row(
+        "Scraping", "scrape_url, batch_scrape, screenshot, save_pdf, get_metadata", "5"
+    )
+    table.add_row(
+        "Discovery",
+        "get_sitemap, crawl_site, extract_contacts, batch_contacts, extract_links, search_web, deep_research",
+        "7",
+    )
+    table.add_row(
+        "Forms",
+        "fill_form, extract_tables, click_element, health_check, validate_url, detect_content_type, download_file",
+        "7",
+    )
+    table.add_row("Content", "chunk_text, get_token_count, truncate_text", "3")
+    table.add_row("Management", "configure_*, cache, session, history, playbook", "12")
+
+    console.print(
+        Panel(table, title="[bold blue]Web Scraper Toolkit MCP Server[/bold blue]")
+    )
+
+
+# --- SIGNAL HANDLING ---
+def signal_handler(sig, frame):
+    logger.info("Shutdown signal received")
+    executor.shutdown(wait=False)
     sys.exit(0)
 
 
-def main():
-    """Entry point for the MCP server."""
-    parser = argparse.ArgumentParser(
-        description="Run the Web Scraper Toolkit MCP Server.",
-        epilog="Designed for Agentic Integration.",
-    )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose logging."
-    )
-    parser.add_argument(
-        "--workers", type=int, help="Override default worker count (default: 1)."
-    )
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
+
+# --- MAIN ENTRY ---
+def main():
+    parser = argparse.ArgumentParser(
+        description="Run MCP Server for Web Scraper Toolkit"
+    )
+    parser.add_argument(
+        "--stdio", action="store_true", help="Run via stdio (for agents)"
+    )
+    parser.add_argument("--display", action="store_true", help="Display tools and exit")
     args = parser.parse_args()
 
-    # Set Environment Variable for MCP Server to pick up
-    if args.workers:
-        os.environ["SCRAPER_WORKERS"] = str(args.workers)
+    if args.display:
+        display_welcome()
+        return
 
-    if args.verbose:
-        os.environ["SCRAPER_VERBOSE"] = "true"
-
-    signal.signal(signal.SIGINT, handle_sigint)
-
-    try:
-        print_banner(args.verbose)
-        mcp.run()
-    except Exception as e:
-        print(f"❌ Server start failed: {e}")
-        sys.exit(1)
+    logger.info("Starting MCP Server...")
+    display_welcome()
+    mcp.run()
 
 
 if __name__ == "__main__":

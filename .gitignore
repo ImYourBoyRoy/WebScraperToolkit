@@ -97,3 +97,5 @@ debug_*.html
 debug_*.png
 mcp_server.log
 REFERENCE_ONLY/
+proxy_account_config.json
+socks5_proxies.json

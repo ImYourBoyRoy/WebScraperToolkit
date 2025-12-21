@@ -6,11 +6,12 @@ import asyncio
 # Ensure src is in path
 # sys.path handled by run_tests.py
 
-# We need to test specific logic inside scraping_tools.
+# We need to test specific logic inside content module.
 # Since the logic is inside _arun_scrape, we can mock PlaywrightManager
 # to return specific HTML content and verify the extraction output.
 
-from web_scraper_toolkit.parsers.scraping_tools import _arun_scrape, get_sitemap_urls
+from web_scraper_toolkit.parsers.content import _arun_scrape
+from web_scraper_toolkit.parsers.scraping_tools import get_sitemap_urls
 
 
 class TestScrapingTools(unittest.TestCase):
@@ -75,15 +76,15 @@ class TestScrapingTools(unittest.TestCase):
         self.assertIn("contact@example.com", result)  # Email extraction
 
     @patch(
-        "web_scraper_toolkit.parsers.scraping_tools.extract_sitemap_tree",
+        "web_scraper_toolkit.parsers.sitemap.tools.extract_sitemap_tree",
         new_callable=AsyncMock,
     )
     @patch(
-        "web_scraper_toolkit.parsers.sitemap_handler.peek_sitemap_index",
+        "web_scraper_toolkit.parsers.sitemap.tools.peek_sitemap_index",
         new_callable=AsyncMock,
     )
     @patch(
-        "web_scraper_toolkit.parsers.scraping_tools.find_sitemap_urls",
+        "web_scraper_toolkit.parsers.sitemap.tools.find_sitemap_urls",
         new_callable=AsyncMock,
     )
     def test_sitemap_extraction(self, mock_find, mock_peek, mock_extract):

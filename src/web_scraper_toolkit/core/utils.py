@@ -1,3 +1,4 @@
+# ./src/web_scraper_toolkit/core/utils.py
 # WebScraperToolkit/src/web_scraper_toolkit/utils.py
 from typing import Optional
 from urllib.parse import urlparse, urljoin

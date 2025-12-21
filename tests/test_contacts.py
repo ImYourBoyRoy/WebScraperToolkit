@@ -2,7 +2,7 @@
 import unittest
 # sys.path handled by run_tests.py or discovery
 
-from web_scraper_toolkit.parsers.contacts import (
+from web_scraper_toolkit.parsers import (
     extract_emails,
     extract_phones,
     extract_socials,
