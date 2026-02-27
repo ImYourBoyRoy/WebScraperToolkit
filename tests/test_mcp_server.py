@@ -22,7 +22,7 @@ class TestMCPServer(unittest.IsolatedAsyncioTestCase):
         """Verify all tool categories are registered."""
         from web_scraper_toolkit.server import mcp_server
 
-        tools = await mcp_server.mcp.get_tools()
+        tools = await mcp_server.get_registered_tools()
         tool_names = set(tools.keys())
 
         # Check for key tools from each category

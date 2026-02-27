@@ -325,6 +325,55 @@ def _build_middleware(api_key: Optional[str]) -> list[Middleware] | None:
     return [Middleware(ApiKeyAuthMiddleware, api_key=api_key)]
 
 
+def _normalize_tool_mapping(raw_tools: Any) -> Dict[str, Any]:
+    """Normalize FastMCP tool registries across API versions."""
+    if isinstance(raw_tools, dict):
+        return dict(raw_tools)
+
+    normalized: Dict[str, Any] = {}
+    if isinstance(raw_tools, (list, tuple, set)):
+        for tool in raw_tools:
+            tool_name = getattr(tool, "name", None)
+            if isinstance(tool_name, str) and tool_name:
+                normalized[tool_name] = tool
+    return normalized
+
+
+async def get_registered_tools() -> Dict[str, Any]:
+    """Return registered tools with compatibility for multiple FastMCP versions."""
+    for getter_name in ("get_tools", "list_tools", "_list_tools"):
+        direct_getter = getattr(mcp, getter_name, None)
+        if not callable(direct_getter):
+            continue
+
+        direct_value = direct_getter()
+        if asyncio.iscoroutine(direct_value):
+            direct_value = await direct_value
+        normalized = _normalize_tool_mapping(direct_value)
+        if normalized:
+            return normalized
+
+    tool_manager = getattr(mcp, "_tool_manager", None)
+    if tool_manager is not None:
+        for getter_name in ("get_tools", "list_tools"):
+            manager_getter = getattr(tool_manager, getter_name, None)
+            if not callable(manager_getter):
+                continue
+            manager_value = manager_getter()
+            if asyncio.iscoroutine(manager_value):
+                manager_value = await manager_value
+            normalized = _normalize_tool_mapping(manager_value)
+            if normalized:
+                return normalized
+
+        manager_tools = getattr(tool_manager, "_tools", None)
+        normalized = _normalize_tool_mapping(manager_tools)
+        if normalized:
+            return normalized
+
+    return {}
+
+
 def signal_handler(sig: int, frame: Any) -> None:
     logger.info("Shutdown signal received")
     executor.shutdown(wait=False)

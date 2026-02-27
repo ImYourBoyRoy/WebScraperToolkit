@@ -87,7 +87,7 @@ class TestMCPToolsCoverage(unittest.IsolatedAsyncioTestCase):
         ]
 
         # Get registered tool names from the mcp object
-        tools = await mcp_server.mcp.get_tools()
+        tools = await mcp_server.get_registered_tools()
         registered_tools = set(tools.keys())
 
         for tool_name in expected_tools:

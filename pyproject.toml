@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "web-scraper-toolkit"
-version = "0.2.2"
+version = "0.2.3"
 description = "A powerful, standalone web scraping toolkit using Playwright and various parsers."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -36,6 +36,12 @@ authors = [
 ]
 license = "MIT"
 
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
+
 [project.urls]
 "Homepage" = "https://github.com/imyourboyroy/WebScraperToolkit"
 "Repository" = "https://github.com/imyourboyroy/WebScraperToolkit"
@@ -50,4 +56,10 @@ where = ["src"]
 [tool.ruff]
 exclude = ["FOR_REFERENCE_ONLY"]
 line-length = 88
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "asyncio: mark tests requiring asyncio event loop support",
+]
 
