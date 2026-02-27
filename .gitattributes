@@ -1,0 +1,16 @@
+# Normalize text files for cross-platform lint/format parity.
+* text=auto
+
+# Source and config files should use LF to keep Ruff/CI stable on macOS/Linux.
+*.py text eol=lf
+*.pyi text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+
+# Windows helper scripts can keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
