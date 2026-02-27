@@ -17,7 +17,7 @@ Key Features:
 
 from bs4 import BeautifulSoup, NavigableString, Tag
 import re
-from typing import Optional
+from typing import Any, Optional
 
 
 class MarkdownConverter:
@@ -68,11 +68,26 @@ class MarkdownConverter:
         return markdown
 
     @staticmethod
-    def _is_block_element(tag) -> bool:
+    def _attr_to_str(value: Any) -> Optional[str]:
+        """Normalize BeautifulSoup attribute values into strings."""
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return value
+        if isinstance(value, (list, tuple)):
+            for item in value:
+                if isinstance(item, str) and item:
+                    return item
+            return None
+        return str(value)
+
+    @staticmethod
+    def _is_block_element(tag: Any) -> bool:
         """Checks if a tag is a block element."""
         if not isinstance(tag, Tag):
             return False
-        return tag.name.lower() in [
+        tag_name = (tag.name or "").lower()
+        return tag_name in [
             "div",
             "section",
             "article",
@@ -95,7 +110,7 @@ class MarkdownConverter:
         ]
 
     @staticmethod
-    def _has_block_children(element) -> bool:
+    def _has_block_children(element: Tag) -> bool:
         """Checks if an element contains any direct block-level children."""
         for child in element.children:
             if MarkdownConverter._is_block_element(child):
@@ -125,30 +140,30 @@ class MarkdownConverter:
 
     @staticmethod
     def _process_element(
-        element, base_url: str = "", link_context: Optional[str] = None
+        element: Any, base_url: str = "", link_context: Optional[str] = None
     ) -> str:
         if element is None:
             return ""
 
         # TEXT
         if isinstance(element, NavigableString):
-            text = element
+            raw_text = str(element)
             # Normalize whitespace but KEEP leading/trailing spaces for separation
-            text = re.sub(r"\s+", " ", text)
-            if not text:
+            normalized_text = re.sub(r"\s+", " ", raw_text)
+            if not normalized_text:
                 return ""
 
             # If we are in a link context, we link the text directly
-            if link_context and text.strip():
+            if link_context and normalized_text.strip():
                 # Avoid linking whitespace only
-                return f"[{text}]({link_context})"
-            return text
+                return f"[{normalized_text}]({link_context})"
+            return normalized_text
 
         if not isinstance(element, Tag):
             return ""
 
         # TAGS mapping
-        tag_name = element.name.lower()
+        tag_name = (element.name or "").lower()
 
         # --- BLOCK ELEMENTS --- #
 
@@ -201,7 +216,7 @@ class MarkdownConverter:
         # --- INLINE ELEMENTS --- #
 
         if tag_name == "a":
-            href = element.get("href", "")
+            href = MarkdownConverter._attr_to_str(element.get("href")) or ""
             if not href or href.startswith("#") or href.startswith("javascript:"):
                 return MarkdownConverter._get_inner_text(
                     element, base_url, link_context
@@ -225,8 +240,8 @@ class MarkdownConverter:
             return f"[{text}]({href})"
 
         if tag_name == "img":
-            alt = element.get("alt", "Image")
-            src = element.get("src", "")
+            alt = MarkdownConverter._attr_to_str(element.get("alt")) or "Image"
+            src = MarkdownConverter._attr_to_str(element.get("src")) or ""
             if not src:
                 return ""
             img_md = f"![{alt}]({src})"
@@ -244,7 +259,7 @@ class MarkdownConverter:
 
         if tag_name == "code":
             # If inside pre, handled by pre. If inline:
-            if element.parent.name == "pre":
+            if element.parent and element.parent.name == "pre":
                 return ""  # Let pre handle it
             text = element.get_text()
             return f"`{text}`"
@@ -274,7 +289,7 @@ class MarkdownConverter:
 
     @staticmethod
     def _get_inner_text(
-        element, base_url: str, link_context: Optional[str] = None
+        element: Tag, base_url: str, link_context: Optional[str] = None
     ) -> str:
         """Helper to recursively process children and join them."""
         results = []
@@ -306,10 +321,10 @@ class MarkdownConverter:
 
     @staticmethod
     def _process_list(
-        list_element, base_url: str, link_context: Optional[str] = None
+        list_element: Tag, base_url: str, link_context: Optional[str] = None
     ) -> str:
         items = []
-        is_ordered = list_element.name == "ol"
+        is_ordered = (list_element.name or "").lower() == "ol"
 
         for i, child in enumerate(list_element.find_all("li", recursive=False)):
             content = MarkdownConverter._get_inner_text(
@@ -333,7 +348,7 @@ class MarkdownConverter:
         return "\n".join(items)
 
     @staticmethod
-    def _process_table(table_element, base_url: str) -> str:
+    def _process_table(table_element: Tag, base_url: str) -> str:
         """
         Simple Markdown table converter.
         Only handles standard thead/tbody structures nicely.

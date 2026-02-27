@@ -39,11 +39,11 @@ class ProxyManager:
         self.proxies: List[Proxy] = proxies or []
         self._lock = asyncio.Lock()
         self._current_index = 0
-        self._last_revival_time = 0
+        self._last_revival_time: float = 0.0
 
         self._real_ip: Optional[str] = None
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         """
         Initializes the manager:
         1. Determines Real IP (if enforcement is on).
@@ -55,13 +55,14 @@ class ProxyManager:
         if self.proxies:
             await self.validate_all()
 
-    async def _determine_real_ip(self):
+    async def _determine_real_ip(self) -> None:
         """Fetches the machine's real IP address for the Kill-Switch."""
         logger.info("Security Check: Determining Real IP...")
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(
-                    self.config.validation_url, timeout=self.config.timeout_seconds
+                    self.config.validation_url,
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout_seconds),
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
@@ -99,7 +100,8 @@ class ProxyManager:
             start_time = time.time()
             async with aiohttp.ClientSession(connector=connector) as session:
                 async with session.get(
-                    self.config.validation_url, timeout=self.config.timeout_seconds
+                    self.config.validation_url,
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout_seconds),
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
@@ -138,7 +140,7 @@ class ProxyManager:
             logger.debug(f"Proxy {proxy.hostname} Unexpected Error: {e}")
             return False
 
-    async def validate_all(self):
+    async def validate_all(self) -> None:
         """Validates all proxies concurrently."""
         logger.info(f"Validating {len(self.proxies)} proxies...")
         tasks = [self.validate_proxy(p) for p in self.proxies]
@@ -161,7 +163,7 @@ class ProxyManager:
                 )
             # If just dead, we might not raise SecurityStopIteration yet, but get_next will fail.
 
-    def load_proxies_from_json(self, file_path: str):
+    def load_proxies_from_json(self, file_path: str) -> None:
         """Loads proxies from a JSON file."""
         try:
             with open(file_path, "r") as f:
@@ -221,7 +223,7 @@ class ProxyManager:
                 if total_health == 0:
                     return random.choice(active_proxies)
                 pick = random.uniform(0, total_health)
-                current = 0
+                current = 0.0
                 for p in active_proxies:
                     current += p.health_score
                     if current >= pick:
@@ -235,7 +237,7 @@ class ProxyManager:
 
     def report_status(
         self, proxy: Proxy, success: bool, status_code: Optional[int] = None
-    ):
+    ) -> None:
         """Updates proxy health based on request outcome."""
         proxy.total_calls += 1
         proxy.last_used_ts = time.time()
@@ -258,14 +260,14 @@ class ProxyManager:
                 if proxy.health_score < 30:
                     proxy.status = ProxyStatus.DEAD
 
-    async def _cooldown_timer(self, proxy: Proxy):
+    async def _cooldown_timer(self, proxy: Proxy) -> None:
         await asyncio.sleep(self.config.cooldown_seconds)
         async with self._lock:
             proxy.status = ProxyStatus.ACTIVE
             proxy.health_score = 50.0  # Reset to mid health
             logger.info(f"Proxy {proxy.hostname} returned from cooldown.")
 
-    async def _attempt_revival(self):
+    async def _attempt_revival(self) -> None:
         """Resets DEAD proxies to UNTESTED and triggers validation."""
         dead_proxies = [p for p in self.proxies if p.status == ProxyStatus.DEAD]
         if not dead_proxies:

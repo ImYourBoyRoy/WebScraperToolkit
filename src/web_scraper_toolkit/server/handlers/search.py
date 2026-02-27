@@ -1,10 +1,15 @@
-# ./src/web_scraper_toolkit/server/tools/search.py
+# ./src/web_scraper_toolkit/server/handlers/search.py
 """
-Search Tools
-============
+Implement MCP-facing search handlers.
+Used by `server.mcp_tools.discovery` for regular and deep research search flows.
+Run: Imported by MCP tool registration modules; no direct CLI entry point.
+Inputs: Search query strings.
+Outputs: Text reports from search/deep-research pipelines.
+Side effects: Performs outbound web lookups through parser/browser search modules.
+Operational notes: Delegates stealth/fallback handling to lower-level search utilities.
+"""
 
-Web search and deep research capabilities.
-"""
+from __future__ import annotations
 
 from ...parsers.scraping_tools import (
     general_web_search,
@@ -17,9 +22,9 @@ GLOBAL_PARSER_CONFIG = ParserConfig()
 
 async def perform_search(query: str) -> str:
     """Performs a web search."""
-    return await general_web_search(query, config=GLOBAL_PARSER_CONFIG)
+    return general_web_search(query, config=GLOBAL_PARSER_CONFIG)
 
 
 async def perform_deep_research(query: str) -> str:
     """Performs deep research (search + crawl)."""
-    return await deep_research_with_google(query, config=GLOBAL_PARSER_CONFIG)
+    return deep_research_with_google(query, config=GLOBAL_PARSER_CONFIG)

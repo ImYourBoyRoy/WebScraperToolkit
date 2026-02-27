@@ -268,17 +268,18 @@ class SerpParser:
 
                 from urllib.parse import parse_qs
 
-                url = str(raw_href)
-                if "duckduckgo.com/l/" in url or "uddg=" in url:
-                    parsed = urlparse(url)
+                url_candidate = str(raw_href)
+                if "duckduckgo.com/l/" in url_candidate or "uddg=" in url_candidate:
+                    parsed = urlparse(url_candidate)
                     qs = parse_qs(parsed.query)
-                    if "uddg" in qs:
-                        url = qs["uddg"][0]
+                    uddg_values = qs.get("uddg")
+                    if uddg_values:
+                        url_candidate = uddg_values[0]
 
-                url = normalize_url(url, base_url=serp_url)
-                if not url or url in seen_urls:
+                normalized_url = normalize_url(url_candidate, base_url=serp_url)
+                if not normalized_url or normalized_url in seen_urls:
                     continue
-                seen_urls.add(url)
+                seen_urls.add(normalized_url)
 
                 title_text = link_tag.get_text(strip=True)
 
@@ -289,7 +290,7 @@ class SerpParser:
 
                 results.append(
                     {
-                        "url": url,
+                        "url": normalized_url,
                         "title": truncate_text(title_text, 200),
                         "snippet": truncate_text(snippet_text, 350)
                         if snippet_text

@@ -9,12 +9,36 @@ High-level tools for agents to query sitemaps.
 import logging
 import re
 import asyncio
-from typing import Optional
+from concurrent.futures import Future
+from threading import Thread
+from typing import Any, Coroutine, Optional, TypeVar
 
 from .detection import find_sitemap_urls
 from .fetching import extract_sitemap_tree, peek_sitemap_index
 
 logger = logging.getLogger(__name__)
+T = TypeVar("T")
+
+
+def _run_coro_sync(coro: Coroutine[Any, Any, T]) -> T:
+    """Run coroutine from synchronous context without loop re-entrancy deadlocks."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+
+    result: Future[T] = Future()
+
+    def _runner() -> None:
+        try:
+            result.set_result(asyncio.run(coro))
+        except Exception as exc:  # pragma: no cover
+            result.set_exception(exc)
+
+    worker = Thread(target=_runner, daemon=True)
+    worker.start()
+    worker.join()
+    return result.result()
 
 
 def get_sitemap_urls(*args, **kwargs) -> str:
@@ -170,18 +194,7 @@ def get_sitemap_urls(*args, **kwargs) -> str:
         except (ValueError, TypeError):
             limit = 50
 
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
-
-        if loop and loop.is_running():
-            future = asyncio.run_coroutine_threadsafe(
-                _async_get_sitemap_urls(target_url, keywords, limit), loop
-            )
-            return future.result()
-        else:
-            return asyncio.run(_async_get_sitemap_urls(target_url, keywords, limit))
+        return _run_coro_sync(_async_get_sitemap_urls(target_url, keywords, limit))
 
     except Exception as e:
         return f"Error executing sitemap extraction: {e}"

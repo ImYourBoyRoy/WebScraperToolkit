@@ -22,7 +22,7 @@ Key Features:
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional, cast
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -69,11 +69,11 @@ async def fill_form(
             # Load existing session if available
             storage_state = session_mgr.get_storage_state_path(session_name)
 
-            context_kwargs = {}
+            context_kwargs: Dict[str, Any] = {}
             if storage_state:
                 context_kwargs["storage_state"] = storage_state
 
-            context = await manager.browser.new_context(**context_kwargs)
+            context = await manager.browser.new_context(**cast(Any, context_kwargs))
             page = await context.new_page()
 
             try:

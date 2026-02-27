@@ -76,7 +76,7 @@ class SharedHttpClient:
     """
 
     _session: Optional[aiohttp.ClientSession] = None
-    _lock: asyncio.Lock = None
+    _lock: Optional[asyncio.Lock] = None
 
     # Default headers
     DEFAULT_HEADERS = {

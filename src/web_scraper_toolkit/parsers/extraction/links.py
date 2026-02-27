@@ -29,6 +29,20 @@ from ...browser.config import BrowserConfig
 logger = logging.getLogger(__name__)
 
 
+def _coerce_href(value: Any) -> Optional[str]:
+    """Normalize BeautifulSoup href values into a string."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            if isinstance(item, str) and item.strip():
+                return item
+        return None
+    return str(value)
+
+
 async def extract_links(
     url: str,
     filter_external: bool = False,
@@ -115,7 +129,8 @@ def extract_links_from_html(
     external_links = set()
 
     for anchor in soup.find_all("a", href=True):
-        href = anchor.get("href", "").strip()
+        href_value = _coerce_href(anchor.get("href"))
+        href = href_value.strip() if href_value else ""
 
         if not href:
             continue

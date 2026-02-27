@@ -18,11 +18,11 @@ Key Features:
 """
 
 import asyncio
-import random
 import logging
-from typing import Optional, Dict, Any, Tuple, Union
-from urllib.parse import urlparse
+import random
 from typing import TYPE_CHECKING
+from typing import Any, Dict, Literal, Optional, Tuple, Union, cast
+from urllib.parse import urlparse
 
 if TYPE_CHECKING:
     from ..proxie.manager import ProxyManager
@@ -59,6 +59,7 @@ DEFAULT_LAUNCH_ARGS = [
     # "--disable-gpu",            # Disabled: Conflicts with --enable-webgl for WebGL rendering
     "--ignore-certificate-errors",
 ]
+WaitUntilState = Literal["commit", "domcontentloaded", "load", "networkidle"]
 
 
 class PlaywrightManager:
@@ -69,9 +70,9 @@ class PlaywrightManager:
 
     def __init__(
         self,
-        config: Union[Dict[str, Any], "BrowserConfig"] = None,
+        config: Optional[Union[Dict[str, Any], BrowserConfig]] = None,
         proxy_manager: Optional["ProxyManager"] = None,
-    ):
+    ) -> None:
         if config is None:
             self.config = BrowserConfig()
         elif isinstance(config, BrowserConfig):
@@ -95,9 +96,7 @@ class PlaywrightManager:
         self.headless = self.config.headless
 
         # Mapping properties
-        self.user_agents = (
-            DEFAULT_USER_AGENTS  # We can enhance config to support list if needed
-        )
+        self.user_agents = DEFAULT_USER_AGENTS
         self.launch_args = list(set(DEFAULT_LAUNCH_ARGS))  # Config can extend this soon
 
         self.default_viewport = {
@@ -118,7 +117,14 @@ class PlaywrightManager:
             f"Default Timeout={self.default_navigation_timeout_ms}ms"
         )
 
-    async def start(self):
+    @property
+    def browser(self) -> Browser:
+        """Expose active browser for backward-compatible advanced operations."""
+        if self._browser is None or not self._browser.is_connected():
+            raise RuntimeError("Browser is not started.")
+        return self._browser
+
+    async def start(self) -> None:
         if self._browser and self._browser.is_connected():
             return
 
@@ -147,7 +153,7 @@ class PlaywrightManager:
                 self._playwright = None
             raise
 
-    async def stop(self):
+    async def stop(self) -> None:
         if self._browser and self._browser.is_connected():
             try:
                 await self._browser.close()
@@ -179,7 +185,7 @@ class PlaywrightManager:
         # We deliberately do NOT set a custom 'user_agent' here by default.
         # Leaving it None allows Chromium to report its native version (e.g. Chrome/131),
         # which matches the TLS fingerprint and helps pass Cloudflare challenges.
-        base_context_options = {
+        base_context_options: Dict[str, Any] = {
             "viewport": self.default_viewport,
             "ignore_https_errors": True,
             "java_script_enabled": True,
@@ -225,7 +231,7 @@ class PlaywrightManager:
             base_context_options.update(context_options)
 
         try:
-            context = await self._browser.new_context(**base_context_options)
+            context = await self._browser.new_context(**cast(Any, base_context_options))
 
             # Stealth: Scrub navigator.webdriver (Critical for Cloudflare)
             await context.add_init_script(
@@ -276,7 +282,7 @@ class PlaywrightManager:
         navigation_timeout_ms: Optional[int] = None,
         wait_for_selector: Optional[str] = None,
         scroll_to_load: bool = False,
-        wait_until_state: str = "domcontentloaded",
+        wait_until_state: WaitUntilState = "domcontentloaded",
         extra_headers: Optional[Dict[str, str]] = None,
         ensure_standard_headers: bool = False,
     ) -> Tuple[Optional[str], str, Optional[int]]:
@@ -498,7 +504,7 @@ class PlaywrightManager:
                 except Exception:
                     pass
 
-    async def _auto_scroll(self, page: Page):
+    async def _auto_scroll(self, page: Page) -> None:
         """
         Scrolls the page to the bottom to trigger lazy loading.
         """
@@ -525,15 +531,15 @@ class PlaywrightManager:
         await page.wait_for_timeout(2000)
 
     async def capture_screenshot(
-        self, url: str, output_path: str, full_page: bool = True, **kwargs
-    ) -> Tuple[bool, int]:
+        self, url: str, output_path: str, full_page: bool = True, **kwargs: Any
+    ) -> Tuple[bool, Optional[int]]:
         """
         Captures a screenshot of the target URL.
         Returns: (Success, StatusCode)
         """
         page, context = await self.get_new_page()
         if not page:
-            return False, 0
+            return False, None
 
         try:
             # We reuse fetch_page_content just to load the page robustly
@@ -549,14 +555,16 @@ class PlaywrightManager:
             return True, status
         except Exception as e:
             logger.error(f"Screenshot failed: {e}", exc_info=True)
-            return False, 0
+            return False, None
         finally:
             if page:
                 await page.close()
             if context:
                 await context.close()
 
-    async def save_pdf(self, url: str, output_path: str, **kwargs) -> Tuple[bool, int]:
+    async def save_pdf(
+        self, url: str, output_path: str, **kwargs: Any
+    ) -> Tuple[bool, Optional[int]]:
         """
         Saves the target URL as a PDF.
         Returns: (Success, StatusCode)
@@ -565,7 +573,7 @@ class PlaywrightManager:
 
         page, context = await self.get_new_page()
         if not page:
-            return False, 0
+            return False, None
 
         try:
             # Use networkidle to ensure hydration (fancy java stuff)
@@ -589,16 +597,16 @@ class PlaywrightManager:
             return True, status
         except Exception as e:
             logger.error(f"PDF generation failed: {e}", exc_info=True)
-            return False, 0
+            return False, None
         finally:
             if page:
                 await page.close()
             if context:
                 await context.close()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "PlaywrightManager":
         await self.start()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         await self.stop()

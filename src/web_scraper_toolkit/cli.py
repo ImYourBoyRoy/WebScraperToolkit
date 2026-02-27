@@ -39,6 +39,7 @@ from . import (
     BrowserConfig,
     setup_logger,
 )
+from .core.runtime import load_runtime_settings, resolve_worker_count
 from .core.verify_deps import verify_dependencies
 
 from rich.console import Console
@@ -89,6 +90,18 @@ def parse_arguments(args=None, defaults=None):
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Enable verbose logging."
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=os.environ.get("WST_CONFIG_JSON", "config.json"),
+        help="Path to primary JSON configuration file.",
+    )
+    parser.add_argument(
+        "--local-config",
+        type=str,
+        default=os.environ.get("WST_LOCAL_CFG"),
+        help="Path to local cfg override file (e.g. settings.local.cfg).",
     )
 
     # Input options
@@ -163,8 +176,11 @@ def parse_arguments(args=None, defaults=None):
         "--workers",
         "-w",
         type=str,
-        default="1",
-        help="Number of concurrent workers (default: 1). pass 'max' to use CPU_COUNT-1.",
+        default=None,
+        help=(
+            "Number of concurrent workers. Accepts integer or auto/max/dynamic. "
+            "If omitted, runtime config defaults are used."
+        ),
     )
     parser.add_argument(
         "--delay",
@@ -207,10 +223,12 @@ def parse_arguments(args=None, defaults=None):
 
 
 async def main_async():
-    # 0. Load Global Config
-    global_config = load_global_config()
-
-    args = parse_arguments(defaults=global_config)
+    args = parse_arguments()
+    runtime_settings = load_runtime_settings(
+        config_json_path=args.config,
+        local_cfg_path=args.local_config,
+    )
+    global_config = load_global_config(args.config)
 
     # --- SITEMAP TREE MODE ---
     if args.site_tree and args.input:
@@ -292,19 +310,19 @@ async def main_async():
             # Check for proxy file (unless disabled)
             proxy_file = os.environ.get("PROXY_FILE", "proxies.json")
             if os.path.exists(proxy_file) and not args.no_proxy:
-                # Load Proxies
-                with open(proxy_file, "r") as f:
-                    # basic list of dicts or {"proxies": []}
-                    data = json.load(f)
-                    p_list = (
-                        data.get("proxies", data) if isinstance(data, dict) else data
+                manager = ProxyManager(proxie_config)
+                manager.load_proxies_from_json(proxy_file)
+                proxy_count = len(manager.proxies)
+                if proxy_count == 0:
+                    manager = None
+                    console.print(
+                        "[yellow]Proxy file found but no valid proxies were loaded. "
+                        "Falling back to direct mode.[/yellow]"
                     )
-                    proxies = [p for p in p_list]
-
-                manager = ProxyManager(proxie_config, proxies)
-                console.print(
-                    f"[green]Proxy System Active: Loaded {len(proxies)} proxies.[/green]"
-                )
+                else:
+                    console.print(
+                        f"[green]Proxy System Active: Loaded {proxy_count} proxies.[/green]"
+                    )
                 # Ideally initialize manager here if needed: await manager.initialize()
             else:
                 msg = "Running in Direct (No-Proxy) Mode."
@@ -334,22 +352,13 @@ async def main_async():
 
     # --- STANDARD MODE (Legacy/Direct) ---
 
-    # Determine worker count
-    worker_count = 1
-    if args.workers.lower() == "max":
-        try:
-            cpu_count = os.cpu_count() or 1
-            worker_count = max(1, cpu_count - 1)
-        except Exception:
-            worker_count = 1
-    else:
-        try:
-            worker_count = int(args.workers)
-            if worker_count < 1:
-                worker_count = 1
-        except ValueError:
-            logger.error(f"Invalid worker count: {args.workers}. Defaulting to 1.")
-            worker_count = 1
+    worker_request = args.workers or runtime_settings.concurrency.cli_workers_default
+    worker_count = resolve_worker_count(
+        worker_request,
+        cpu_reserve=runtime_settings.concurrency.cpu_reserve,
+        max_workers=runtime_settings.concurrency.cli_workers_max,
+        fallback=1,
+    )
 
     # Diagnostics check
     if args.diagnostics:

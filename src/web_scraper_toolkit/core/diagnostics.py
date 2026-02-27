@@ -34,7 +34,7 @@ async def verify_environment() -> Dict[str, Any]:
         - browser_launch_successful
         - browsers_found
     """
-    report = {
+    report: Dict[str, Any] = {
         "python_version": sys.version,
         "playwright_installed": False,
         "browser_launch_successful": False,
@@ -80,7 +80,7 @@ async def verify_environment() -> Dict[str, Any]:
     return report
 
 
-def print_diagnostics():
+def print_diagnostics() -> None:
     """Runs the verification and prints a human-readable report."""
     print("Running WebScraperToolkit Diagnostics...")
     try:

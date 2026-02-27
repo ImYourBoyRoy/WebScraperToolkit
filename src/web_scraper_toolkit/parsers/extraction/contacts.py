@@ -14,7 +14,7 @@ Usage:
 """
 
 import logging
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 from urllib.parse import urlparse
 
 # Optional dependencies handling is tricky with Type Checking if we enforce them.
@@ -68,20 +68,23 @@ def extract_emails(text: str, source_url: str = "") -> List[Dict[str, Any]]:
         return []
 
     # Convert to list of dicts with context
-    results = []
+    results: List[Dict[str, Any]] = []
     seen = set()
 
     for em in found_emails:
-        # emailtoolkit returns Email objects. Use .normalized or .canonical
-        normalized = em.normalized
+        normalized = str(
+            getattr(
+                em,
+                "normalized",
+                getattr(em, "canonical", getattr(em, "original", str(em))),
+            )
+        )
         if normalized in seen:
             continue
         seen.add(normalized)
+        original = str(getattr(em, "original", normalized))
 
-        context = _find_context(
-            text, em.original
-        )  # Use original match for context search if possible?
-        # Actually em.original is the string segment found.
+        context = _find_context(text, original)
 
         results.append(
             {
@@ -101,7 +104,7 @@ def extract_phones(
     """
     Extracts phone numbers using Google's phonenumbers library.
     """
-    results = []
+    results: List[Dict[str, Any]] = []
     seen = set()
 
     if not text:
@@ -154,7 +157,7 @@ def extract_socials(soup, source_url: str = "") -> List[Dict[str, Any]]:
         soup: BeautifulSoup object
         source_url: The URL of the page being parsed (for logging/metadata)
     """
-    results = []
+    results: List[Dict[str, Any]] = []
     seen = set()
 
     if not soup:
@@ -194,7 +197,7 @@ def extract_heuristic_names(soup) -> Dict[str, str]:
     Returns:
         Dict with keys 'business_name' and/or 'author_name' if found.
     """
-    names = {}
+    names: Dict[str, str] = {}
     if not soup:
         return names
 

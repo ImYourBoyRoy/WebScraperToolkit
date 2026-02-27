@@ -6,10 +6,10 @@ Handles reliable and secure data fetching using the Proxy Manager.
 Ensures requests are routed through valid proxies and retries on failure.
 """
 
-import logging
 import asyncio
+import logging
 import aiohttp
-from typing import Optional, Dict
+from typing import Any, Dict, Optional
 from aiohttp_socks import (
     ProxyConnector,
     ProxyType,
@@ -33,7 +33,7 @@ class ProxyScraper:
         url: str,
         method: str = "GET",
         headers: Optional[Dict[str, str]] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Optional[str]:
         """
         Fetches a URL securely using the proxy pool.
@@ -80,7 +80,10 @@ class ProxyScraper:
                 logger.debug(f"{log_prefix} (Attempt {attempt + 1})")
 
                 # Timeout logic
-                timeout = self.manager.config.timeout_seconds if self.manager else 10
+                timeout_seconds = (
+                    self.manager.config.timeout_seconds if self.manager else 10
+                )
+                timeout = aiohttp.ClientTimeout(total=timeout_seconds)
 
                 # Merge user headers with stealth defaults
                 request_headers = get_stealth_headers(headers)

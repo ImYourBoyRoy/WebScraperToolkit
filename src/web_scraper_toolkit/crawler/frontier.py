@@ -11,7 +11,7 @@ Features:
 """
 
 import asyncio
-from typing import Set
+from typing import Any, Dict, Optional, Set
 from dataclasses import dataclass, field
 import heapq
 
@@ -22,7 +22,7 @@ class FrontierItem:
     url: str = field(compare=False)
     depth: int = field(compare=False)
     # Metadata for processing context
-    meta: dict = field(default_factory=dict, compare=False)
+    meta: Dict[str, Any] = field(default_factory=dict, compare=False)
 
 
 class Frontier:
@@ -33,8 +33,12 @@ class Frontier:
         self._count = 0  # Push counter specifically for stable sorting if needed (heapq is not stable)
 
     async def add_url(
-        self, url: str, depth: int = 0, priority: int = 10, meta: dict = None
-    ):
+        self,
+        url: str,
+        depth: int = 0,
+        priority: int = 10,
+        meta: Optional[Dict[str, Any]] = None,
+    ) -> None:
         """Adds a URL to the frontier if not already seen."""
         async with self._lock:
             if url in self._seen:
@@ -44,7 +48,7 @@ class Frontier:
             # Use heapq for priority queue
             heapq.heappush(self._queue, FrontierItem(priority, url, depth, meta or {}))
 
-    async def get_next(self) -> FrontierItem:
+    async def get_next(self) -> Optional[FrontierItem]:
         """Pops the highest priority (lowest number) item."""
         async with self._lock:
             if not self._queue:

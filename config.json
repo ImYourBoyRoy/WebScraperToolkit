@@ -80,5 +80,56 @@
 		"port": 8000,
 		"host": "localhost",
 		"log_level": "INFO"
+	},
+	"runtime": {
+		"default_timeout_profile": "standard",
+		"safe_output_root": "./output",
+		"job_retention_seconds": 3600,
+		"max_job_records": 1000,
+		"concurrency": {
+			"cli_workers_default": "auto",
+			"cli_workers_max": 32,
+			"mcp_process_workers": 0,
+			"mcp_inflight_limit": 0,
+			"mcp_batch_workers": 0,
+			"crawler_default_workers": 0,
+			"crawler_max_workers": 128,
+			"cpu_reserve": 1
+		},
+		"server": {
+			"transport": "stdio",
+			"host": "127.0.0.1",
+			"port": 8000,
+			"path": "/mcp",
+			"require_api_key": false,
+			"api_key_env": "WST_MCP_API_KEY",
+			"expose_server_banner": true
+		},
+		"timeouts": {
+			"fast": {
+				"soft_seconds": 20,
+				"hard_seconds": 45,
+				"extension_seconds": 10,
+				"allow_extension": true
+			},
+			"standard": {
+				"soft_seconds": 60,
+				"hard_seconds": 180,
+				"extension_seconds": 60,
+				"allow_extension": true
+			},
+			"research": {
+				"soft_seconds": 180,
+				"hard_seconds": 900,
+				"extension_seconds": 300,
+				"allow_extension": true
+			},
+			"long": {
+				"soft_seconds": 600,
+				"hard_seconds": 3600,
+				"extension_seconds": 900,
+				"allow_extension": true
+			}
+		}
 	}
 }

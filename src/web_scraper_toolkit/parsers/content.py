@@ -9,7 +9,9 @@ Tools for extracting and cleaning content from websites, including HTML to Markd
 import asyncio
 import logging
 import re
-from typing import Optional, Dict, Any, Union
+from concurrent.futures import Future
+from threading import Thread
+from typing import Any, Coroutine, Dict, List, Optional, TypeVar, Union
 
 from bs4 import BeautifulSoup
 
@@ -18,6 +20,33 @@ from .config import ParserConfig
 from ..browser.config import BrowserConfig
 
 logger = logging.getLogger(__name__)
+T = TypeVar("T")
+
+
+def _run_coro_sync(coro: Coroutine[Any, Any, T]) -> T:
+    """
+    Run an async coroutine from synchronous call sites.
+
+    If called from an active event loop thread, execute on a dedicated worker
+    thread to avoid deadlocks.
+    """
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+
+    future: Future[T] = Future()
+
+    def _runner() -> None:
+        try:
+            future.set_result(asyncio.run(coro))
+        except Exception as exc:  # pragma: no cover - surfaced by caller
+            future.set_exception(exc)
+
+    worker = Thread(target=_runner, daemon=True)
+    worker.start()
+    worker.join()
+    return future.result()
 
 
 async def _arun_scrape(
@@ -49,15 +78,7 @@ async def _arun_scrape(
 
             title_tag = soup.find("title")
 
-            # Extract structured data
-            extracted_data = {
-                "url": final_url,
-                "title": title_tag.text if title_tag else "No title",
-                "main_content": "",
-                "leadership_mentions": [],
-                "contact_info": [],
-                "key_facts": [],
-            }
+            title_text = title_tag.get_text(strip=True) if title_tag else "No title"
 
             # Remove noise
             for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
@@ -72,34 +93,35 @@ async def _arun_scrape(
                 "Owner",
                 "Director",
             ]
+            leadership_mentions: List[str] = []
             for text in soup.stripped_strings:
                 if any(keyword in text for keyword in leadership_keywords):
-                    extracted_data["leadership_mentions"].append(text[:200])
+                    leadership_mentions.append(text[:200])
 
             # Look for contact information
             email_pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
             emails = re.findall(email_pattern, str(soup))
-            extracted_data["contact_info"].extend(emails[:5])
+            contact_info = emails[:5]
 
             # Get main content
             main_content = soup.get_text(separator=" ", strip=True)
-            extracted_data["main_content"] = main_content[:15000]  # Increase from 8000
+            trimmed_main_content = main_content[:15000]
 
             # Format output
             output = f"=== EXTRACTED FROM: {final_url} ===\n\n"
-            output += f"TITLE: {extracted_data['title']}\n\n"
+            output += f"TITLE: {title_text}\n\n"
 
-            if extracted_data["leadership_mentions"]:
+            if leadership_mentions:
                 output += "LEADERSHIP MENTIONS:\n"
-                for mention in extracted_data["leadership_mentions"][:5]:
+                for mention in leadership_mentions[:5]:
                     output += f"- {mention}\n"
                 output += "\n"
 
-            if extracted_data["contact_info"]:
-                output += f"CONTACT INFO FOUND: {', '.join(extracted_data['contact_info'][:3])}\n\n"
+            if contact_info:
+                output += f"CONTACT INFO FOUND: {', '.join(contact_info[:3])}\n\n"
 
             output += "MAIN CONTENT:\n"
-            output += extracted_data["main_content"]
+            output += trimmed_main_content
 
             logger.info(
                 f"Successfully scraped and structured {len(main_content)} characters from {final_url}"
@@ -129,29 +151,26 @@ def read_website_content(
         config (dict, optional): Configuration dictionary.
     """
     logger.info(f"Executing read_website_content for URL: {website_url}")
-    # This ensures an asyncio event loop is managed correctly
-    try:
-        loop = asyncio.get_running_loop()
-        if loop.is_running():
-            future = asyncio.run_coroutine_threadsafe(
-                _arun_scrape(website_url, config), loop
-            )
-            return future.result()
-        else:
-            return asyncio.run(_arun_scrape(website_url, config))
-    except RuntimeError:
-        return asyncio.run(_arun_scrape(website_url, config))
+    return _run_coro_sync(_arun_scrape(website_url, config))
 
 
 async def _arun_scrape_markdown(
     website_url: str,
-    config: Optional[Union[Dict[str, Any], ParserConfig]] = None,
+    config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]] = None,
     selector: Optional[str] = None,
     max_length: Optional[int] = None,
 ) -> str:
     """Async helper for scraping and converting to Markdown."""
     manager = None
     browser_cfg = BrowserConfig()
+    if isinstance(config, BrowserConfig):
+        browser_cfg = config
+    elif isinstance(config, dict):
+        browser_cfg = BrowserConfig(
+            headless=config.get("headless", True),
+            browser_type=config.get("browser_type", "chromium"),
+            timeout=config.get("timeout", 30000),
+        )
     try:
         from ..browser.playwright_handler import PlaywrightManager
 
@@ -200,7 +219,7 @@ async def _arun_scrape_markdown(
 
 def read_website_markdown(
     website_url: str,
-    config: Optional[Union[Dict[str, Any], ParserConfig]] = None,
+    config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]] = None,
     selector: Optional[str] = None,
     max_length: Optional[int] = None,
 ) -> str:
@@ -215,18 +234,6 @@ def read_website_markdown(
         max_length (int): Optional character limit for the output.
     """
     logger.info(f"Executing read_website_markdown for URL: {website_url}")
-    try:
-        loop = asyncio.get_running_loop()
-        if loop.is_running():
-            future = asyncio.run_coroutine_threadsafe(
-                _arun_scrape_markdown(website_url, config, selector, max_length), loop
-            )
-            return future.result()
-        else:
-            return asyncio.run(
-                _arun_scrape_markdown(website_url, config, selector, max_length)
-            )
-    except RuntimeError:
-        return asyncio.run(
-            _arun_scrape_markdown(website_url, config, selector, max_length)
-        )
+    return _run_coro_sync(
+        _arun_scrape_markdown(website_url, config, selector, max_length)
+    )

@@ -8,8 +8,10 @@ Tools for performing web searches and deep research using DuckDuckGo and other e
 
 import asyncio
 import logging
+from concurrent.futures import Future
+from threading import Thread
 from urllib.parse import quote_plus, urlparse
-from typing import Optional, Dict, Any, Union
+from typing import Any, Coroutine, Dict, List, Optional, TypeVar, Union
 
 from bs4 import BeautifulSoup
 
@@ -18,6 +20,28 @@ from ..config import ParserConfig
 from ...browser.config import BrowserConfig
 
 logger = logging.getLogger(__name__)
+T = TypeVar("T")
+
+
+def _run_coro_sync(coro: Coroutine[Any, Any, T]) -> T:
+    """Run async call from sync interfaces without deadlocking active loops."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+
+    result: Future[T] = Future()
+
+    def _runner() -> None:
+        try:
+            result.set_result(asyncio.run(coro))
+        except Exception as exc:  # pragma: no cover
+            result.set_exception(exc)
+
+    worker = Thread(target=_runner, daemon=True)
+    worker.start()
+    worker.join()
+    return result.result()
 
 
 async def _arun_search(
@@ -125,17 +149,7 @@ def general_web_search(
         search_query (str): The query to search for.
     """
     logger.info(f"Executing general_web_search for query: {search_query}")
-    try:
-        loop = asyncio.get_running_loop()
-        if loop.is_running():
-            future = asyncio.run_coroutine_threadsafe(
-                _arun_search(search_query, config), loop
-            )
-            return future.result()
-        else:
-            return asyncio.run(_arun_search(search_query, config))
-    except RuntimeError:
-        return asyncio.run(_arun_search(search_query, config))
+    return _run_coro_sync(_arun_search(search_query, config))
 
 
 async def _arun_deep_research(
@@ -186,7 +200,12 @@ async def _arun_deep_research(
         final_report += "---\n\n"
 
         # Filter for actual content URLs (skip pdfs/docs if desirable, but simple check for now)
-        urls_to_crawl = [res["url"] for res in results[:3] if res.get("url")]
+        urls_to_crawl: List[str] = [
+            str(url_value)
+            for res in results[:3]
+            for url_value in [res.get("url")]
+            if isinstance(url_value, str) and url_value
+        ]
 
         for i, url_to_crawl in enumerate(urls_to_crawl):
             logger.info(f"Crawling top result #{i + 1}: {url_to_crawl}")
@@ -237,17 +256,7 @@ def deep_research_with_google(
     Args:
         search_query (str): The research query.
     """
-    try:
-        loop = asyncio.get_running_loop()
-        if loop.is_running():
-            future = asyncio.run_coroutine_threadsafe(
-                _arun_deep_research(search_query, config), loop
-            )
-            return future.result()
-        else:
-            return asyncio.run(_arun_deep_research(search_query, config))
-    except RuntimeError:
-        return asyncio.run(_arun_deep_research(search_query, config))
+    return _run_coro_sync(_arun_deep_research(search_query, config))
 
 
 def finish_research_for_field(field_path: str, reasoning: str) -> str:

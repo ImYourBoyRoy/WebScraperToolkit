@@ -14,7 +14,7 @@ Integrates:
 import asyncio
 import logging
 import re
-from typing import List, Optional, Any, Dict, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from bs4 import BeautifulSoup
 import json
 
@@ -38,7 +38,7 @@ class AutonomousCrawler:
         self,
         playbook: Playbook,
         proxy_manager: Optional[ProxyManager] = None,
-        config: CrawlerConfig = None,
+        config: Optional[CrawlerConfig] = None,
         state_file: str = "crawl_state.json",
     ):
         self.playbook = playbook
@@ -50,7 +50,6 @@ class AutonomousCrawler:
         browser_cfg = BrowserConfig(
             headless=True,  # Default to headless for autonomous, smart_fetch switches if needed
             browser_type="chromium",  # Default for best stealth
-            user_agent=playbook.settings.user_agent,
         )
         self.browser_manager = PlaywrightManager(
             config=browser_cfg, proxy_manager=self.proxy_manager
@@ -73,11 +72,11 @@ class AutonomousCrawler:
             respect_robots=respect,
         )
 
-        self.results = []  # In-memory storage
+        self.results: List[Dict[str, Any]] = []  # In-memory storage
         self.results_filename = f"results_{self.playbook.name.replace(' ', '_')}.jsonl"
 
         # Rule Optimization
-        self._successful_rules = []  # Cache of rules that worked recently
+        self._successful_rules: List[Any] = []  # Cache of rules that worked recently
 
     async def initialize(self):
         """Prepares the crawler: starts browser, loads state, seeds frontier."""
@@ -192,7 +191,7 @@ class AutonomousCrawler:
             ]
 
         for rule in rules_to_try:
-            if rule.type == "extract":
+            if rule.rule_type == "extract":
                 if self._matches(url, rule):
                     # Extract Data
                     for field in rule.extract_fields:
@@ -243,7 +242,7 @@ class AutonomousCrawler:
         # 2. Apply Traversal Rules (if depth allows)
         if depth < self.playbook.settings.max_depth:
             for rule in self.playbook.rules:
-                if rule.type == "follow":
+                if rule.rule_type == "follow":
                     # If global follow rule (no regex) or matches
                     links = self._extract_links(soup)
                     for link in links:
@@ -251,28 +250,44 @@ class AutonomousCrawler:
                             await self.frontier.add_url(link, depth + 1)
 
                 # Logic to hit API endpoint
-                api_url = url.rstrip("/") + "/wp-json/wp/v2/posts"
-                logger.info(f"Checking WP API: {api_url}")
-                try:
-                    api_content, _, api_status = await self.browser_manager.smart_fetch(
-                        api_url
-                    )
-                    if api_content and api_status == 200:
-                        posts = json.loads(api_content)
-                        if isinstance(posts, list):
-                            for post in posts:
-                                link = post.get("link")
-                                if link and not self.state.is_seen(link):
-                                    logger.info(f"Discovered via WP API: {link}")
-                                    await self.frontier.add_url(link, depth + 1)
-                except Exception as e:
-                    logger.warning(f"WP API Discovery failed for {url}: {e}")
+                if rule.rule_type == "wp_api_discover":
+                    api_url = url.rstrip("/") + "/wp-json/wp/v2/posts"
+                    logger.info(f"Checking WP API: {api_url}")
+                    try:
+                        (
+                            api_content,
+                            _,
+                            api_status,
+                        ) = await self.browser_manager.smart_fetch(api_url)
+                        if api_content and api_status == 200:
+                            posts = json.loads(api_content)
+                            if isinstance(posts, list):
+                                for post in posts:
+                                    post_link: Optional[str] = (
+                                        post.get("link")
+                                        if isinstance(post, dict)
+                                        else None
+                                    )
+                                    if (
+                                        isinstance(post_link, str)
+                                        and post_link
+                                        and not self.state.is_seen(post_link)
+                                    ):
+                                        logger.info(
+                                            f"Discovered via WP API: {post_link}"
+                                        )
+                                        await self.frontier.add_url(
+                                            post_link, depth + 1
+                                        )
+                    except Exception as e:
+                        logger.warning(f"WP API Discovery failed for {url}: {e}")
 
     def _matches(self, text: str, rule: Any) -> bool:
-        if not rule.regex:
+        pattern = getattr(rule, "url_pattern", None)
+        if not pattern:
             return True  # If no regex, match all? Or match none?
             # Usually 'follow' without regex means follow everything
-        return bool(re.search(rule.regex, text))
+        return bool(re.search(pattern, text))
 
     def _extract_links(self, soup) -> List[str]:
         return [
@@ -282,7 +297,7 @@ class AutonomousCrawler:
         ]
 
     def _extract_field(self, soup, field) -> Optional[str]:
-        if field.type == "css":
+        if field.extractor_type == "css":
             el = soup.select_one(field.selector)
             if el:
                 return (

@@ -127,13 +127,13 @@ def with_retry(
             ...
     """
 
-    def decorator(func: Callable):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             config = get_retry_config()
             attempts = max_attempts or config.max_attempts
 
-            last_exception = None
+            last_exception: Optional[Exception] = None
 
             for attempt in range(attempts):
                 try:
@@ -151,7 +151,9 @@ def with_retry(
                     else:
                         logger.error(f"All {attempts} attempts failed: {e}")
 
-            raise last_exception
+            if last_exception is not None:
+                raise last_exception
+            raise RuntimeError("Retry operation failed without capturing an exception.")
 
         return wrapper
 
@@ -159,10 +161,10 @@ def with_retry(
 
 
 async def retry_operation(
-    operation: Callable,
-    *args,
+    operation: Callable[..., Any],
+    *args: Any,
     max_attempts: Optional[int] = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> Any:
     """
     Execute an operation with retry logic.
@@ -179,7 +181,7 @@ async def retry_operation(
     config = get_retry_config()
     attempts = max_attempts or config.max_attempts
 
-    last_exception = None
+    last_exception: Optional[Exception] = None
 
     for attempt in range(attempts):
         try:
@@ -194,4 +196,6 @@ async def retry_operation(
                 )
                 await asyncio.sleep(wait_time)
 
-    raise last_exception
+    if last_exception is not None:
+        raise last_exception
+    raise RuntimeError("Retry operation failed without capturing an exception.")

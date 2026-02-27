@@ -6,11 +6,12 @@ Input Parser
 Utilities for parsing input sources (files, URLs, sitemaps) into a list of URLs.
 """
 
-import os
 import csv
 import json
 import logging
-import requests
+import os
+import requests  # type: ignore[import-untyped]
+from io import StringIO
 from typing import List
 
 from ..parsers.sitemap import extract_sitemap_tree, parse_sitemap_urls
@@ -59,8 +60,8 @@ async def load_urls_from_source(input_source: str) -> List[str]:
             logger.error(f"Input file not found: {input_source}")
             return []
         try:
-            with open(input_source, "r", encoding="utf-8") as f:
-                content_text = f.read()
+            with open(input_source, "r", encoding="utf-8") as input_file:
+                content_text = input_file.read()
             ext = os.path.splitext(input_source)[1].lower()
         except Exception as e:
             logger.error(f"Failed to read local file: {e}")
@@ -78,10 +79,8 @@ async def load_urls_from_source(input_source: str) -> List[str]:
             urls.extend(valid)
 
         elif ext == ".csv":
-            from io import StringIO
-
-            f = StringIO(content_text)
-            reader = csv.reader(f)
+            csv_buffer = StringIO(content_text)
+            reader = csv.reader(csv_buffer)
             for row in reader:
                 for cell in row:
                     if cell.strip().startswith("http"):

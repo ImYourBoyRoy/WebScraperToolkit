@@ -11,7 +11,7 @@ Usage:
 
 """
 
-__version__ = "0.1.7"
+__version__ = "0.2.0"
 
 # Configs (Modular)
 from .browser.config import BrowserConfig
@@ -20,6 +20,7 @@ from .parsers.config import ParserConfig
 from .proxie.config import ProxieConfig
 from .server.config import ServerConfig
 from .core.logger import setup_logger
+from .core.runtime import load_runtime_settings, resolve_worker_count
 from .core.diagnostics import verify_environment, print_diagnostics
 from .browser.playwright_handler import PlaywrightManager
 from .browser.playwright_crawler import WebCrawler
@@ -54,6 +55,8 @@ __all__ = [
     "ProxieConfig",
     "ServerConfig",
     "setup_logger",
+    "load_runtime_settings",
+    "resolve_worker_count",
     "verify_environment",
     "print_diagnostics",
     "PlaywrightManager",

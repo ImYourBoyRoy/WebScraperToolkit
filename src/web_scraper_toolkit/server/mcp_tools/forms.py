@@ -8,6 +8,7 @@ Form filling, table extraction, and interactive element handling.
 
 import json
 import logging
+from typing import Optional
 
 from ...core.automation.forms import (
     fill_form as _fill_form,
@@ -20,6 +21,8 @@ from ...core.automation.utilities import (
     detect_content_type as _detect_content_type,
     download_file as _download_file,
 )
+from ..handlers.config import get_runtime_config
+from ..path_safety import resolve_safe_output_path
 
 logger = logging.getLogger("mcp_server")
 
@@ -31,9 +34,10 @@ def register_form_tools(mcp, create_envelope, format_error, run_in_process):
     async def fill_form(
         url: str,
         fields: str,
-        submit_selector: str = None,
+        submit_selector: Optional[str] = None,
         save_session: bool = True,
         session_name: str = "default",
+        timeout_profile: str = "research",
     ) -> str:
         """
         Fill and submit a web form. Supports login automation.
@@ -49,34 +53,61 @@ def register_form_tools(mcp, create_envelope, format_error, run_in_process):
         try:
             logger.info(f"Tool Call: fill_form {url}")
             fields_dict = json.loads(fields) if isinstance(fields, str) else fields
+            if not isinstance(fields_dict, dict):
+                raise ValueError(
+                    "fields must decode to a JSON object of selector/value pairs"
+                )
 
-            result = await _fill_form(
+            result = await run_in_process(
+                _fill_form,
                 url=url,
                 fields=fields_dict,
                 submit_selector=submit_selector,
                 save_session=save_session,
                 session_name=session_name,
+                timeout_profile=timeout_profile,
+                work_units=max(1, len(fields_dict)),
             )
             return create_envelope("success", result, meta={"url": url})
         except Exception as e:
             return format_error("fill_form", e)
 
     @mcp.tool()
-    async def extract_tables(url: str, table_selector: str = "table") -> str:
+    async def extract_tables(
+        url: str,
+        table_selector: str = "table",
+        timeout_profile: str = "standard",
+    ) -> str:
         """Extract structured table data from webpage."""
         try:
             logger.info(f"Tool Call: extract_tables {url}")
-            result = await _extract_tables(url, table_selector)
+            result = await run_in_process(
+                _extract_tables,
+                url,
+                table_selector,
+                timeout_profile=timeout_profile,
+                work_units=2,
+            )
             return create_envelope("success", result, meta={"url": url})
         except Exception as e:
             return format_error("extract_tables", e)
 
     @mcp.tool()
-    async def click_element(url: str, selector: str) -> str:
+    async def click_element(
+        url: str,
+        selector: str,
+        timeout_profile: str = "standard",
+    ) -> str:
         """Navigate to URL and click an element (for JS triggers, expanding sections)."""
         try:
             logger.info(f"Tool Call: click_element {selector} on {url}")
-            result = await _click_element(url, selector)
+            result = await run_in_process(
+                _click_element,
+                url,
+                selector,
+                timeout_profile=timeout_profile,
+                work_units=1,
+            )
             return create_envelope(
                 "success", result, meta={"url": url, "selector": selector}
             )
@@ -87,36 +118,66 @@ def register_form_tools(mcp, create_envelope, format_error, run_in_process):
     async def health_check() -> str:
         """Check system health. Returns status of browser, cache, sessions."""
         try:
-            result = await _health_check()
+            result = await run_in_process(
+                _health_check,
+                timeout_profile="fast",
+                work_units=1,
+            )
             return create_envelope("success", result)
         except Exception as e:
             return format_error("health_check", e)
 
     @mcp.tool()
-    async def validate_url(url: str) -> str:
+    async def validate_url(url: str, timeout_profile: str = "fast") -> str:
         """Validate URL reachability before scraping. Returns status, content type, size."""
         try:
-            result = await _validate_url(url)
+            result = await run_in_process(
+                _validate_url,
+                url,
+                timeout_profile=timeout_profile,
+                work_units=1,
+            )
             return create_envelope("success", result, meta={"url": url})
         except Exception as e:
             return format_error("validate_url", e)
 
     @mcp.tool()
-    async def detect_content_type(url: str) -> str:
+    async def detect_content_type(url: str, timeout_profile: str = "fast") -> str:
         """Detect content type of URL (HTML, PDF, image, etc.)."""
         try:
-            result = await _detect_content_type(url)
+            result = await run_in_process(
+                _detect_content_type,
+                url,
+                timeout_profile=timeout_profile,
+                work_units=1,
+            )
             return create_envelope("success", result, meta={"url": url})
         except Exception as e:
             return format_error("detect_content_type", e)
 
     @mcp.tool()
-    async def download_file(url: str, path: str) -> str:
+    async def download_file(
+        url: str,
+        path: str,
+        timeout_profile: str = "research",
+    ) -> str:
         """Download file from URL. Saves PDFs, images, documents directly."""
         try:
-            logger.info(f"Tool Call: download_file {url} -> {path}")
-            result = await _download_file(url, path)
-            return create_envelope("success", result, meta={"url": url, "path": path})
+            runtime = get_runtime_config()
+            safe_path = resolve_safe_output_path(path, runtime.safe_output_root)
+            logger.info(f"Tool Call: download_file {url} -> {safe_path}")
+            result = await run_in_process(
+                _download_file,
+                url,
+                safe_path,
+                timeout_profile=timeout_profile,
+                work_units=2,
+            )
+            return create_envelope(
+                "success",
+                result,
+                meta={"url": url, "path": safe_path},
+            )
         except Exception as e:
             return format_error("download_file", e)
 

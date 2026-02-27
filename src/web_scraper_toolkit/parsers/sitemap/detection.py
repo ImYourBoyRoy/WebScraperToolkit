@@ -9,14 +9,29 @@ Heuristic methods for discovering sitemap URLs.
 import asyncio
 import logging
 import re
-import requests
-from typing import List
+from typing import Any, List, Optional
 from urllib.parse import urljoin, urlparse
+
+import requests  # type: ignore[import-untyped]
 from bs4 import BeautifulSoup
 from .models import COMMON_SITEMAP_PATHS
 from ...core.user_agents import get_simple_headers
 
 logger = logging.getLogger(__name__)
+
+
+def _coerce_attr_to_str(value: Any) -> Optional[str]:
+    """Normalize BeautifulSoup attribute values to a single string."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            if isinstance(item, str) and item.strip():
+                return item
+        return None
+    return str(value)
 
 
 async def _check_robots_txt(base_url: str) -> List[str]:
@@ -87,16 +102,18 @@ async def _check_homepage_for_sitemap(base_url: str) -> List[str]:
             # Check <link> tags
             links = soup.find_all("link", rel=re.compile(r"sitemap", re.I))
             for link in links:
-                href = link.get("href")
+                href = _coerce_attr_to_str(link.get("href"))
                 if href:
                     found_sitemaps.append(urljoin(base_url, href))
 
             # Check footer/body links by text
             # This is heuristic and might be noisy, so we are strict with text
             sitemap_text_regex = re.compile(r"^(Sitemap|Site Map|XML Sitemap)$", re.I)
-            a_tags = soup.find_all("a", string=sitemap_text_regex)
-            for a in a_tags:
-                href = a.get("href")
+            for a in soup.find_all("a", href=True):
+                link_text = a.get_text(strip=True)
+                if not sitemap_text_regex.match(link_text):
+                    continue
+                href = _coerce_attr_to_str(a.get("href"))
                 if href:
                     found_sitemaps.append(urljoin(base_url, href))
 
@@ -129,7 +146,7 @@ async def find_sitemap_urls(target_url: str) -> List[str]:
     results = await asyncio.gather(*tasks)
 
     # Flatten results
-    all_candidates = []
+    all_candidates: List[str] = []
     for res_list in results:
         all_candidates.extend(res_list)
 

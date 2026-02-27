@@ -1,10 +1,15 @@
-# ./src/web_scraper_toolkit/server/tools/extraction.py
+# ./src/web_scraper_toolkit/server/handlers/extraction.py
 """
-Extraction Tools
-================
+Implement MCP-facing extraction handlers for sitemap and contact workflows.
+Used by discovery MCP tools to power sitemap discovery and contact extraction actions.
+Run: Imported by server tool registration modules; not executed directly.
+Inputs: URL targets, optional keyword filters, and result limits.
+Outputs: Structured dictionaries for sitemap/contact results.
+Side effects: Performs network access and HTML parsing on target pages.
+Operational notes: Contact extraction uses parser-level normalization helpers.
+"""
 
-Contacts, Sitemaps, and Discovery.
-"""
+from __future__ import annotations
 
 from bs4 import BeautifulSoup
 from ...parsers.scraping_tools import (
@@ -23,7 +28,9 @@ from ...parsers.config import ParserConfig
 GLOBAL_PARSER_CONFIG = ParserConfig()
 
 
-async def discover_sitemap(url: str, keywords: str = None, limit: int = 50) -> dict:
+async def discover_sitemap(
+    url: str, keywords: str | None = None, limit: int = 50
+) -> dict[str, object]:
     """Smartly discovers URLs from a sitemap."""
     priority_kw = [k.strip() for k in keywords.split(",")] if keywords else None
 
@@ -50,12 +57,12 @@ async def discover_sitemap(url: str, keywords: str = None, limit: int = 50) -> d
 
 async def get_sitemap_plain(url: str) -> str:
     """Legacy sitemap fetching."""
-    return await get_sitemap_urls(url)
+    return get_sitemap_urls(url)
 
 
-async def get_contacts(url: str) -> dict:
+async def get_contacts(url: str) -> dict[str, object]:
     """Extracts contact info from a URL."""
-    html_content = await read_website_content(url, config=GLOBAL_PARSER_CONFIG)
+    html_content = read_website_content(url, config=GLOBAL_PARSER_CONFIG)
     if not html_content:
         return {"error": "Failed to retrieve content"}
 

@@ -17,6 +17,20 @@ RuleType = Literal["follow", "extract", "wp_api_discover", "sitemap"]
 ExtractorType = Literal["css", "xpath", "regex", "json"]
 
 
+def _default_playbook_settings() -> "PlaybookSettings":
+    """Create default settings instance for pydantic field factories."""
+    return PlaybookSettings(
+        respect_robots=True,
+        user_agent=None,
+        max_depth=3,
+        max_pages=100,
+        crawl_delay=1.0,
+        ai_context=False,
+        validation_enabled=False,
+        reuse_rules=True,
+    )
+
+
 # --- Settings ---
 class PlaybookSettings(BaseModel):
     """Configuration for the crawler's behavior."""
@@ -96,5 +110,5 @@ class Playbook(BaseModel):
         default_factory=list, description="List of traversal and extraction rules."
     )
     settings: PlaybookSettings = Field(
-        default_factory=PlaybookSettings, description="Crawler settings."
+        default_factory=_default_playbook_settings, description="Crawler settings."
     )

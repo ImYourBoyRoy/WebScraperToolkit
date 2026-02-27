@@ -9,7 +9,7 @@ Logic for downloading and recursively walking sitemaps.
 import asyncio
 import logging
 import re
-import requests
+import requests  # type: ignore[import-untyped]
 from typing import List, Optional, Dict, Any
 
 from .parsing import parse_sitemap_urls
@@ -43,7 +43,9 @@ async def fetch_sitemap_content(url: str, manager=None) -> Optional[str]:
 
         should_close = False
         if not manager:
-            manager = PlaywrightManager(config={"scraper_settings": {"headless": True}})
+            from ...browser.config import BrowserConfig
+
+            manager = PlaywrightManager(config=BrowserConfig(headless=True))
             should_close = True
 
         try:
@@ -66,7 +68,10 @@ async def fetch_sitemap_content(url: str, manager=None) -> Optional[str]:
 
 
 async def extract_sitemap_tree(
-    input_source: str, depth: int = 0, semaphore: asyncio.Semaphore = None, manager=None
+    input_source: str,
+    depth: int = 0,
+    semaphore: Optional[asyncio.Semaphore] = None,
+    manager=None,
 ) -> List[str]:
     """
     Recursively extracts all URLs from a sitemap or sitemap index.
@@ -84,8 +89,9 @@ async def extract_sitemap_tree(
     if depth == 0 and manager is None:
         try:
             from ...browser.playwright_handler import PlaywrightManager
+            from ...browser.config import BrowserConfig
 
-            manager = PlaywrightManager(config={"scraper_settings": {"headless": True}})
+            manager = PlaywrightManager(config=BrowserConfig(headless=True))
             # We don't start it yet - let fetch_sitemap_content start it lazily if requests fails
             local_manager_created = True
         except Exception as e:

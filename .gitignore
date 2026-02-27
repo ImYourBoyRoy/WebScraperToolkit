@@ -1,15 +1,14 @@
-# Byte-compiled / optimized / DLL files
+# Python bytecode / cache
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
+# Native extensions
 *.so
 
-# Distribution / packaging
+# Packaging / build artifacts
 .Python
 build/
-develop-eggs/
 dist/
 downloads/
 eggs/
@@ -25,77 +24,69 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+pip-wheel-metadata/
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
+# Virtual environments
+.venv/
 venv/
+env/
 ENV/
 env.bak/
 venv.bak/
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.cache/
+coverage.xml
+nosetests.xml
+*.cover
+*.py,cover
+cover/
 
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
+# Static analysis / lint caches
 .mypy_cache/
+.pyre/
+.ruff_cache/
 .dmypy.json
 dmypy.json
 
-# Pyre type checker
-.pyre/
+# Notebook checkpoints
+.ipynb_checkpoints/
 
-# Project Specific
-tests_output/
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+.python-version
+
+# Logs and runtime artifacts
 *.log
+*.pid
+mcp_server.log
+.runtime/
+.quality_gate_logs/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Project-specific artifacts
+test_output/
+tests_output/
+REFERENCE_ONLY/
 debug_*.html
 debug_*.png
-mcp_server.log
-REFERENCE_ONLY/
 proxy_account_config.json
 socks5_proxies.json
+settings.cfg
+settings.local.cfg
+*.local.cfg

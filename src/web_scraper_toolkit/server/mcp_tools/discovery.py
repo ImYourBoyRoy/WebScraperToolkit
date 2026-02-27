@@ -8,10 +8,11 @@ Sitemap discovery, contact extraction, link extraction, and site exploration too
 
 import asyncio
 import logging
-import os
 from typing import Optional
 
+from ...core.runtime import resolve_worker_count
 from ..handlers.search import perform_search, perform_deep_research
+from ..handlers.config import get_runtime_config
 from ..handlers.extraction import discover_sitemap, get_contacts, get_sitemap_plain
 from ...parsers.extraction.links import extract_links as _extract_links
 
@@ -26,6 +27,7 @@ def register_discovery_tools(mcp, create_envelope, format_error, run_in_process)
         url: str,
         keywords: Optional[str] = None,
         limit: int = 100,
+        timeout_profile: str = "standard",
     ) -> str:
         """
         Smart Sitemap Discovery and Filtering.
@@ -34,24 +36,34 @@ def register_discovery_tools(mcp, create_envelope, format_error, run_in_process)
         try:
             logger.info(f"Tool Call: get_sitemap {url}")
             data = await run_in_process(
-                discover_sitemap, url, keywords=keywords, limit=limit
+                discover_sitemap,
+                url,
+                keywords=keywords,
+                limit=limit,
+                timeout_profile=timeout_profile,
+                work_units=max(1, limit // 25),
             )
             return create_envelope("success", data, meta={"url": url})
         except Exception as e:
             return format_error("get_sitemap", e)
 
     @mcp.tool()
-    async def crawl_site(url: str) -> str:
+    async def crawl_site(url: str, timeout_profile: str = "standard") -> str:
         """Crawl a site's sitemap to discover pages."""
         try:
             logger.info(f"Tool Call: crawl_site {url}")
-            data = await run_in_process(get_sitemap_plain, url)
+            data = await run_in_process(
+                get_sitemap_plain,
+                url,
+                timeout_profile=timeout_profile,
+                work_units=2,
+            )
             return create_envelope("success", data, meta={"url": url})
         except Exception as e:
             return format_error("crawl_site", e)
 
     @mcp.tool()
-    async def extract_contacts(url: str) -> str:
+    async def extract_contacts(url: str, timeout_profile: str = "standard") -> str:
         """
         Extract all contact information from a URL.
 
@@ -59,13 +71,21 @@ def register_discovery_tools(mcp, create_envelope, format_error, run_in_process)
         """
         try:
             logger.info(f"Tool Call: extract_contacts {url}")
-            data = await run_in_process(get_contacts, url)
+            data = await run_in_process(
+                get_contacts,
+                url,
+                timeout_profile=timeout_profile,
+                work_units=1,
+            )
             return create_envelope("success", data, meta={"url": url})
         except Exception as e:
             return format_error("extract_contacts", e)
 
     @mcp.tool()
-    async def batch_contacts(urls: list[str]) -> str:
+    async def batch_contacts(
+        urls: list[str],
+        timeout_profile: str = "research",
+    ) -> str:
         """
         Extract contacts from multiple URLs in parallel.
 
@@ -74,14 +94,26 @@ def register_discovery_tools(mcp, create_envelope, format_error, run_in_process)
         try:
             logger.info(f"Tool Call: batch_contacts for {len(urls)} URLs")
 
-            # Hardware-limited parallelism
-            max_workers = max(1, (os.cpu_count() or 1) - 1)
+            runtime = get_runtime_config()
+            max_workers = resolve_worker_count(
+                runtime.concurrency.mcp_batch_workers
+                if runtime.concurrency.mcp_batch_workers > 0
+                else "auto",
+                cpu_reserve=runtime.concurrency.cpu_reserve,
+                max_workers=runtime.concurrency.crawler_max_workers,
+                fallback=4,
+            )
             semaphore = asyncio.Semaphore(max_workers)
 
             async def process_url(url: str) -> dict:
                 async with semaphore:
                     try:
-                        data = await run_in_process(get_contacts, url)
+                        data = await run_in_process(
+                            get_contacts,
+                            url,
+                            timeout_profile=timeout_profile,
+                            work_units=1,
+                        )
                         return {"url": url, **data}
                     except Exception as e:
                         return {"url": url, "error": str(e)}
@@ -92,7 +124,11 @@ def register_discovery_tools(mcp, create_envelope, format_error, run_in_process)
             return create_envelope(
                 "success",
                 list(results),
-                meta={"count": len(results), "workers": max_workers},
+                meta={
+                    "count": len(results),
+                    "workers": max_workers,
+                    "timeout_profile": timeout_profile,
+                },
             )
         except Exception as e:
             return format_error("batch_contacts", e)
@@ -101,6 +137,7 @@ def register_discovery_tools(mcp, create_envelope, format_error, run_in_process)
     async def extract_links(
         url: str,
         filter_external: bool = False,
+        timeout_profile: str = "standard",
     ) -> str:
         """
         Extract all hyperlinks from a webpage.
@@ -114,28 +151,41 @@ def register_discovery_tools(mcp, create_envelope, format_error, run_in_process)
         try:
             logger.info(f"Tool Call: extract_links {url}")
             data = await run_in_process(
-                _extract_links, url, filter_external=filter_external
+                _extract_links,
+                url,
+                filter_external=filter_external,
+                timeout_profile=timeout_profile,
             )
             return create_envelope("success", data, meta={"url": url})
         except Exception as e:
             return format_error("extract_links", e)
 
     @mcp.tool()
-    async def search_web(query: str) -> str:
+    async def search_web(query: str, timeout_profile: str = "standard") -> str:
         """Perform a web search and return results."""
         try:
             logger.info(f"Tool Call: search_web '{query}'")
-            data = await run_in_process(perform_search, query)
+            data = await run_in_process(
+                perform_search,
+                query,
+                timeout_profile=timeout_profile,
+                work_units=1,
+            )
             return create_envelope("success", data, meta={"query": query})
         except Exception as e:
             return format_error("search_web", e)
 
     @mcp.tool()
-    async def deep_research(query: str) -> str:
+    async def deep_research(query: str, timeout_profile: str = "research") -> str:
         """Perform Deep Research (Search + Crawl + Report)."""
         try:
             logger.info(f"Tool Call: deep_research for '{query}'")
-            data = await run_in_process(perform_deep_research, query)
+            data = await run_in_process(
+                perform_deep_research,
+                query,
+                timeout_profile=timeout_profile,
+                work_units=3,
+            )
             return create_envelope("success", data, meta={"query": query})
         except Exception as e:
             return format_error("deep_research", e)

@@ -16,9 +16,9 @@ Key Features:
     - Batch processing with progress tracking.
 """
 
-import asyncio
-import os
 import logging
+import os
+import asyncio
 from typing import List, Optional, Tuple
 
 # Import toolkit components
@@ -35,6 +35,7 @@ from ..core.file_utils import (
     get_unique_filepath,
     merge_content_files,
 )
+from ..core.runtime import load_runtime_settings, resolve_worker_count
 from ..parsers.extraction.contacts import (
     extract_emails,
     extract_phones,
@@ -49,11 +50,26 @@ class WebCrawler:
     def __init__(
         self,
         config: Optional[BrowserConfig] = None,
-        workers: int = 1,
+        workers: Optional[int] = None,
         delay: float = 0.0,
     ):
         self.config = config or BrowserConfig()
-        self.workers = workers
+        runtime = load_runtime_settings()
+        requested_workers: int | str = (
+            workers
+            if workers is not None
+            else (
+                runtime.concurrency.crawler_default_workers
+                if runtime.concurrency.crawler_default_workers > 0
+                else "auto"
+            )
+        )
+        self.workers = resolve_worker_count(
+            requested_workers,
+            cpu_reserve=runtime.concurrency.cpu_reserve,
+            max_workers=runtime.concurrency.crawler_max_workers,
+            fallback=1,
+        )
         self.delay = delay
         self.semaphore = asyncio.Semaphore(self.workers)
 
@@ -66,7 +82,7 @@ class WebCrawler:
         export: bool,
         merge: bool,
         output_dir: str,
-        output_filename: str = None,
+        output_filename: Optional[str] = None,
         extract_contacts: bool = False,
     ) -> Tuple[Optional[str], Optional[str]]:
         """Process a single URL: fetch, convert/screenshot, save."""
@@ -85,7 +101,7 @@ class WebCrawler:
             for attempt in range(max_attempts):
                 try:
                     # Current Config check
-                    is_headless = self.config.scraper_settings.headless
+                    is_headless = self.config.headless
                     if attempt > 0:
                         logger.warning(
                             f"  -> Retry Attempt {attempt + 1} (Headless: {is_headless})..."
@@ -112,7 +128,7 @@ class WebCrawler:
                         )
 
                     # Status tracking
-                    status_code = 0
+                    status_code: Optional[int] = 0
                     success = False
                     raw_html_for_contacts = None  # We might need this for contacts
 
@@ -162,6 +178,11 @@ class WebCrawler:
                             success = True
 
                     elif output_format == "screenshot":
+                        if output_file is None:
+                            logger.error(
+                                "No output file path provided for screenshot mode."
+                            )
+                            return None, None
                         manager = PlaywrightManager(config=self.config)
                         async with manager:
                             success, status_code = await manager.capture_screenshot(
@@ -169,6 +190,9 @@ class WebCrawler:
                             )
 
                     elif output_format == "pdf":
+                        if output_file is None:
+                            logger.error("No output file path provided for PDF mode.")
+                            return None, None
                         manager = PlaywrightManager(config=self.config)
                         async with manager:
                             success, status_code = await manager.save_pdf(
@@ -188,7 +212,7 @@ class WebCrawler:
                         )
 
                         # Update config for next iteration
-                        self.config.scraper_settings.headless = False
+                        self.config.headless = False
 
                         # Continue to next attempt
                         continue
@@ -203,12 +227,12 @@ class WebCrawler:
 
                             c_html = raw_html_for_contacts
                             if not c_html:
-                                # Quick fetch for parsing
-                                c_html = await asyncio.to_thread(
-                                    read_website_content,
-                                    url,
-                                    config=self.config,
-                                )
+                                # Fetch raw HTML for more reliable contact extraction.
+                                contact_manager = PlaywrightManager(config=self.config)
+                                async with contact_manager:
+                                    c_html, _, _ = await contact_manager.smart_fetch(
+                                        url
+                                    )
 
                             if c_html:
                                 from bs4 import BeautifulSoup
@@ -261,7 +285,7 @@ class WebCrawler:
                                             "**Socials**\n"
                                             + "\n".join(
                                                 [
-                                                    f"- [{s['type']}]({s['url']})"
+                                                    f"- [{s['type']}]({s['value']})"
                                                     for s in socials
                                                 ]
                                             )
@@ -280,6 +304,11 @@ class WebCrawler:
                     # Individual Export (Content Based)
                     if content and export and not merge:
                         # Output file was already determined above
+                        if output_file is None:
+                            logger.error(
+                                "No output file path provided for export mode."
+                            )
+                            return None, None
                         with open(output_file, "w", encoding="utf-8") as f:
                             f.write(content)
                         logger.info(f"  -> Saved {output_file}")
@@ -318,9 +347,9 @@ class WebCrawler:
         export: bool = False,
         merge: bool = False,
         output_dir: str = ".",
-        temp_dir: str = None,
+        temp_dir: Optional[str] = None,
         clean: bool = False,
-        output_filename: str = None,
+        output_filename: Optional[str] = None,
         extract_contacts: bool = False,
     ):
         """Run the crawler on the list of URLs."""

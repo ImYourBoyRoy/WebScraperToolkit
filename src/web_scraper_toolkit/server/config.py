@@ -12,7 +12,7 @@ from dataclasses import dataclass, asdict
 @dataclass
 class ServerConfig:
     name: str = "Web Scraper Toolkit"
-    version: str = "0.1.7"
+    version: str = "0.2.0"
     port: int = 8000
     host: str = "localhost"
     log_level: str = "INFO"
