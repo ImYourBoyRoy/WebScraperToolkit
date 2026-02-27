@@ -241,9 +241,11 @@ class PlaywrightManager:
             # Tracker and ad blocking for faster, cleaner page loads
             await context.route(
                 "**/*",
-                lambda route: route.abort()
-                if self._is_tracker_or_ad(route.request.url)
-                else route.continue_(),
+                lambda route: (
+                    route.abort()
+                    if self._is_tracker_or_ad(route.request.url)
+                    else route.continue_()
+                ),
             )
 
             page = await context.new_page()

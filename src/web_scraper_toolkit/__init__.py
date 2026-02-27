@@ -11,7 +11,7 @@ Usage:
 
 """
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 # Configs (Modular)
 from .browser.config import BrowserConfig

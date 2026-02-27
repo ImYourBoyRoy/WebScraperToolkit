@@ -42,7 +42,7 @@ jobs:
       - name: Install project and tooling
         run: |
           python -m pip install -e .
-          python -m pip install -U ruff mypy pytest build twine types-requests types-beautifulsoup4
+          python -m pip install -U "ruff==0.15.0" mypy pytest build twine types-requests types-beautifulsoup4
 
       - name: Ruff format check
         run: ruff format --check .

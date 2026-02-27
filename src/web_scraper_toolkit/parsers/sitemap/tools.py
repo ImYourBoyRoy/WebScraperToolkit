@@ -84,9 +84,11 @@ def get_sitemap_urls(*args, **kwargs) -> str:
         # We usually pick the best candidate (e.g. sitemap.xml or sitemap_index.xml)
         # Prioritize 'sitemap.xml' or 'sitemap_index.xml' if present to capture the Index.
         sitemap_candidates.sort(
-            key=lambda x: 0
-            if x.endswith("/sitemap.xml") or x.endswith("/sitemap_index.xml")
-            else 1
+            key=lambda x: (
+                0
+                if x.endswith("/sitemap.xml") or x.endswith("/sitemap_index.xml")
+                else 1
+            )
         )
 
         primary_sitemap = sitemap_candidates[0]
