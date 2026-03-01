@@ -11,7 +11,7 @@ Usage:
 
 """
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 # Configs (Modular)
 from .browser.config import BrowserConfig
@@ -37,6 +37,7 @@ from .parsers.discovery import smart_discover_urls
 from .parsers.scraping_tools import (
     read_website_markdown,
     read_website_content,
+    aread_website_markdown,
     capture_screenshot,
     save_as_pdf,
     extract_metadata,
@@ -71,6 +72,7 @@ __all__ = [
     "smart_discover_urls",
     "read_website_markdown",
     "read_website_content",
+    "aread_website_markdown",
     "capture_screenshot",
     "save_as_pdf",
     "extract_metadata",

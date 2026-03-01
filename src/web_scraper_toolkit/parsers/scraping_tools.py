@@ -35,6 +35,7 @@ from .search.search import (
 from .content import (
     read_website_content,
     read_website_markdown,
+    aread_website_markdown,
 )
 from .extraction.metadata import (
     extract_metadata,
@@ -59,6 +60,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "read_website_content",
     "read_website_markdown",
+    "aread_website_markdown",
     "extract_metadata",
     "capture_screenshot",
     "save_as_pdf",

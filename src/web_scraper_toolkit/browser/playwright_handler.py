@@ -40,7 +40,18 @@ from playwright.async_api import (
 
 from .config import BrowserConfig
 
+try:
+    from playwright_stealth import Stealth as _StealthClass  # type: ignore[import-untyped]
+except ImportError:  # pragma: no cover
+    _StealthClass = None
+
+try:
+    from playwright_stealth import stealth_async as _legacy_stealth_async  # type: ignore[import-untyped]
+except ImportError:  # pragma: no cover - older/newer API compatibility
+    _legacy_stealth_async = None
+
 logger = logging.getLogger(__name__)
+_STEALTH_BACKEND_LOGGED = False
 
 # --- OPTIMIZED CONFIGURATION ---
 DEFAULT_USER_AGENTS = [
@@ -94,6 +105,7 @@ class PlaywrightManager:
 
         self.browser_type_name = self.config.browser_type.lower()
         self.headless = self.config.headless
+        self.stealth_mode = bool(getattr(self.config, "stealth_mode", True))
 
         # Mapping properties
         self.user_agents = DEFAULT_USER_AGENTS
@@ -111,11 +123,63 @@ class PlaywrightManager:
 
         self._playwright: Optional[Playwright] = None
         self._browser: Optional[Browser] = None
+        self._logged_socks_auth_skips: set[str] = set()
+        self._stealth = _StealthClass() if _StealthClass is not None else None
+        self._stealth_missing_warned = False
+        global _STEALTH_BACKEND_LOGGED
+        if not _STEALTH_BACKEND_LOGGED:
+            if self._stealth is not None:
+                logger.info("Playwright stealth backend: playwright_stealth.Stealth")
+            elif callable(_legacy_stealth_async):
+                logger.info(
+                    "Playwright stealth backend: playwright_stealth.stealth_async"
+                )
+            else:
+                logger.info(
+                    "Playwright stealth backend: unavailable (basic webdriver scrub only)"
+                )
+            _STEALTH_BACKEND_LOGGED = True
 
         logger.info(
             f"PlaywrightManager initialized: Browser={self.browser_type_name}, Headless={self.headless}, "
             f"Default Timeout={self.default_navigation_timeout_ms}ms"
         )
+
+    def _build_playwright_proxy_settings(self, proxy_obj: Any) -> Dict[str, str]:
+        """
+        Build Playwright proxy settings from a Proxy model.
+        NOTE: Playwright does not support SOCKS authentication fields.
+        """
+        protocol = (
+            proxy_obj.protocol.value
+            if hasattr(proxy_obj.protocol, "value")
+            else str(proxy_obj.protocol)
+        ).lower()
+        proxy_settings: Dict[str, str] = {
+            "server": f"{protocol}://{proxy_obj.hostname}:{proxy_obj.port}"
+        }
+
+        username = str(getattr(proxy_obj, "username", "") or "")
+        password = str(getattr(proxy_obj, "password", "") or "")
+        has_auth = bool(username or password)
+        supports_auth = protocol in {"http", "https"}
+
+        if supports_auth:
+            if username:
+                proxy_settings["username"] = username
+            if password:
+                proxy_settings["password"] = password
+        elif has_auth:
+            warning_key = f"{proxy_obj.hostname}:{proxy_obj.port}:{protocol}"
+            if warning_key not in self._logged_socks_auth_skips:
+                logger.warning(
+                    "Proxy %s provided SOCKS credentials, but Playwright does not "
+                    "support SOCKS authentication. Credentials will be ignored.",
+                    warning_key,
+                )
+                self._logged_socks_auth_skips.add(warning_key)
+
+        return proxy_settings
 
     @property
     def browser(self) -> Browser:
@@ -202,21 +266,12 @@ class PlaywrightManager:
                     # Construct Playwright Proxy Dict
                     # protocol://user:pass@host:port OR separate fields
                     # Playwright expects: { "server": "...", "username": "...", "password": "..." }
-
-                    # Protocol handling
                     protocol = (
                         proxy_obj.protocol.value
                         if hasattr(proxy_obj.protocol, "value")
                         else str(proxy_obj.protocol)
                     )
-
-                    proxy_settings = {
-                        "server": f"{protocol}://{proxy_obj.hostname}:{proxy_obj.port}"
-                    }
-                    if proxy_obj.username:
-                        proxy_settings["username"] = proxy_obj.username
-                    if proxy_obj.password:
-                        proxy_settings["password"] = proxy_obj.password
+                    proxy_settings = self._build_playwright_proxy_settings(proxy_obj)
 
                     base_context_options["proxy"] = proxy_settings
                     logger.info(
@@ -239,16 +294,25 @@ class PlaywrightManager:
             )
 
             # Tracker and ad blocking for faster, cleaner page loads
-            await context.route(
-                "**/*",
-                lambda route: (
-                    route.abort()
-                    if self._is_tracker_or_ad(route.request.url)
-                    else route.continue_()
-                ),
-            )
+            async def _route_handler(route: Any) -> None:
+                if self._is_tracker_or_ad(route.request.url):
+                    await route.abort()
+                    return
+                await route.continue_()
+
+            await context.route("**/*", _route_handler)
 
             page = await context.new_page()
+            if self.stealth_mode and self._stealth is not None:
+                await self._stealth.apply_stealth_async(page)
+            elif self.stealth_mode and callable(_legacy_stealth_async):
+                await _legacy_stealth_async(page)
+            elif self.stealth_mode and not self._stealth_missing_warned:
+                logger.warning(
+                    "stealth_mode is enabled but playwright_stealth is unavailable; "
+                    "falling back to basic webdriver scrubbing only."
+                )
+                self._stealth_missing_warned = True
             return page, context
         except Exception as e:
             logger.error(f"Error creating new page and context: {e}", exc_info=True)
@@ -404,6 +468,14 @@ class PlaywrightManager:
                     f"Playwright: Timeout on {current_url_val} "
                     f"(attempt {attempt + 1}/{effective_retries + 1}): {pte}"
                 )
+            except asyncio.CancelledError:
+                logger.warning(
+                    "Playwright: Fetch cancelled on %s (attempt %s/%s).",
+                    current_url_val,
+                    attempt + 1,
+                    effective_retries + 1,
+                )
+                raise
             except Exception as e:
                 logger.error(
                     f"Playwright: Unexpected error on {current_url_val} "
@@ -493,6 +565,9 @@ class PlaywrightManager:
                     )
 
             return content, final_url, status
+        except asyncio.CancelledError:
+            logger.warning("SmartFetch cancelled for %s.", url)
+            raise
 
         finally:
             if page:

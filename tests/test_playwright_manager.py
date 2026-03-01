@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch, AsyncMock
 import os
 import asyncio
+from types import SimpleNamespace
 
 # Ensure src is in path
 # sys.path handled by run_tests.py
@@ -82,6 +83,77 @@ class TestPlaywrightManager(unittest.TestCase):
         self.assertIsNone(pm._browser)
         self.assertIsNone(pm._playwright)
         mock_browser.close.assert_called_once()
+
+    def test_proxy_settings_socks_ignores_auth(self):
+        pm = PlaywrightManager(BrowserConfig())
+        proxy = SimpleNamespace(
+            hostname="socks.example.com",
+            port=1080,
+            username="user",
+            password="pass",
+            protocol=SimpleNamespace(value="socks5"),
+        )
+        settings = pm._build_playwright_proxy_settings(proxy)
+        self.assertEqual(settings["server"], "socks5://socks.example.com:1080")
+        self.assertNotIn("username", settings)
+        self.assertNotIn("password", settings)
+
+    def test_proxy_settings_http_keeps_auth(self):
+        pm = PlaywrightManager(BrowserConfig())
+        proxy = SimpleNamespace(
+            hostname="http.example.com",
+            port=8080,
+            username="user",
+            password="pass",
+            protocol=SimpleNamespace(value="http"),
+        )
+        settings = pm._build_playwright_proxy_settings(proxy)
+        self.assertEqual(settings["server"], "http://http.example.com:8080")
+        self.assertEqual(settings.get("username"), "user")
+        self.assertEqual(settings.get("password"), "pass")
+
+    def test_get_new_page_uses_async_route_handler(self):
+        pm = PlaywrightManager(BrowserConfig())
+        pm.stealth_mode = False
+
+        mock_browser = MagicMock()
+        mock_browser.is_connected.return_value = True
+        mock_context = AsyncMock()
+        mock_page = AsyncMock()
+        mock_context.new_page = AsyncMock(return_value=mock_page)
+        mock_browser.new_context = AsyncMock(return_value=mock_context)
+        pm._browser = mock_browser
+
+        page, context = self.loop.run_until_complete(pm.get_new_page())
+        self.assertIs(page, mock_page)
+        self.assertIs(context, mock_context)
+        mock_context.route.assert_awaited_once()
+
+        pattern, handler = mock_context.route.await_args.args
+        self.assertEqual(pattern, "**/*")
+        self.assertTrue(asyncio.iscoroutinefunction(handler))
+
+        # Verify handler awaits abort/continue correctly
+        block_route = AsyncMock()
+        block_route.request.url = "https://google-analytics.com/pixel"
+        self.loop.run_until_complete(handler(block_route))
+        block_route.abort.assert_awaited_once()
+
+        normal_route = AsyncMock()
+        normal_route.request.url = "https://example.com/page"
+        self.loop.run_until_complete(handler(normal_route))
+        normal_route.continue_.assert_awaited_once()
+
+    def test_fetch_page_content_propagates_cancelled_error(self):
+        pm = PlaywrightManager(BrowserConfig())
+        page = AsyncMock()
+        page.goto = AsyncMock(side_effect=asyncio.CancelledError())
+
+        async def _run() -> None:
+            await pm.fetch_page_content(page=page, url="https://example.com")
+
+        with self.assertRaises(asyncio.CancelledError):
+            self.loop.run_until_complete(_run())
 
 
 if __name__ == "__main__":

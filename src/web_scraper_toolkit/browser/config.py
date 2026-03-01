@@ -17,6 +17,7 @@ from dataclasses import dataclass, asdict
 class BrowserConfig:
     headless: bool = True
     browser_type: str = "chromium"
+    stealth_mode: bool = True
     viewport_width: int = 1280
     viewport_height: int = 800
     timeout: int = 30000

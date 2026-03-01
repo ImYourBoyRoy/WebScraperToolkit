@@ -56,15 +56,17 @@ async def _arun_scrape(
     """Async helper for scraping."""
     manager = None
     # Config handling
-    # Config handling
     browser_cfg = BrowserConfig()  # default
     if isinstance(config, BrowserConfig):
         browser_cfg = config
     elif isinstance(config, dict):
-        # Convert dict to BrowserConfig
         browser_cfg = BrowserConfig(
             headless=config.get("headless", True),
             browser_type=config.get("browser_type", "chromium"),
+            stealth_mode=config.get("stealth_mode", True),
+            viewport_width=config.get("viewport_width", 1280),
+            viewport_height=config.get("viewport_height", 800),
+            timeout=config.get("timeout", 30000),
         )
 
     try:
@@ -154,28 +156,54 @@ def read_website_content(
     return _run_coro_sync(_arun_scrape(website_url, config))
 
 
-async def _arun_scrape_markdown(
+def _dict_to_browser_config(config: Dict[str, Any]) -> "BrowserConfig":
+    """Convert a dict to BrowserConfig, preserving all supported fields."""
+    return BrowserConfig(
+        headless=config.get("headless", True),
+        browser_type=config.get("browser_type", "chromium"),
+        stealth_mode=config.get("stealth_mode", True),
+        viewport_width=config.get("viewport_width", 1280),
+        viewport_height=config.get("viewport_height", 800),
+        timeout=config.get("timeout", 30000),
+    )
+
+
+async def aread_website_markdown(
     website_url: str,
     config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]] = None,
     selector: Optional[str] = None,
     max_length: Optional[int] = None,
+    playwright_manager: Optional[Any] = None,
 ) -> str:
-    """Async helper for scraping and converting to Markdown."""
-    manager = None
+    """Async version of read_website_markdown.
+
+    Fetches a website and converts the content to clean Markdown.
+
+    Args:
+        website_url: The full URL of the website to read.
+        config: Browser configuration (dict, ParserConfig, or BrowserConfig).
+        selector: Optional CSS selector to extract only specific content.
+        max_length: Optional character limit for the output.
+        playwright_manager: Optional pre-started PlaywrightManager instance
+            for browser session reuse. When provided, the caller owns the
+            lifecycle — this function will NOT start or stop the manager.
+    """
+    owns_manager = playwright_manager is None
+    manager = playwright_manager
+
     browser_cfg = BrowserConfig()
     if isinstance(config, BrowserConfig):
         browser_cfg = config
     elif isinstance(config, dict):
-        browser_cfg = BrowserConfig(
-            headless=config.get("headless", True),
-            browser_type=config.get("browser_type", "chromium"),
-            timeout=config.get("timeout", 30000),
-        )
-    try:
-        from ..browser.playwright_handler import PlaywrightManager
+        browser_cfg = _dict_to_browser_config(config)
 
-        manager = PlaywrightManager(config=browser_cfg)
-        await manager.start()
+    try:
+        if manager is None:
+            from ..browser.playwright_handler import PlaywrightManager
+
+            manager = PlaywrightManager(config=browser_cfg)
+            await manager.start()
+
         # Use Smart Fetch for robustness
         content, final_url, status_code = await manager.smart_fetch(url=website_url)
 
@@ -213,8 +241,12 @@ async def _arun_scrape_markdown(
         )
         return f"An error occurred while scraping the website: {str(e)}"
     finally:
-        if manager:
+        if owns_manager and manager:
             await manager.stop()
+
+
+# Backward-compatible alias
+_arun_scrape_markdown = aread_website_markdown
 
 
 def read_website_markdown(
@@ -235,5 +267,5 @@ def read_website_markdown(
     """
     logger.info(f"Executing read_website_markdown for URL: {website_url}")
     return _run_coro_sync(
-        _arun_scrape_markdown(website_url, config, selector, max_length)
+        aread_website_markdown(website_url, config, selector, max_length)
     )
