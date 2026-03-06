@@ -49,7 +49,7 @@ class AutonomousCrawler:
         # We pass the proxy_manager to it so it handles rotation internally
         browser_cfg = BrowserConfig(
             headless=True,  # Default to headless for autonomous, smart_fetch switches if needed
-            browser_type="chromium",  # Default for best stealth
+            browser_type="chromium",  # Default baseline for autonomous crawling
         )
         self.browser_manager = PlaywrightManager(
             config=browser_cfg, proxy_manager=self.proxy_manager

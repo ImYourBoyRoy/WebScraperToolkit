@@ -43,7 +43,7 @@ def generate_safe_filename(
 
     domain = urlparse(url).netloc.replace("www.", "")
     safe_name = "".join(x for x in domain if x.isalnum() or x in "._-")
-    url_hash = hashlib.md5(url.encode()).hexdigest()[:8]
+    url_hash = hashlib.sha256(url.encode("utf-8")).hexdigest()[:12]
     filename = f"{safe_name}_{url_hash}.{extension.lstrip('.')}"
 
     return os.path.join(output_dir, filename)

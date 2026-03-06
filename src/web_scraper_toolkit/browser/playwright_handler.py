@@ -1,194 +1,73 @@
 # ./src/web_scraper_toolkit/browser/playwright_handler.py
 """
-Playwright Handler
-==================
-
-Low-level interface to the Playwright browser automation library.
-Handles browser lifecycle, page creation, stealth overrides, and Cloudflare navigation.
-
-Usage:
-    async with PlaywrightManager(config) as manager:
-        content, url, status = await manager.smart_fetch("https://...")
-
-Key Features:
-    - Cloudflare 'Spatial Solver' (Click-to-verify logic).
-    - Stealth overrides (Navigator properties).
-    - PDF generation (Headless only).
-    - Robust error handling and retries.
+Public Playwright manager facade preserving legacy import/patch compatibility.
+Run: imported by crawler/parsers/MCP handlers for browser automation workflows.
+Inputs: BrowserConfig/dict payloads, fetch URLs, and optional proxy manager integration.
+Outputs: PlaywrightManager APIs, bot-block classifier, and compatibility constants/types.
+Side effects: launches browsers, performs network requests, and writes artifacts when requested.
+Operational notes: implementation is split across private `_playwright_handler` modules.
 """
 
-import asyncio
+from __future__ import annotations
+
 import logging
 import random
-from typing import TYPE_CHECKING
-from typing import Any, Dict, Literal, Optional, Tuple, Union, cast
-from urllib.parse import urlparse
+from typing import Any, Dict, cast
 
-if TYPE_CHECKING:
-    from ..proxie.manager import ProxyManager
+from playwright.async_api import async_playwright
 
-
-from playwright.async_api import (
-    async_playwright,
-    Playwright,
-    Browser,
-    BrowserContext,
-    Page,
-    TimeoutError as PlaywrightTimeoutError,
-    Response as PlaywrightResponse,
+from ._playwright_handler import (
+    BASELINE_LAUNCH_ARGS,
+    COMMON_VIEWPORTS,
+    DEFAULT_USER_AGENTS,
+    EXPERIMENTAL_SERP_LAUNCH_ARGS,
+    NATIVE_FALLBACK_LAUNCH_ARGS,
+    SERP_NATIVE_LAUNCH_ARGS,
+    BotBlockReason,
+    PlaywrightInitStateMixin,
+    PlaywrightLifecycleMixin,
+    PlaywrightNativeAttemptsMixin,
+    PlaywrightPageOpsMixin,
+    PlaywrightRoutingMixin,
+    PlaywrightSerpAttemptsMixin,
+    PlaywrightSmartFetchArtifactsMixin,
+    PlaywrightStrategySupportMixin,
+    SerpProvider,
+    WaitUntilState,
+    _CF_CHALLENGE_MARKERS,
+    _DDG_ANOMALY_MARKERS,
+    _GOOGLE_UNUSUAL_TRAFFIC_MARKERS,
+    _PX_CHALLENGE_MARKERS,
+    classify_bot_block,
 )
-
-from .config import BrowserConfig
-
-try:
-    from playwright_stealth import Stealth as _StealthClass  # type: ignore[import-untyped]
-except ImportError:  # pragma: no cover
-    _StealthClass = None
-
-try:
-    from playwright_stealth import stealth_async as _legacy_stealth_async  # type: ignore[import-untyped]
-except ImportError:  # pragma: no cover - older/newer API compatibility
-    _legacy_stealth_async = None
 
 logger = logging.getLogger(__name__)
 _STEALTH_BACKEND_LOGGED = False
 
-# --- OPTIMIZED CONFIGURATION ---
-DEFAULT_USER_AGENTS = [
-    # We keep these for fallback, but we will default to 'None' (Native) for Cloudflare
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-]
 
-DEFAULT_LAUNCH_ARGS = [
-    "--disable-blink-features=AutomationControlled",
-    "--enable-webgl",  # CRITICAL: Fixes 'No Adapter' error
-    "--window-size=1400,1000",
-    "--no-sandbox",
-    "--disable-infobars",
-    "--disable-dev-shm-usage",
-    # "--disable-gpu",            # Disabled: Conflicts with --enable-webgl for WebGL rendering
-    "--ignore-certificate-errors",
-]
-WaitUntilState = Literal["commit", "domcontentloaded", "load", "networkidle"]
-
-
-class PlaywrightManager:
+class PlaywrightManager(
+    PlaywrightInitStateMixin,
+    PlaywrightRoutingMixin,
+    PlaywrightLifecycleMixin,
+    PlaywrightPageOpsMixin,
+    PlaywrightStrategySupportMixin,
+    PlaywrightNativeAttemptsMixin,
+    PlaywrightSerpAttemptsMixin,
+    PlaywrightSmartFetchArtifactsMixin,
+):
     """
     Manages Playwright browser instances, contexts, and pages for web interactions.
     Full-featured version with integrated Cloudflare Spatial Solver.
     """
 
-    def __init__(
-        self,
-        config: Optional[Union[Dict[str, Any], BrowserConfig]] = None,
-        proxy_manager: Optional["ProxyManager"] = None,
-    ) -> None:
-        if config is None:
-            self.config = BrowserConfig()
-        elif isinstance(config, BrowserConfig):
-            self.config = config
-        elif isinstance(config, dict):
-            # Simple extraction from dict to config object
-            self.config = BrowserConfig(
-                headless=config.get("headless", True),
-                browser_type=config.get("browser_type", "chromium"),
-                timeout=config.get("timeout", 30000),
-            )
-        else:
-            # Backward compatibility attempt (if passed ScraperConfig) - we try to adapt or just default
-            # User said "deprecate fully", so we assume proper usage from now on.
-            logger.warning(
-                f"Invalid config type passed to PlaywrightManager: {type(config)}. Using default."
-            )
-            self.config = BrowserConfig()
-
-        self.browser_type_name = self.config.browser_type.lower()
-        self.headless = self.config.headless
-        self.stealth_mode = bool(getattr(self.config, "stealth_mode", True))
-
-        # Mapping properties
-        self.user_agents = DEFAULT_USER_AGENTS
-        self.launch_args = list(set(DEFAULT_LAUNCH_ARGS))  # Config can extend this soon
-
-        self.default_viewport = {
-            "width": self.config.viewport_width,
-            "height": self.config.viewport_height,
-        }
-        self.default_navigation_timeout_ms = self.config.timeout
-        self.default_action_retries = (
-            2  # Hardcoded or add to config? Add to config later if needed.
-        )
-        self.proxy_manager = proxy_manager
-
-        self._playwright: Optional[Playwright] = None
-        self._browser: Optional[Browser] = None
-        self._logged_socks_auth_skips: set[str] = set()
-        self._stealth = _StealthClass() if _StealthClass is not None else None
-        self._stealth_missing_warned = False
-        global _STEALTH_BACKEND_LOGGED
-        if not _STEALTH_BACKEND_LOGGED:
-            if self._stealth is not None:
-                logger.info("Playwright stealth backend: playwright_stealth.Stealth")
-            elif callable(_legacy_stealth_async):
-                logger.info(
-                    "Playwright stealth backend: playwright_stealth.stealth_async"
-                )
-            else:
-                logger.info(
-                    "Playwright stealth backend: unavailable (basic webdriver scrub only)"
-                )
-            _STEALTH_BACKEND_LOGGED = True
-
-        logger.info(
-            f"PlaywrightManager initialized: Browser={self.browser_type_name}, Headless={self.headless}, "
-            f"Default Timeout={self.default_navigation_timeout_ms}ms"
-        )
-
-    def _build_playwright_proxy_settings(self, proxy_obj: Any) -> Dict[str, str]:
-        """
-        Build Playwright proxy settings from a Proxy model.
-        NOTE: Playwright does not support SOCKS authentication fields.
-        """
-        protocol = (
-            proxy_obj.protocol.value
-            if hasattr(proxy_obj.protocol, "value")
-            else str(proxy_obj.protocol)
-        ).lower()
-        proxy_settings: Dict[str, str] = {
-            "server": f"{protocol}://{proxy_obj.hostname}:{proxy_obj.port}"
-        }
-
-        username = str(getattr(proxy_obj, "username", "") or "")
-        password = str(getattr(proxy_obj, "password", "") or "")
-        has_auth = bool(username or password)
-        supports_auth = protocol in {"http", "https"}
-
-        if supports_auth:
-            if username:
-                proxy_settings["username"] = username
-            if password:
-                proxy_settings["password"] = password
-        elif has_auth:
-            warning_key = f"{proxy_obj.hostname}:{proxy_obj.port}:{protocol}"
-            if warning_key not in self._logged_socks_auth_skips:
-                logger.warning(
-                    "Proxy %s provided SOCKS credentials, but Playwright does not "
-                    "support SOCKS authentication. Credentials will be ignored.",
-                    warning_key,
-                )
-                self._logged_socks_auth_skips.add(warning_key)
-
-        return proxy_settings
-
-    @property
-    def browser(self) -> Browser:
-        """Expose active browser for backward-compatible advanced operations."""
-        if self._browser is None or not self._browser.is_connected():
-            raise RuntimeError("Browser is not started.")
-        return self._browser
-
     async def start(self) -> None:
+        """
+        Start browser runtime.
+
+        Kept on facade module so test patches to
+        `web_scraper_toolkit.browser.playwright_handler.async_playwright`
+        continue to intercept startup behavior.
+        """
         if self._browser and self._browser.is_connected():
             return
 
@@ -197,493 +76,77 @@ class PlaywrightManager:
             logger.info("Playwright started.")
 
         try:
-            # Force Chromium for the bypass logic (Firefox/Webkit handle stealth differently)
-            browser_launcher = getattr(
-                self._playwright, self.browser_type_name, self._playwright.chromium
-            )
+            launch_kwargs: Dict[str, Any] = {
+                "headless": self.headless,
+                "args": self.launch_args,
+            }
+            if self.browser_type_name in {"chrome", "msedge"}:
+                launch_kwargs["channel"] = self.browser_type_name
+                browser_launcher = self._playwright.chromium
+            else:
+                browser_launcher = getattr(
+                    self._playwright,
+                    self.browser_type_name,
+                    self._playwright.chromium,
+                )
 
-            self._browser = await browser_launcher.launch(
-                headless=self.headless, args=self.launch_args
-            )
+            self._browser = await browser_launcher.launch(**cast(Any, launch_kwargs))
+            self._browser_launch_fallback_used = False
             logger.info(
-                f"{self.browser_type_name} browser launched. Headless: {self.headless}."
+                "%s browser launched. Headless: %s.",
+                self.browser_type_name,
+                self.headless,
             )
-        except Exception as e:
+        except Exception as exc:
+            if self.browser_type_name in {"chrome", "msedge"} and self._playwright:
+                logger.warning(
+                    "Failed to launch channel '%s' (%s). Falling back to Playwright chromium.",
+                    self.browser_type_name,
+                    exc,
+                )
+                try:
+                    self._browser = await self._playwright.chromium.launch(
+                        **cast(Any, {"headless": self.headless, "args": self.launch_args})
+                    )
+                    self._browser_launch_fallback_used = True
+                    logger.info(
+                        "Chromium fallback launch succeeded after %s channel failure.",
+                        self.browser_type_name,
+                    )
+                    return
+                except Exception as fallback_exc:
+                    logger.error(
+                        "Fallback launch to chromium also failed: %s",
+                        fallback_exc,
+                        exc_info=True,
+                    )
+
             logger.error(
-                f"Failed to launch {self.browser_type_name} browser: {e}", exc_info=True
+                "Failed to launch %s browser: %s",
+                self.browser_type_name,
+                exc,
+                exc_info=True,
             )
             if self._playwright:
                 await self._playwright.stop()
                 self._playwright = None
             raise
 
-    async def stop(self) -> None:
-        if self._browser and self._browser.is_connected():
-            try:
-                await self._browser.close()
-                logger.info(f"{self.browser_type_name} browser closed.")
-            except Exception as e:
-                logger.error(f"Error closing browser: {e}", exc_info=True)
-        self._browser = None
 
-        if self._playwright:
-            try:
-                await self._playwright.stop()
-                logger.info("Playwright stopped.")
-            except Exception as e:
-                logger.error(f"Error stopping Playwright: {e}", exc_info=True)
-        self._playwright = None
-
-    async def get_new_page(
-        self, context_options: Optional[Dict[str, Any]] = None
-    ) -> Tuple[Optional[Page], Optional[BrowserContext]]:
-        """Creates a new pageContext."""
-        if not self._browser or not self._browser.is_connected():
-            logger.warning("Browser not started or not connected. Attempting to start.")
-            await self.start()
-            if not self._browser or not self._browser.is_connected():
-                logger.error("Failed to get new page: Browser could not be started.")
-                return None, None
-
-        # Browser Stealth Strategy:
-        # We deliberately do NOT set a custom 'user_agent' here by default.
-        # Leaving it None allows Chromium to report its native version (e.g. Chrome/131),
-        # which matches the TLS fingerprint and helps pass Cloudflare challenges.
-        base_context_options: Dict[str, Any] = {
-            "viewport": self.default_viewport,
-            "ignore_https_errors": True,
-            "java_script_enabled": True,
-            "locale": "en-US",
-            "timezone_id": "America/New_York",
-        }
-
-        # --- Proxy Injection ---
-        if self.proxy_manager:
-            try:
-                # Dynamically fetch next proxy from manager
-                proxy_obj = await self.proxy_manager.get_next_proxy()
-                if proxy_obj:
-                    # Construct Playwright Proxy Dict
-                    # protocol://user:pass@host:port OR separate fields
-                    # Playwright expects: { "server": "...", "username": "...", "password": "..." }
-                    protocol = (
-                        proxy_obj.protocol.value
-                        if hasattr(proxy_obj.protocol, "value")
-                        else str(proxy_obj.protocol)
-                    )
-                    proxy_settings = self._build_playwright_proxy_settings(proxy_obj)
-
-                    base_context_options["proxy"] = proxy_settings
-                    logger.info(
-                        f"Using Proxy: {proxy_obj.hostname} (Protocol: {protocol})"
-                    )
-            except Exception as e:
-                logger.warning(
-                    f"Failed to get proxy from manager: {e}. Proceeding direct."
-                )
-
-        if context_options:
-            base_context_options.update(context_options)
-
-        try:
-            context = await self._browser.new_context(**cast(Any, base_context_options))
-
-            # Stealth: Scrub navigator.webdriver (Critical for Cloudflare)
-            await context.add_init_script(
-                "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-            )
-
-            # Tracker and ad blocking for faster, cleaner page loads
-            async def _route_handler(route: Any) -> None:
-                if self._is_tracker_or_ad(route.request.url):
-                    await route.abort()
-                    return
-                await route.continue_()
-
-            await context.route("**/*", _route_handler)
-
-            page = await context.new_page()
-            if self.stealth_mode and self._stealth is not None:
-                await self._stealth.apply_stealth_async(page)
-            elif self.stealth_mode and callable(_legacy_stealth_async):
-                await _legacy_stealth_async(page)
-            elif self.stealth_mode and not self._stealth_missing_warned:
-                logger.warning(
-                    "stealth_mode is enabled but playwright_stealth is unavailable; "
-                    "falling back to basic webdriver scrubbing only."
-                )
-                self._stealth_missing_warned = True
-            return page, context
-        except Exception as e:
-            logger.error(f"Error creating new page and context: {e}", exc_info=True)
-            return None, None
-
-    def _is_tracker_or_ad(self, url: str) -> bool:
-        tracker_domains = [
-            "google-analytics.com",
-            "googletagmanager.com",
-            "scorecardresearch.com",
-            "doubleclick.net",
-            "adservice.google.com",
-            "connect.facebook.net",
-            "criteo.com",
-            "adsrvr.org",
-            "quantserve.com",
-            "taboola.com",
-            "outbrain.com",
-            "hotjar.com",
-            "inspectlet.com",
-            "optimizely.com",
-            "vwo.com",
-        ]
-        parsed_url = urlparse(url)
-        return any(td in parsed_url.netloc for td in tracker_domains)
-
-    async def fetch_page_content(
-        self,
-        page: Page,
-        url: str,
-        action_name: str = "fetching page",
-        retries: Optional[int] = None,
-        navigation_timeout_ms: Optional[int] = None,
-        wait_for_selector: Optional[str] = None,
-        scroll_to_load: bool = False,
-        wait_until_state: WaitUntilState = "domcontentloaded",
-        extra_headers: Optional[Dict[str, str]] = None,
-        ensure_standard_headers: bool = False,
-    ) -> Tuple[Optional[str], str, Optional[int]]:
-        """
-        Fetches content robustly.
-        PATCHED: Removes manual header/UA injection to prevent Cloudflare 'Please Unblock' errors.
-        """
-        current_url_val = url
-        final_url_val = url
-        status_code_val: Optional[int] = None
-
-        effective_retries = (
-            retries if retries is not None else self.default_action_retries
-        )
-        effective_nav_timeout = (
-            navigation_timeout_ms
-            if navigation_timeout_ms is not None
-            else self.default_navigation_timeout_ms
-        )
-
-        # Header Management:
-        # We avoid force-overwriting headers to prevent blocking.
-        # Extra headers are applied only if explicitly provided.
-        if extra_headers:
-            await page.set_extra_http_headers(extra_headers)
-
-        for attempt in range(effective_retries + 1):
-            try:
-                logger.info(
-                    f"Playwright: Attempt {attempt + 1}/{effective_retries + 1} - {action_name} @ {current_url_val}"
-                )
-
-                response: Optional[PlaywrightResponse] = await page.goto(
-                    current_url_val,
-                    timeout=effective_nav_timeout,
-                    wait_until=wait_until_state,
-                )
-
-                final_url_val = page.url
-                if response:
-                    status_code_val = response.status
-
-                # --- 1. Infrastructure Check (Fail Fast on 5xx) ---
-                if status_code_val in [500, 502, 503, 504]:
-                    logger.error(
-                        f"⚠️ SERVER ERROR {status_code_val}: The target site is down (Gateway/Service Unavailable)."
-                    )
-                    content = await page.content()
-                    return content, final_url_val, status_code_val
-
-                # Wait for selector if specified
-                if wait_for_selector:
-                    try:
-                        await page.wait_for_selector(
-                            wait_for_selector,
-                            timeout=max(10000, effective_nav_timeout // 2),
-                        )
-                    except PlaywrightTimeoutError:
-                        logger.warning(
-                            f"Playwright: Selector '{wait_for_selector}' not found on {final_url_val}."
-                        )
-                else:
-                    await page.wait_for_timeout(random.uniform(1500, 3000))
-
-                if scroll_to_load:
-                    await page.evaluate(
-                        "window.scrollTo(0, document.body.scrollHeight)"
-                    )
-                    await page.wait_for_timeout(1000)
-
-                content = await page.content()
-                content_lower = content.lower() if content else ""
-
-                # Check Safe Title
-                try:
-                    current_title = await page.title()
-                except Exception:
-                    current_title = "Redirecting..."
-
-                # --- 2. Cloudflare Detection & Solving ---
-                if (
-                    "just a moment" in current_title
-                    or "attention required" in current_title
-                    or ("cloudflare" in content_lower and "challenge" in content_lower)
-                ):
-                    logger.info(
-                        f"Playwright: Cloudflare challenge detected at {final_url_val}. Engaging Spatial Solver..."
-                    )
-
-                    solved = await self._attempt_cloudflare_solve_spatial(page)
-
-                    if solved:
-                        logger.info(
-                            "Playwright: Spatial Solver reports success. Re-fetching content."
-                        )
-                        await page.wait_for_timeout(3000)
-
-                        # Refresh content variables
-                        content = await page.content()
-                        final_url_val = page.url
-
-                        # If we passed, assume 200 OK
-                        if "Just a moment" not in (await page.title()):
-                            status_code_val = 200
-                    else:
-                        logger.warning(
-                            "Playwright: Spatial Solver failed to confirm bypass."
-                        )
-
-                logger.info(
-                    f"Playwright: Finished fetch for {final_url_val} (status: {status_code_val}, len: {len(content or '')})"
-                )
-                return content, final_url_val, status_code_val
-
-            except PlaywrightTimeoutError as pte:
-                logger.warning(
-                    f"Playwright: Timeout on {current_url_val} "
-                    f"(attempt {attempt + 1}/{effective_retries + 1}): {pte}"
-                )
-            except asyncio.CancelledError:
-                logger.warning(
-                    "Playwright: Fetch cancelled on %s (attempt %s/%s).",
-                    current_url_val,
-                    attempt + 1,
-                    effective_retries + 1,
-                )
-                raise
-            except Exception as e:
-                logger.error(
-                    f"Playwright: Unexpected error on {current_url_val} "
-                    f"(attempt {attempt + 1}/{effective_retries + 1}): {e}"
-                )
-
-            # Retry logic
-            if attempt < effective_retries:
-                await asyncio.sleep(2)
-
-        return None, final_url_val, status_code_val
-
-    async def _attempt_cloudflare_solve_spatial(self, page: Page) -> bool:
-        """
-        Coordinate-based spatial solver for Cloudflare.
-        Delegates to specialized solver module.
-        """
-        from .solver import CloudflareSolver
-
-        return await CloudflareSolver.solve_spatial(page)
-
-    async def smart_fetch(
-        self, url: str, **kwargs
-    ) -> Tuple[Optional[str], str, Optional[int]]:
-        """
-        High-level fetch that automatically restarts the browser in HEADED mode
-        if a blocking signature (403, Cloudflare Challenge) is detected while headless.
-
-        Manages its own Page/Context lifecycle.
-        """
-        # Attempt 1: Current State
-        page, context = await self.get_new_page()
-        if not page:
-            return None, url, None
-
-        try:
-            content, final_url, status = await self.fetch_page_content(
-                page, url, **kwargs
-            )
-
-            # Detection: Did we fail due to anti-bot?
-            is_blocked = False
-
-            # Status check
-            if status in [403, 429]:
-                is_blocked = True
-
-            # Content check (if status was 200 but actually a captcha)
-            if content:
-                content_lower = content.lower()
-                # If we have a challenge text but the solver failed (or didn't run)
-                if (
-                    "just a moment" in content_lower
-                    or "verification required" in content_lower
-                ) and len(content) < 50000:
-                    try:
-                        title = await page.title()
-                        if "Just a moment" in title or "Attention Required" in title:
-                            is_blocked = True
-                    except Exception:
-                        pass
-
-            # FALLBACK LOGIC
-            if is_blocked and self.headless:
-                logger.warning(
-                    f"SmartFetch: Block detected ({status}) on {url} while Headless. Switching to HEADED mode for retry..."
-                )
-
-                # Close Page/Context first
-                await page.close()
-                if context:
-                    await context.close()
-                page = None
-                context = None
-
-                # Restart Browser Visible
-                await self.stop()
-                self.headless = False
-                await self.start()
-
-                # Retry
-                page, context = await self.get_new_page()
-                if page:
-                    logger.info("SmartFetch: Retrying in Headed mode...")
-                    content, final_url, status = await self.fetch_page_content(
-                        page, url, action_name="smart_retry", **kwargs
-                    )
-
-            return content, final_url, status
-        except asyncio.CancelledError:
-            logger.warning("SmartFetch cancelled for %s.", url)
-            raise
-
-        finally:
-            if page:
-                try:
-                    await page.close()
-                except Exception:
-                    pass
-            if context:
-                try:
-                    await context.close()
-                except Exception:
-                    pass
-
-    async def _auto_scroll(self, page: Page) -> None:
-        """
-        Scrolls the page to the bottom to trigger lazy loading.
-        """
-        logger.info("Auto-scrolling page to trigger lazy loading...")
-        await page.evaluate("""
-            async () => {
-                await new Promise((resolve) => {
-                    var totalHeight = 0;
-                    var distance = 100;
-                    var timer = setInterval(() => {
-                        var scrollHeight = document.body.scrollHeight;
-                        window.scrollBy(0, distance);
-                        totalHeight += distance;
-
-                        if(totalHeight >= scrollHeight - window.innerHeight){
-                            clearInterval(timer);
-                            resolve();
-                        }
-                    }, 100);
-                });
-            }
-        """)
-        # Wait a bit after scrolling for final renders
-        await page.wait_for_timeout(2000)
-
-    async def capture_screenshot(
-        self, url: str, output_path: str, full_page: bool = True, **kwargs: Any
-    ) -> Tuple[bool, Optional[int]]:
-        """
-        Captures a screenshot of the target URL.
-        Returns: (Success, StatusCode)
-        """
-        page, context = await self.get_new_page()
-        if not page:
-            return False, None
-
-        try:
-            # We reuse fetch_page_content just to load the page robustly
-            _, final_url, status = await self.fetch_page_content(
-                page, url, action_name="loading for screenshot", **kwargs
-            )
-
-            # Default to auto-scroll for screenshots to capture full lazy-loaded content
-            await self._auto_scroll(page)
-
-            logger.info(f"Taking screenshot of {final_url} to {output_path}")
-            await page.screenshot(path=output_path, full_page=full_page)
-            return True, status
-        except Exception as e:
-            logger.error(f"Screenshot failed: {e}", exc_info=True)
-            return False, None
-        finally:
-            if page:
-                await page.close()
-            if context:
-                await context.close()
-
-    async def save_pdf(
-        self, url: str, output_path: str, **kwargs: Any
-    ) -> Tuple[bool, Optional[int]]:
-        """
-        Saves the target URL as a PDF.
-        Returns: (Success, StatusCode)
-        Note: PDF generation ONLY works in HEADLESS mode in Chromium.
-        """
-
-        page, context = await self.get_new_page()
-        if not page:
-            return False, None
-
-        try:
-            # Use networkidle to ensure hydration (fancy java stuff)
-            _, _, status = await self.fetch_page_content(
-                page,
-                url,
-                action_name="loading for PDF",
-                wait_until_state="networkidle",
-                **kwargs,
-            )
-
-            # Default to auto-scroll for PDFs
-            await self._auto_scroll(page)
-
-            # Force 'screen' media to avoid print stylesheets that hide backgrounds/layout
-            await page.emulate_media(media="screen")
-
-            logger.info(f"Saving PDF of {url} to {output_path}")
-            # print_background=True captures colors/images
-            await page.pdf(path=output_path, format="A4", print_background=True)
-            return True, status
-        except Exception as e:
-            logger.error(f"PDF generation failed: {e}", exc_info=True)
-            return False, None
-        finally:
-            if page:
-                await page.close()
-            if context:
-                await context.close()
-
-    async def __aenter__(self) -> "PlaywrightManager":
-        await self.start()
-        return self
-
-    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        await self.stop()
+__all__ = [
+    "PlaywrightManager",
+    "BotBlockReason",
+    "SerpProvider",
+    "WaitUntilState",
+    "classify_bot_block",
+    "DEFAULT_USER_AGENTS",
+    "COMMON_VIEWPORTS",
+    "BASELINE_LAUNCH_ARGS",
+    "EXPERIMENTAL_SERP_LAUNCH_ARGS",
+    "SERP_NATIVE_LAUNCH_ARGS",
+    "NATIVE_FALLBACK_LAUNCH_ARGS",
+    "_GOOGLE_UNUSUAL_TRAFFIC_MARKERS",
+    "_DDG_ANOMALY_MARKERS",
+    "_CF_CHALLENGE_MARKERS",
+    "_PX_CHALLENGE_MARKERS",
+]

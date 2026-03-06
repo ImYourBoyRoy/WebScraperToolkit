@@ -60,14 +60,7 @@ async def _arun_scrape(
     if isinstance(config, BrowserConfig):
         browser_cfg = config
     elif isinstance(config, dict):
-        browser_cfg = BrowserConfig(
-            headless=config.get("headless", True),
-            browser_type=config.get("browser_type", "chromium"),
-            stealth_mode=config.get("stealth_mode", True),
-            viewport_width=config.get("viewport_width", 1280),
-            viewport_height=config.get("viewport_height", 800),
-            timeout=config.get("timeout", 30000),
-        )
+        browser_cfg = BrowserConfig.from_dict(config)
 
     try:
         from ..browser.playwright_handler import PlaywrightManager
@@ -158,14 +151,7 @@ def read_website_content(
 
 def _dict_to_browser_config(config: Dict[str, Any]) -> "BrowserConfig":
     """Convert a dict to BrowserConfig, preserving all supported fields."""
-    return BrowserConfig(
-        headless=config.get("headless", True),
-        browser_type=config.get("browser_type", "chromium"),
-        stealth_mode=config.get("stealth_mode", True),
-        viewport_width=config.get("viewport_width", 1280),
-        viewport_height=config.get("viewport_height", 800),
-        timeout=config.get("timeout", 30000),
-    )
+    return BrowserConfig.from_dict(config)
 
 
 async def aread_website_markdown(

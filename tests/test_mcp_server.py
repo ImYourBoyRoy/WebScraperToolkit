@@ -32,9 +32,19 @@ class TestMCPServer(unittest.IsolatedAsyncioTestCase):
         self.assertIn("chunk_text", tool_names)  # Content
         self.assertIn("clear_cache", tool_names)  # Management
         self.assertIn("run_playbook", tool_names)  # Playbook
+        self.assertIn("browser_wait_for", tool_names)  # Interactive waits
+        self.assertIn("browser_press_key", tool_names)  # Interactive keyboard
+        self.assertIn("browser_scroll", tool_names)  # Interactive scroll
+        self.assertIn("browser_hover", tool_names)  # Interactive hover
+        self.assertIn(
+            "browser_get_interaction_map", tool_names
+        )  # Interactive compact map
+        self.assertIn(
+            "browser_accessibility_tree", tool_names
+        )  # Interactive accessibility snapshot
 
-        # Verify count (should be ~33)
-        self.assertGreaterEqual(len(tool_names), 30)
+        # Verify count (should be ~40+ as features are added)
+        self.assertGreaterEqual(len(tool_names), 35)
 
     async def test_envelope_format(self):
         """Verify response envelope format."""

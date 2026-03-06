@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "web-scraper-toolkit"
-version = "0.2.4"
+version = "0.3.0"
 description = "A powerful, standalone web scraping toolkit using Playwright and various parsers."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -20,7 +20,8 @@ dependencies = [
     "emailtoolkit",
     "phonenumbers",
     "aiohttp",
-    "aiohttp-socks"
+    "aiohttp-socks",
+    "tldextract>=5.1.2"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -37,6 +38,9 @@ authors = [
 license = "MIT"
 
 [project.optional-dependencies]
+desktop = [
+    "pyautogui>=0.9.54",
+]
 test = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
@@ -54,12 +58,29 @@ web-scraper-server = "web_scraper_toolkit.server.mcp_server:main"
 where = ["src"]
 
 [tool.ruff]
-exclude = ["FOR_REFERENCE_ONLY"]
+exclude = ["FOR_REFERENCE_ONLY", "scripts", ".quality_gate_venvs", ".venv", "venv"]
 line-length = 88
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+testpaths = ["tests"]
 markers = [
     "asyncio: mark tests requiring asyncio event loop support",
+    "integration: mark live network/browser integration tests that are skipped by default",
+    "benchmark: mark performance budget tests",
 ]
 
+[tool.mypy]
+python_version = "3.10"
+follow_imports = "skip"
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+pretty = true
+files = [
+    "src/web_scraper_toolkit/core/logger.py",
+    "src/web_scraper_toolkit/core/script_diagnostics.py",
+    "src/web_scraper_toolkit/core/_script_diagnostics",
+    "src/web_scraper_toolkit/browser/domain_identity.py",
+]

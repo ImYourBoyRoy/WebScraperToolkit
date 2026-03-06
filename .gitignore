@@ -87,6 +87,13 @@ debug_*.html
 debug_*.png
 proxy_account_config.json
 socks5_proxies.json
+cache/
+sessions/
+scripts/out/
+scripts/*.log
+scripts/results*.txt
+host_profiles.json
+config.json
 settings.cfg
 settings.local.cfg
 *.local.cfg

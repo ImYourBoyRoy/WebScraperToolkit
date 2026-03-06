@@ -65,10 +65,7 @@ async def _arun_extract_metadata(
     if isinstance(config, BrowserConfig):
         browser_cfg = config
     elif isinstance(config, dict):
-        browser_cfg = BrowserConfig(
-            headless=config.get("headless", True),
-            browser_type=config.get("browser_type", "chromium"),
-        )
+        browser_cfg = BrowserConfig.from_dict(config)
 
     manager = PlaywrightManager(config=browser_cfg)
     await manager.start()

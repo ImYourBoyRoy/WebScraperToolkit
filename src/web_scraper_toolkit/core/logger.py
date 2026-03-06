@@ -1,19 +1,11 @@
 # ./src/web_scraper_toolkit/core/logger.py
 """
-Logger Module
-=============
-
-Sets up the centralized logging configuration for the project.
-Ensures consistent log formatting, levels, and output destinations.
-
-Usage:
-    params = setup_logger(verbose=True)
-
-Key Inputs:
-    - verbose: Boolean flag to enable DEBUG level logging.
-
-Key Outputs:
-    - Configured 'logging.Logger' instance.
+Centralized logger setup utility shared by CLI, server handlers, and runtime modules.
+Run: import `setup_logger` and call it during application startup or test bootstrapping.
+Inputs: logger name, verbose toggle, and optional output log file path.
+Outputs: configured `logging.Logger` instance with stdout and optional file handlers.
+Side effects: clears existing handlers for the requested logger and mutates global logging state for that logger.
+Operational notes: idempotent per-call for a logger name; designed to prevent duplicate handlers in repeated boots.
 """
 
 import logging

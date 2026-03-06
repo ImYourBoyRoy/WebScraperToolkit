@@ -1,18 +1,28 @@
-import unittest
-from unittest.mock import MagicMock, patch, AsyncMock
-import os
+# ./tests/test_playwright_manager.py
+"""
+Unit tests for PlaywrightManager anti-bot behavior and profile gating.
+Run with `python -m pytest -q tests/test_playwright_manager.py`.
+Inputs: mocked Playwright objects and deterministic HTML/status fixtures.
+Outputs: assertions over stealth profile behavior, retry policy, and block classification.
+Side effects: clears local __pycache__ for fresh imports in each test setup.
+"""
+
 import asyncio
+import os
+import tempfile
+import unittest
 from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock, patch
 
-# Ensure src is in path
-# sys.path handled by run_tests.py
-
-from web_scraper_toolkit.browser.playwright_handler import PlaywrightManager
 from web_scraper_toolkit.browser.config import BrowserConfig
+from web_scraper_toolkit.browser.playwright_handler import (
+    PlaywrightManager,
+    classify_bot_block,
+)
 
 
 class TestPlaywrightManager(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # Cache Scrub (Roy-Standard)
         import shutil
 
@@ -22,51 +32,50 @@ class TestPlaywrightManager(unittest.TestCase):
                 shutil.rmtree(cache_path)
             except Exception:
                 pass
+        profile_store_path = os.path.join(os.getcwd(), "host_profiles.json")
+        if os.path.exists(profile_store_path):
+            try:
+                os.remove(profile_store_path)
+            except Exception:
+                pass
 
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.loop.close()
 
-    def test_initialization_defaults(self):
-        # Test default config
+    def test_initialization_defaults(self) -> None:
         config = BrowserConfig()
         pm = PlaywrightManager(config=config)
         self.assertEqual(pm.browser_type_name, "chromium")
-        # Default headless is now True (default in BrowserConfig)
         self.assertTrue(pm.headless)
+        self.assertEqual(pm.stealth_profile, "baseline")
+        self.assertNotIn(
+            "--disable-site-isolation-trials",
+            pm.launch_args,
+        )
 
-    def test_initialization_custom(self):
-        config = BrowserConfig(browser_type="firefox", headless=True)
+    def test_initialization_experimental_profile_adds_launch_flags(self) -> None:
+        config = BrowserConfig(stealth_profile="experimental_serp")
         pm = PlaywrightManager(config)
-        self.assertEqual(pm.browser_type_name, "firefox")
-        self.assertTrue(pm.headless)
-        # BrowserConfig doesn't have default_action_retries, removed assertion
+        self.assertEqual(pm.stealth_profile, "experimental_serp")
+        self.assertIn("--disable-site-isolation-trials", pm.launch_args)
 
     @patch("web_scraper_toolkit.browser.playwright_handler.async_playwright")
-    def test_start_stop_logic(self, mock_playwright_fn):
-        # Mock the context manager of async_playwright
+    def test_start_stop_logic(self, mock_playwright_fn: MagicMock) -> None:
         mock_playwright_obj = MagicMock()
         mock_browser_type = MagicMock()
         mock_browser = AsyncMock()
-
-        # Setup the chain: async_playwright().start() -> playwright_obj
-        # Actually async_playwright() returns a ContextManager, but we use await in start() manually?
-        # Re-reading code: "self._playwright = await async_playwright().start()"
 
         mock_playwright_fn.return_value.start = AsyncMock(
             return_value=mock_playwright_obj
         )
 
-        # Setup browser launcher
         mock_playwright_obj.chromium = mock_browser_type
         mock_browser_type.launch = AsyncMock(return_value=mock_browser)
-
-        # FIX: is_connected() is a synchronous method in Playwright, so we must use MagicMock (not AsyncMock)
         mock_browser.is_connected = MagicMock(return_value=True)
 
-        # Test Start
         pm = PlaywrightManager({})
         self.loop.run_until_complete(pm.start())
 
@@ -74,7 +83,6 @@ class TestPlaywrightManager(unittest.TestCase):
         self.assertIsNotNone(pm._browser)
         mock_browser_type.launch.assert_called_once()
 
-        # Test Stop
         mock_browser.close = AsyncMock()
         mock_playwright_obj.stop = AsyncMock()
 
@@ -84,7 +92,7 @@ class TestPlaywrightManager(unittest.TestCase):
         self.assertIsNone(pm._playwright)
         mock_browser.close.assert_called_once()
 
-    def test_proxy_settings_socks_ignores_auth(self):
+    def test_proxy_settings_socks_ignores_auth(self) -> None:
         pm = PlaywrightManager(BrowserConfig())
         proxy = SimpleNamespace(
             hostname="socks.example.com",
@@ -98,7 +106,7 @@ class TestPlaywrightManager(unittest.TestCase):
         self.assertNotIn("username", settings)
         self.assertNotIn("password", settings)
 
-    def test_proxy_settings_http_keeps_auth(self):
+    def test_proxy_settings_http_keeps_auth(self) -> None:
         pm = PlaywrightManager(BrowserConfig())
         proxy = SimpleNamespace(
             hostname="http.example.com",
@@ -112,7 +120,7 @@ class TestPlaywrightManager(unittest.TestCase):
         self.assertEqual(settings.get("username"), "user")
         self.assertEqual(settings.get("password"), "pass")
 
-    def test_get_new_page_uses_async_route_handler(self):
+    def test_get_new_page_uses_async_route_handler(self) -> None:
         pm = PlaywrightManager(BrowserConfig())
         pm.stealth_mode = False
 
@@ -133,7 +141,6 @@ class TestPlaywrightManager(unittest.TestCase):
         self.assertEqual(pattern, "**/*")
         self.assertTrue(asyncio.iscoroutinefunction(handler))
 
-        # Verify handler awaits abort/continue correctly
         block_route = AsyncMock()
         block_route.request.url = "https://google-analytics.com/pixel"
         self.loop.run_until_complete(handler(block_route))
@@ -144,7 +151,97 @@ class TestPlaywrightManager(unittest.TestCase):
         self.loop.run_until_complete(handler(normal_route))
         normal_route.continue_.assert_awaited_once()
 
-    def test_fetch_page_content_propagates_cancelled_error(self):
+    def test_get_new_page_baseline_profile_keeps_static_viewport(self) -> None:
+        pm = PlaywrightManager(BrowserConfig(stealth_profile="baseline"))
+        pm.stealth_mode = False
+
+        mock_browser = MagicMock()
+        mock_browser.is_connected.return_value = True
+        mock_context = AsyncMock()
+        mock_context.new_page = AsyncMock(return_value=AsyncMock())
+        mock_browser.new_context = AsyncMock(return_value=mock_context)
+        pm._browser = mock_browser
+
+        self.loop.run_until_complete(pm.get_new_page())
+        kwargs = mock_browser.new_context.await_args.kwargs
+        self.assertEqual(kwargs.get("viewport"), pm.default_viewport)
+        self.assertNotIn("screen", kwargs)
+        self.assertEqual(mock_context.add_cookies.await_count, 0)
+
+    def test_get_new_page_applies_stealth_when_available(self) -> None:
+        pm = PlaywrightManager(BrowserConfig(stealth_profile="baseline"))
+        pm.stealth_mode = True
+
+        mock_browser = MagicMock()
+        mock_browser.is_connected.return_value = True
+        mock_context = AsyncMock()
+        mock_page = AsyncMock()
+        mock_context.new_page = AsyncMock(return_value=mock_page)
+        mock_browser.new_context = AsyncMock(return_value=mock_context)
+        pm._browser = mock_browser
+        pm._stealth = SimpleNamespace(apply_stealth_async=AsyncMock())
+
+        self.loop.run_until_complete(pm.get_new_page())
+
+        pm._stealth.apply_stealth_async.assert_awaited_once_with(mock_page)
+
+    def test_get_new_page_experimental_profile_sets_screen_and_cookies(self) -> None:
+        pm = PlaywrightManager(BrowserConfig(stealth_profile="experimental_serp"))
+        pm.stealth_mode = False
+
+        mock_browser = MagicMock()
+        mock_browser.is_connected.return_value = True
+        mock_context = AsyncMock()
+        mock_context.new_page = AsyncMock(return_value=AsyncMock())
+        mock_browser.new_context = AsyncMock(return_value=mock_context)
+        pm._browser = mock_browser
+
+        with patch(
+            "web_scraper_toolkit.browser.playwright_handler.random.choice",
+            return_value={"width": 1366, "height": 768},
+        ):
+            self.loop.run_until_complete(pm.get_new_page())
+
+        kwargs = mock_browser.new_context.await_args.kwargs
+        self.assertEqual(kwargs.get("viewport"), {"width": 1366, "height": 768})
+        self.assertEqual(kwargs.get("screen"), {"width": 1366, "height": 768})
+        self.assertGreaterEqual(mock_context.add_cookies.await_count, 1)
+
+    def test_classify_bot_block_variants(self) -> None:
+        self.assertEqual(
+            classify_bot_block(
+                status=200,
+                final_url="https://www.google.com/sorry/index?continue=...",
+                content_html="",
+            ),
+            "google_sorry",
+        )
+        self.assertEqual(
+            classify_bot_block(
+                status=429,
+                final_url="https://www.google.com/search?q=test",
+                content_html="Our systems have detected unusual traffic",
+            ),
+            "google_unusual_traffic",
+        )
+        self.assertEqual(
+            classify_bot_block(
+                status=202,
+                final_url="https://html.duckduckgo.com/html/?q=test",
+                content_html="Unfortunately, bots use DuckDuckGo too",
+            ),
+            "ddg_anomaly",
+        )
+        self.assertEqual(
+            classify_bot_block(
+                status=200,
+                final_url="https://example.com",
+                content_html="Just a moment...",
+            ),
+            "cf_challenge",
+        )
+
+    def test_fetch_page_content_propagates_cancelled_error(self) -> None:
         pm = PlaywrightManager(BrowserConfig())
         page = AsyncMock()
         page.goto = AsyncMock(side_effect=asyncio.CancelledError())
@@ -154,6 +251,412 @@ class TestPlaywrightManager(unittest.TestCase):
 
         with self.assertRaises(asyncio.CancelledError):
             self.loop.run_until_complete(_run())
+
+    def test_smart_fetch_honors_allow_headed_retry_false(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                headless=True,
+                native_fallback_policy="off",
+            )
+        )
+
+        page = AsyncMock()
+        context = AsyncMock()
+        pm.get_new_page = AsyncMock(return_value=(page, context))  # type: ignore[method-assign]
+        pm.fetch_page_content = AsyncMock(  # type: ignore[method-assign]
+            return_value=(
+                "Our systems have detected unusual traffic",
+                "https://www.google.com/sorry/index",
+                429,
+            )
+        )
+        pm.stop = AsyncMock()  # type: ignore[method-assign]
+        pm.start = AsyncMock()  # type: ignore[method-assign]
+
+        self.loop.run_until_complete(
+            pm.smart_fetch(
+                "https://www.google.com/search?q=test",
+                allow_headed_retry=False,
+            )
+        )
+
+        pm.fetch_page_content.assert_awaited_once()
+        pm.stop.assert_not_awaited()
+        pm.start.assert_not_awaited()
+
+    def test_standard_flow_uses_native_only_retry_when_stealth_retry_still_blocked(
+        self,
+    ) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                headless=True,
+                native_fallback_policy="off",
+                stealth_mode=True,
+            )
+        )
+
+        page1, page2, page3 = AsyncMock(), AsyncMock(), AsyncMock()
+        ctx1, ctx2, ctx3 = AsyncMock(), AsyncMock(), AsyncMock()
+        pm.get_new_page = AsyncMock(  # type: ignore[method-assign]
+            side_effect=[(page1, ctx1), (page2, ctx2), (page3, ctx3)]
+        )
+        pm.fetch_page_content = AsyncMock(  # type: ignore[method-assign]
+            side_effect=[
+                (
+                    "Our systems have detected unusual traffic",
+                    "https://www.google.com/sorry/index",
+                    429,
+                ),
+                ("blocked", "https://example.com/challenge", 403),
+                ("<html>ok</html>", "https://example.com", 200),
+            ]
+        )
+        pm.stop = AsyncMock()  # type: ignore[method-assign]
+        pm.start = AsyncMock()  # type: ignore[method-assign]
+
+        content, final_url, status = self.loop.run_until_complete(
+            pm._smart_fetch_standard("https://example.com")
+        )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(final_url, "https://example.com")
+        self.assertIn("ok", content or "")
+        self.assertEqual(pm.fetch_page_content.await_count, 3)
+        self.assertEqual(pm.get_new_page.await_count, 3)
+        self.assertEqual(pm.stop.await_count, 2)
+        self.assertEqual(pm.start.await_count, 2)
+        self.assertTrue(pm.stealth_mode)  # restored after compatibility retry
+        self.assertEqual(
+            pm.get_last_fetch_metadata().get("attempt_profile"),
+            "baseline_headed_no_stealth",
+        )
+
+    def test_standard_flow_cf_block_uses_native_only_headed_retry_immediately(
+        self,
+    ) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                headless=True,
+                native_fallback_policy="off",
+                stealth_mode=True,
+            )
+        )
+
+        page1, page2 = AsyncMock(), AsyncMock()
+        ctx1, ctx2 = AsyncMock(), AsyncMock()
+        pm.get_new_page = AsyncMock(  # type: ignore[method-assign]
+            side_effect=[(page1, ctx1), (page2, ctx2)]
+        )
+        pm.fetch_page_content = AsyncMock(  # type: ignore[method-assign]
+            side_effect=[
+                ("Just a moment", "https://example.com/challenge", 403),
+                ("<html>ok</html>", "https://example.com", 200),
+            ]
+        )
+        pm.stop = AsyncMock()  # type: ignore[method-assign]
+        pm.start = AsyncMock()  # type: ignore[method-assign]
+
+        content, final_url, status = self.loop.run_until_complete(
+            pm._smart_fetch_standard("https://example.com")
+        )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(final_url, "https://example.com")
+        self.assertIn("ok", content or "")
+        self.assertEqual(pm.fetch_page_content.await_count, 2)
+        second_call_kwargs = pm.fetch_page_content.await_args_list[1].kwargs
+        self.assertEqual(
+            second_call_kwargs.get("action_name"),
+            "smart_retry_native_signals",
+        )
+        self.assertTrue(pm.stealth_mode)
+        self.assertEqual(
+            pm.get_last_fetch_metadata().get("attempt_profile"),
+            "baseline_headed_no_stealth",
+        )
+
+    def test_serp_balanced_retry_order_native_headless_then_headed(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                serp_strategy="native_first",
+                serp_retry_policy="balanced",
+                serp_retry_backoff_seconds=0.0,
+            )
+        )
+        pm._run_serp_native_attempt = AsyncMock(  # type: ignore[method-assign]
+            side_effect=[
+                (
+                    "Our systems have detected unusual traffic",
+                    "https://www.google.com/search?q=test",
+                    429,
+                    {"attempt_profile": "native_headless"},
+                ),
+                (
+                    "<html><body>ok</body></html>",
+                    "https://www.google.com/search?q=test",
+                    200,
+                    {"attempt_profile": "native_headed"},
+                ),
+            ]
+        )
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=(None, "", None)
+        )
+
+        self.loop.run_until_complete(
+            pm.smart_fetch(
+                "https://www.google.com/search?q=test",
+                provider="google_html",
+                is_serp_request=True,
+            )
+        )
+
+        self.assertEqual(pm._run_serp_native_attempt.await_count, 2)
+        first_kwargs = pm._run_serp_native_attempt.await_args_list[0].kwargs
+        second_kwargs = pm._run_serp_native_attempt.await_args_list[1].kwargs
+        self.assertEqual(first_kwargs["attempt_profile"], "native_headless")
+        self.assertTrue(bool(first_kwargs["headless"]))
+        self.assertEqual(second_kwargs["attempt_profile"], "native_headed")
+        self.assertFalse(bool(second_kwargs["headless"]))
+        pm._smart_fetch_standard.assert_not_awaited()
+
+    def test_serp_native_path_does_not_use_playwright_stealth(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                serp_strategy="native_first",
+                serp_retry_policy="none",
+                stealth_mode=True,
+            )
+        )
+        pm._stealth = SimpleNamespace(apply_stealth_async=AsyncMock())
+        pm._run_serp_native_attempt = AsyncMock(  # type: ignore[method-assign]
+            return_value=(
+                "<html><body>ok</body></html>",
+                "https://www.google.com/search?q=test",
+                200,
+                {"attempt_profile": "native_headless"},
+            )
+        )
+
+        self.loop.run_until_complete(
+            pm.smart_fetch(
+                "https://www.google.com/search?q=test",
+                provider="google_html",
+                is_serp_request=True,
+            )
+        )
+
+        pm._stealth.apply_stealth_async.assert_not_awaited()
+        self.assertEqual(pm._run_serp_native_attempt.await_count, 1)
+
+    def test_non_serp_requests_still_use_standard_flow(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                serp_strategy="native_first",
+                serp_retry_policy="balanced",
+            )
+        )
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=("ok", "https://example.com", 200)
+        )
+        pm._smart_fetch_serp_strategy = AsyncMock(  # type: ignore[method-assign]
+            return_value=(None, "", None)
+        )
+
+        self.loop.run_until_complete(pm.smart_fetch("https://example.com"))
+
+        pm._smart_fetch_standard.assert_awaited_once()
+        pm._smart_fetch_serp_strategy.assert_not_awaited()
+
+    def test_serp_allowlist_only_gates_native_strategy(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                serp_strategy="native_first",
+                serp_allowlist_only=True,
+            )
+        )
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=("ok", "https://example.com", 200)
+        )
+        pm._smart_fetch_serp_strategy = AsyncMock(  # type: ignore[method-assign]
+            return_value=(None, "", None)
+        )
+
+        self.loop.run_until_complete(
+            pm.smart_fetch(
+                "https://example.com/search?q=test",
+                is_serp_request=True,
+            )
+        )
+        pm._smart_fetch_standard.assert_awaited_once()
+        pm._smart_fetch_serp_strategy.assert_not_awaited()
+
+    def test_native_fallback_runs_when_primary_blocked(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                native_fallback_policy="on_blocked",
+            )
+        )
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=(
+                "Access denied",
+                "https://example.com/challenge",
+                403,
+            )
+        )
+        pm._smart_fetch_native_fallback = AsyncMock(  # type: ignore[method-assign]
+            return_value=(
+                "<html><body>ok</body></html>",
+                "https://example.com/ok",
+                200,
+            )
+        )
+
+        content, final_url, status = self.loop.run_until_complete(
+            pm.smart_fetch("https://example.com")
+        )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(final_url, "https://example.com/ok")
+        self.assertIn("ok", content or "")
+        pm._smart_fetch_standard.assert_awaited_once()
+        pm._smart_fetch_native_fallback.assert_awaited_once()
+
+    def test_native_fallback_disabled_policy_off(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                native_fallback_policy="off",
+            )
+        )
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=("blocked", "https://example.com/challenge", 403)
+        )
+        pm._smart_fetch_native_fallback = AsyncMock(  # type: ignore[method-assign]
+            return_value=("ok", "https://example.com", 200)
+        )
+
+        self.loop.run_until_complete(pm.smart_fetch("https://example.com"))
+
+        pm._smart_fetch_standard.assert_awaited_once()
+        pm._smart_fetch_native_fallback.assert_not_awaited()
+
+    def test_native_fallback_policy_always_short_circuits_primary(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                native_fallback_policy="always",
+            )
+        )
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=("primary", "https://example.com", 200)
+        )
+        pm._smart_fetch_native_fallback = AsyncMock(  # type: ignore[method-assign]
+            return_value=("native", "https://example.com/native", 200)
+        )
+
+        content, _, _ = self.loop.run_until_complete(
+            pm.smart_fetch("https://example.com")
+        )
+
+        self.assertEqual(content, "native")
+        pm._smart_fetch_standard.assert_not_awaited()
+        pm._smart_fetch_native_fallback.assert_awaited_once()
+
+    def test_host_profile_can_enable_native_fallback_when_global_off(self) -> None:
+        from web_scraper_toolkit.browser.host_profiles import HostProfileStore
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            store_path = os.path.join(tmp_dir, "host_profiles.json")
+            HostProfileStore(path=store_path).set_host_profile(
+                "example.com",
+                {
+                    "native_fallback_policy": "on_blocked",
+                    "native_browser_channels": ["chrome"],
+                },
+            )
+
+            pm = PlaywrightManager(
+                BrowserConfig(
+                    native_fallback_policy="off",
+                    host_profiles_path=store_path,
+                )
+            )
+            pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+                return_value=("blocked", "https://example.com/challenge", 403)
+            )
+            pm._smart_fetch_native_fallback = AsyncMock(  # type: ignore[method-assign]
+                return_value=("ok", "https://example.com/ok", 200)
+            )
+
+            _, _, status = self.loop.run_until_complete(
+                pm.smart_fetch("https://example.com")
+            )
+            self.assertEqual(status, 200)
+            pm._smart_fetch_native_fallback.assert_awaited_once()
+
+    def test_explicit_strategy_override_beats_host_profile(self) -> None:
+        from web_scraper_toolkit.browser.host_profiles import HostProfileStore
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            store_path = os.path.join(tmp_dir, "host_profiles.json")
+            HostProfileStore(path=store_path).set_host_profile(
+                "example.com",
+                {
+                    "native_fallback_policy": "on_blocked",
+                    "native_browser_channels": ["chrome"],
+                },
+            )
+
+            pm = PlaywrightManager(
+                BrowserConfig(
+                    native_fallback_policy="off",
+                    host_profiles_path=store_path,
+                )
+            )
+            pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+                return_value=("blocked", "https://example.com/challenge", 403)
+            )
+            pm._smart_fetch_native_fallback = AsyncMock(  # type: ignore[method-assign]
+                return_value=("ok", "https://example.com/ok", 200)
+            )
+
+            _, _, status = self.loop.run_until_complete(
+                pm.smart_fetch(
+                    "https://example.com",
+                    strategy_overrides={"native_fallback_policy": "off"},
+                )
+            )
+            self.assertEqual(status, 403)
+            pm._smart_fetch_native_fallback.assert_not_awaited()
+
+    def test_smart_fetch_metadata_includes_learning_flags(self) -> None:
+        pm = PlaywrightManager(BrowserConfig(native_fallback_policy="off"))
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=("ok", "https://example.com", 200)
+        )
+
+        self.loop.run_until_complete(pm.smart_fetch("https://example.com"))
+
+        metadata = pm.get_last_fetch_metadata()
+        self.assertIn("context_mode", metadata)
+        self.assertIn("had_persisted_state", metadata)
+        self.assertIn("promotion_eligible", metadata)
+        self.assertIn("run_id", metadata)
+        self.assertIn("resolved_routing", metadata)
+        self.assertEqual(metadata["context_mode"], "incognito")
+        self.assertFalse(metadata["had_persisted_state"])
+        self.assertTrue(metadata["promotion_eligible"])
+
+    def test_host_profiles_read_only_forces_apply_without_learning(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                host_profiles_enabled=False,
+                host_profiles_read_only=True,
+                host_learning_enabled=True,
+            )
+        )
+        self.assertTrue(pm.host_profiles_enabled)
+        self.assertTrue(pm.host_profiles_read_only)
+        self.assertFalse(pm.host_learning_enabled)
 
 
 if __name__ == "__main__":

@@ -1,33 +1,311 @@
-# Web Scraper Toolkit Remote/Service Instructions
+# Web Scraper Toolkit - Operations & Deployment Guide
 
-This guide is the operational companion to `README.md`.
-
-Use this for:
-- Ubuntu/Linux remote service setup
-- Windows local/remote host operation
-- macOS host operation
-- Health checks and safe start/stop workflows
+This document is the full runbook for humans and AI models.
+Use this file when you need complete operational detail beyond the quick-start README.
 
 ---
 
-## 1) Quick decision matrix
+## 1) Mode Selection (choose first)
 
-- **Local desktop MCP use (Claude/Cursor, etc.)**  
-  Use `web-scraper-server --stdio` (or scripts for local background process).
+- **CLI mode** (`web-scraper`)  
+  Best for local scripts, CI jobs, and direct terminal workflows.
 
-- **Remote high-horsepower MCP host**  
-  Use `streamable-http` transport + API key + TLS reverse proxy.
+- **MCP mode** (`web-scraper-server`)  
+  Best for agentic systems that need callable tools over stdio or HTTP transports.
 
-- **Massive parallel jobs**  
-  Use async MCP jobs: `start_job` + `poll_job`.
+- **Python embedding**  
+  Best when toolkit must run inside your own Python runtime/process lifecycle.
 
 ---
 
-## 2) Ubuntu (20.04 / 22.04 / 24.04)
+## 2) Install + Bootstrap
 
-All three are supported with the same flow.
+### 2.1 Install
 
-### A. Install
+```bash
+pip install web-scraper-toolkit
+playwright install
+```
+
+Optional desktop challenge tooling:
+
+```bash
+pip install web-scraper-toolkit[desktop]
+playwright install
+```
+
+### 2.2 Bootstrap config files
+
+```bash
+cp config.example.json config.json
+cp settings.example.cfg settings.local.cfg
+cp host_profiles.example.json host_profiles.json
+```
+
+If files are absent, toolkit can still run on defaults.  
+When host learning is enabled, host profile storage is auto-created on first write.
+
+---
+
+## 3) How Runtime Resolution Works
+
+Configuration precedence is deterministic:
+1. CLI / MCP explicit inputs
+2. `WST_*` environment variables
+3. `settings.local.cfg` / `settings.cfg`
+4. `config.json`
+5. code defaults
+
+This precedence applies to browser behavior, concurrency, timeout profiles, and server settings.
+
+Default browser policy is Chromium-first (`browser_type=chromium`) with marker-driven native fallback.
+
+---
+
+## 4) CLI Operations (complete practical entry)
+
+### 4.1 Basic scrape
+
+```bash
+web-scraper --url https://example.com --format markdown --export
+```
+
+### 4.2 Batch scrape
+
+```bash
+web-scraper --input urls.txt --workers auto --format text --merge --output-name merged.txt
+```
+
+### 4.3 Sitemap tree extraction
+
+```bash
+web-scraper --input https://example.com/sitemap.xml --site-tree --format json --output-name sitemap_tree.json
+```
+
+### 4.4 Domain crawl
+
+```bash
+web-scraper --input https://example.com --crawl --workers auto --format markdown
+```
+
+### 4.5 Contact extraction
+
+```bash
+web-scraper --url https://example.com --contacts --format json --export
+```
+
+### 4.6 Browser fallback tuning
+
+```bash
+web-scraper \
+  --url https://target-site.tld/page \
+  --native-fallback-policy on_blocked \
+  --native-browser-channels chrome,msedge,chromium
+```
+
+Read-only host-profile apply mode:
+
+```bash
+web-scraper --url https://target-site.tld/page --host-profiles-read-only on
+```
+
+### 4.7 Host profile admin
+
+Read host profile:
+
+```bash
+web-scraper --host-profile-host example.com
+```
+
+Manual host routing set:
+
+```bash
+web-scraper \
+  --host-profile-host example.com \
+  --host-profile-json "{\"routing\":{\"native_fallback_policy\":\"on_blocked\",\"native_browser_channels\":[\"chrome\",\"msedge\"],\"allow_headed_retry\":true,\"serp_strategy\":\"none\",\"serp_retry_policy\":\"none\",\"serp_retry_backoff_seconds\":12.0}}"
+```
+
+### 4.8 Script diagnostics through CLI wrapper
+
+Toolkit-stage diagnostics:
+
+```bash
+web-scraper --run-diagnostic toolkit_route --diagnostic-url https://target-site.tld/resource
+```
+
+Matrix diagnostics:
+
+```bash
+web-scraper \
+  --run-diagnostic challenge_matrix \
+  --diagnostic-url https://target-site.tld/resource \
+  --diagnostic-runs-per-variant 2 \
+  --diagnostic-browser chrome
+```
+
+Toolkit diagnostics with gated host-profile auto-commit:
+
+```bash
+web-scraper \
+  --run-diagnostic toolkit_route \
+  --diagnostic-url https://target-site.tld/resource \
+  --diagnostic-auto-commit-host-profile \
+  --diagnostic-host-profiles-file ./host_profiles.json
+```
+
+Read-only diagnostics (apply existing profiles only, never write):
+
+```bash
+web-scraper --run-diagnostic toolkit_route --diagnostic-url https://target-site.tld/resource --diagnostic-read-only
+```
+
+Bot-surface diagnostics:
+
+```bash
+web-scraper --run-diagnostic bot_check --diagnostic-use-default-sites --diagnostic-screenshots
+```
+
+Browser telemetry diagnostics:
+
+```bash
+web-scraper --run-diagnostic browser_info
+```
+
+---
+
+## 5) Diagnostic Scripts (direct invocation)
+
+Use these when you need raw script behavior directly:
+
+> Canonical diagnostic script naming is `diag_*.py`.
+> Legacy non-`diag_` script names remain available as compatibility aliases.
+
+```bash
+python scripts/diag_toolkit_route.py --url https://target-site.tld/resource
+python scripts/diag_toolkit_route.py --url https://target-site.tld/resource --require-2xx
+python scripts/diag_toolkit_route.py --url https://target-site.tld/resource --require-2xx --save-artifacts --artifacts-dir ./scripts/out/artifacts
+python scripts/diag_challenge_matrix.py --url https://target-site.tld/resource --runs-per-variant 2
+python scripts/diag_bot_check.py --test-url https://example.com --browsers chromium,pw_chrome,system_chrome
+python scripts/diag_browser_info.py
+```
+
+Output roots:
+- `scripts/out/`
+
+Workspace hygiene helper:
+
+```bash
+python scripts/clean_workspace.py --dry-run
+```
+
+---
+
+## 6) Host Learning Lifecycle (auto domain routing)
+
+### 6.1 Default learning behavior
+- `host_profiles_enabled=true`
+- `host_profiles_read_only=false`
+- `host_learning_enabled=true`
+- `host_learning_apply_mode="safe_subset"`
+- `host_learning_promotion_threshold=2`
+
+### 6.1.1 Read-only behavior
+- `host_profiles_read_only=true` keeps host-profile routing apply-enabled.
+- Learning writes are disabled while read-only is enabled.
+
+### 6.2 What is auto-learned
+- `native_fallback_policy` (`off|on_blocked` only)
+- `native_browser_channels`
+- `allow_headed_retry`
+- `serp_strategy`
+- `serp_retry_policy`
+- `serp_retry_backoff_seconds` (bounded)
+
+### 6.3 Promotion and demotion
+- Promotion requires clean incognito successes (threshold default `2`).
+- Persistent/session-backed runs are tracked but do not count for promotion.
+- Repeated clean incognito failures can demote active routing.
+
+### 6.4 Domain matching scope
+- Host routing resolution order:
+  1. explicit request overrides
+  2. exact host profile (e.g., `api.example.com`)
+  3. registrable domain profile (e.g., `example.com`)
+  4. global browser config defaults
+- Learning writes default to the registrable domain key unless an exact-host profile already exists.
+
+---
+
+## 7) MCP Server Operations
+
+### 7.1 Local stdio (for desktop agents)
+
+```bash
+web-scraper-server --stdio
+```
+
+### 7.2 Remote transport
+
+```bash
+web-scraper-server --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp
+```
+
+### 7.3 API key protection
+
+```bash
+# Windows
+set WST_MCP_API_KEY=your-secret
+
+# Linux/macOS
+export WST_MCP_API_KEY=your-secret
+
+web-scraper-server --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp
+```
+
+### 7.4 MCP tool groups
+
+- Scraping/discovery/content tools
+- Browser interactive tools (`browser_*`), including:
+  - explicit waits (`browser_wait_for`)
+  - keyboard actions (`browser_press_key`)
+  - scrolling/hover (`browser_scroll`, `browser_hover`)
+  - compact element maps (`browser_get_interaction_map`)
+  - accessibility snapshots (`browser_accessibility_tree`)
+- Diagnostics tools:
+  - `run_challenge_diagnostic(mode=toolkit|matrix, ...)`
+    - supports `auto_commit_host_profile`, `host_profiles_path`, `read_only`
+  - `run_bot_surface_diagnostic(...)`
+  - `run_browser_info_diagnostic_tool(...)`
+- Runtime/management tools
+- Host profile management tools
+- Async job orchestration (`start_job`, `poll_job`, etc.)
+
+---
+
+## 8) Security + Safety Controls
+
+### 8.1 Recommended remote posture
+1. Bind server to localhost/private network.
+2. Put TLS reverse proxy in front.
+3. Require API key for remote transport.
+4. Keep context mode incognito by default.
+5. Keep host learning on safe-subset mode.
+
+### 8.2 OS-level input takeover safety
+When challenge solving requires real mouse input:
+- toolkit warns before takeover
+- toolkit verifies browser/tab focus
+- toolkit verifies active foreground window bounds
+- toolkit refuses OS interaction in headless mode
+
+Optional warning delay control:
+- `WST_OS_INPUT_WARNING_SECONDS` (default `3`)
+
+---
+
+## 9) Ubuntu Service Deployment
+
+### 9.1 Install runtime
 
 ```bash
 sudo apt update
@@ -41,35 +319,7 @@ pip install web-scraper-toolkit
 playwright install
 ```
 
-Optional from source:
-
-```bash
-git clone https://github.com/imyourboyroy/WebScraperToolkit.git /opt/webscraper
-cd /opt/webscraper
-source .venv/bin/activate
-pip install -e .
-playwright install
-```
-
-### B. Configure
-
-```bash
-cp settings.example.cfg settings.local.cfg
-```
-
-Set key runtime values in `settings.local.cfg`:
-- concurrency
-- timeout profiles
-- server transport/host/port/path
-- `require_api_key=true` for remote use
-
-Set API key:
-
-```bash
-export WST_MCP_API_KEY="change-me"
-```
-
-### C. Run as systemd service (recommended)
+### 9.2 Install systemd service (helper script)
 
 ```bash
 sudo SERVICE_NAME=web-scraper-mcp \
@@ -84,7 +334,7 @@ sudo SERVICE_NAME=web-scraper-mcp \
   ./scripts/setup_mcp_service_ubuntu.sh
 ```
 
-Manage service:
+### 9.3 Service control
 
 ```bash
 sudo systemctl start web-scraper-mcp
@@ -100,119 +350,60 @@ Remove service:
 sudo SERVICE_NAME=web-scraper-mcp ./scripts/remove_mcp_service_ubuntu.sh
 ```
 
-### D. Health check
+---
+
+## 10) Health Checks and Troubleshooting
+
+### 10.1 Health checks
 
 ```bash
 python scripts/healthcheck_mcp.py --url http://127.0.0.1:8000/mcp --api-key "$WST_MCP_API_KEY"
-```
-
-Full remote smoke check:
-
-```bash
 python verify_remote_mcp.py --remote-url https://your-domain/mcp --api-key "$WST_MCP_API_KEY"
 ```
 
----
+### 10.2 Common failure patterns
 
-## 3) Linux/macOS start/stop scripts (non-systemd mode)
+- **Playwright browser missing**  
+  Run `playwright install`.
 
-```bash
-./scripts/start_server.sh
-./scripts/status_server.sh
-./scripts/stop_server.sh
-```
+- **Desktop solver unavailable**  
+  Install desktop extra: `pip install web-scraper-toolkit[desktop]` and ensure GUI display is available.
 
-These scripts:
-- run MCP server in background
-- store PID in `.runtime/web_scraper_mcp.pid`
-- write logs in `.runtime/`
-- run post-start health check automatically
+- **Host profile store write error**  
+  Check `host_profiles_path` permission/path and filesystem write access.
 
----
+- **Remote MCP unauthorized**  
+  Verify `WST_MCP_API_KEY` and proxy/header forwarding.
 
-## 4) Windows start/stop scripts
-
-From repository root:
-
-```bat
-scripts\start_server.bat
-scripts\status_server.bat
-scripts\stop_server.bat
-```
-
-These call PowerShell scripts:
-- `scripts/start_server.ps1`
-- `scripts/status_server.ps1`
-- `scripts/stop_server.ps1`
+- **No output generated**  
+  Verify `--output-dir`, format selection, and run permissions.
 
 ---
 
-## 5) Remote connection model (best practice)
+## 11) High-Value Environment Variables
 
-### A. Topology
-
-1. MCP server on remote host (`127.0.0.1:8000/mcp` internally)
-2. TLS reverse proxy exposes `https://your-domain/mcp`
-3. Agent/client connects with API key
-
-### B. Client endpoint
-
-Point MCP client to:
-
-`https://your-domain/mcp`
-
-Include:
-- `x-api-key: <key>` header  
-  or  
-- `Authorization: Bearer <key>`
-
----
-
-## 6) High-throughput usage pattern (recommended)
-
-For large parallel loads (40–80+):
-
-1. Submit:
-   - `start_job(job_type="batch_scrape", payload_json=...)`
-2. Poll:
-   - `poll_job(job_id)`
-3. Consume result locally:
-   - parse returned JSON envelope data
-
-This keeps heavy computation remote while your local machine only orchestrates and consumes results.
+- `WST_CONFIG_JSON`
+- `WST_LOCAL_CFG`
+- `WST_MCP_API_KEY`
+- `WST_TIMEOUT_PROFILE`
+- `WST_CLI_WORKERS_DEFAULT`
+- `WST_MCP_PROCESS_WORKERS`
+- `WST_MCP_INFLIGHT_LIMIT`
+- `WST_MCP_BATCH_WORKERS`
+- `WST_CRAWLER_DEFAULT_WORKERS`
+- `WST_CRAWLER_MAX_WORKERS`
+- `WST_SAFE_OUTPUT_ROOT`
+- `WST_SERVER_TRANSPORT`
+- `WST_SERVER_HOST`
+- `WST_SERVER_PORT`
+- `WST_SERVER_PATH`
+- `WST_SERVER_REQUIRE_API_KEY`
+- `WST_OS_INPUT_WARNING_SECONDS`
 
 ---
 
-## 7) Remote file output strategy
+## 12) Author
 
-Recommended default:
-- avoid remote file output unless required
-- keep workflows data-return oriented (`scrape_url`, `batch_scrape`, async jobs)
-
-If file output is needed:
-- use `screenshot`, `save_pdf`, `download_file`
-- enforce `runtime.safe_output_root` to an isolated directory
-
----
-
-## 8) Remote test suite
-
-Set environment:
-
-```bash
-export WST_REMOTE_MCP_URL=https://your-domain/mcp
-export WST_REMOTE_MCP_API_KEY=your-key
-export WST_REMOTE_TARGETS=https://readyforus.app,https://claragurney.com
-```
-
-Run optional remote integration tests:
-
-```bash
-pytest -q tests/test_remote_mcp_integration.py
-```
-
-Run smoke validation script:
-
-```bash
-python verify_remote_mcp.py
-```
+Created by: **Roy Dawson IV**  
+GitHub: <https://github.com/imyourboyroy>  
+PyPi: <https://pypi.org/user/ImYourBoyRoy/>

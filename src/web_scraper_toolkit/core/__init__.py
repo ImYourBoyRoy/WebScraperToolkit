@@ -1,14 +1,11 @@
 # ./src/web_scraper_toolkit/core/__init__.py
 """
-Core Package
-============
-
-Core utilities, state management, content processing, and automation.
-
-Sub-packages:
-    - state: Cache, session, and history management
-    - content: Text chunking and token counting
-    - automation: Form filling, retry logic, utilities
+Expose core toolkit utilities, runtime helpers, diagnostics wrappers, and state primitives.
+Run: import from `web_scraper_toolkit.core` for consolidated access to core package APIs.
+Inputs: Python imports and function calls from CLI/server/crawler layers.
+Outputs: stable re-exported utilities for logging, state, diagnostics, and helper modules.
+Side effects: importing this module loads subpackages and binds public symbols in memory.
+Operational notes: maintain explicit exports in `__all__` to prevent accidental API surface growth.
 """
 
 # Root level utilities
@@ -61,6 +58,14 @@ from .runtime import (
     RuntimeSettings,
     load_runtime_settings,
     resolve_worker_count,
+)
+from .script_diagnostics import (
+    ScriptDiagnosticsRunner,
+    split_cli_args,
+    run_toolkit_route_diagnostic,
+    run_challenge_matrix_diagnostic,
+    run_bot_check_diagnostic,
+    run_browser_info_diagnostic,
 )
 
 __all__ = [
@@ -119,4 +124,11 @@ __all__ = [
     "RuntimeSettings",
     "load_runtime_settings",
     "resolve_worker_count",
+    # Script diagnostics
+    "ScriptDiagnosticsRunner",
+    "split_cli_args",
+    "run_toolkit_route_diagnostic",
+    "run_challenge_matrix_diagnostic",
+    "run_bot_check_diagnostic",
+    "run_browser_info_diagnostic",
 ]

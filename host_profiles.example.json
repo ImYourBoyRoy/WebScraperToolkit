@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "defaults": {
+    "fallback_policy": "on_blocked",
+    "session_policy": "incognito"
+  },
+  "hosts": {
+    "example.com": {
+      "active": {
+        "routing": {
+          "native_fallback_policy": "on_blocked",
+          "native_browser_channels": [
+            "chrome",
+            "msedge"
+          ],
+          "allow_headed_retry": true,
+          "serp_strategy": "none",
+          "serp_retry_policy": "none",
+          "serp_retry_backoff_seconds": 12.0
+        },
+        "learned_from": {
+          "success_count": 2,
+          "window_days": 7
+        },
+        "updated_utc": "2026-03-05T00:00:00+00:00",
+        "health": {
+          "clean_incognito_failures": 0,
+          "window_days": 7,
+          "failure_timestamps": []
+        }
+      }
+    }
+  }
+}

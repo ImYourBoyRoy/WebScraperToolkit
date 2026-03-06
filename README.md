@@ -1,417 +1,331 @@
-# Web Scraper Toolkit (Agentic + MCP Ready)
+# Web Scraper Toolkit
 
-`web-scraper-toolkit` is a modular scraping and crawling toolkit designed for:
-- **Agentic runtimes** (MCP clients like Claude Desktop, Cursor, custom orchestrators)
-- **Programmatic Python usage**
-- **CLI workflows for scripts and batch pipelines**
+## Use Case Synopsis
 
-It focuses on robust extraction, safe automation, dynamic concurrency, and configurable runtime behavior without hardcoded operational limits.
+Web Scraper Toolkit is a production-grade scraping and browser automation platform for:
+- **Engineers and analysts** who need repeatable, scriptable web extraction.
+- **Red/blue team workflows** that need transparent anti-bot diagnostics and safe automation controls.
+- **Agent builders** who need MCP tools for autonomous URL ingestion, crawling, extraction, and post-processing.
 
-Operational deployment guide: **`INSTRUCTIONS.md`** (Ubuntu/Windows/macOS service and remote runbooks).
-
----
-
-## Why this toolkit
-
-- **Agent-first MCP envelopes** (status/meta/data JSON response shape)
-- **Dynamic concurrency** (CLI + MCP + crawler workers scale by host capacity/config)
-- **Adaptive timeout profiles** (`fast`, `standard`, `research`, `long`)
-- **Async job lifecycle for long tasks** (`start_job`, `poll_job`, `cancel_job`, `list_jobs`)
-- **Remote MCP hosting support** (`stdio`, `http`, `sse`, `streamable-http`)
-- **Optional API-key middleware** for remote MCP endpoints
-- **Path safety rails** for file-writing tools (screenshot/pdf/download)
+You can run it as:
+1. A **CLI tool** (`web-scraper`)
+2. An **MCP server** (`web-scraper-server`)
+3. A **Python library** (typed config + async APIs)
 
 ---
 
-## Installation
+## What it does (without reading code)
+
+### Core scraping and extraction
+- Single-page scrape, batch scrape, and domain crawling.
+- Sitemap ingestion and tree extraction.
+- Markdown, text, HTML, JSON, XML, CSV, screenshot, and PDF outputs.
+- Contact extraction (emails, phones, socials).
+
+### Browser intelligence and anti-bot handling
+- Playwright-first automation with stealth profile controls.
+- Native browser fallback routing (`chrome`, `msedge`, `chromium`) when blocked.
+- Interactive browser MCP tools for navigate/click/type/wait/key/scroll/hover/evaluate/screenshot.
+- Compact interaction-map MCP output for LLM-friendly clickable-element discovery.
+- Optional accessibility-tree MCP output for role/name-first autonomous navigation.
+- Script-level diagnostics for detection analysis and route optimization.
+
+### Dynamic host learning (auto-routing)
+- Per-domain host profiles in `host_profiles.json`.
+- Safe-subset auto-learning of routing strategy.
+- Promotion only after clean incognito successes (default threshold: 2).
+- Deterministic precedence: explicit override > host profile > global config > defaults.
+
+---
+
+## Out-of-the-box behavior ("just works")
+
+Default behavior is tuned for safety + resilience:
+- Playwright **Chromium** is the default primary browser path.
+- Incognito-style contexts by default.
+- Native fallback policy defaults to `on_blocked`.
+- Host profile learning is enabled by default.
+- Host profile read-only mode is available (`host_profiles_read_only=true`) to apply-only with no writes.
+- Host profile store is auto-created when needed.
+- If host profile persistence cannot initialize, toolkit continues with clear diagnostic metadata.
+- OS-level anti-bot interaction is blocked in headless mode.
+- Before OS mouse takeover, toolkit warns the operator and verifies active foreground window.
+
+---
+
+## Quick Start (60 seconds)
 
 ```bash
 pip install web-scraper-toolkit
 playwright install
 ```
 
-From source:
+Optional desktop solver support:
 
 ```bash
-git clone https://github.com/imyourboyroy/WebScraperToolkit.git
-cd WebScraperToolkit
-pip install -e .
+pip install web-scraper-toolkit[desktop]
 playwright install
 ```
 
----
-
-## Runtime config hierarchy (important)
-
-Effective precedence:
-
-1. **CLI arguments**
-2. **Environment variables** (`WST_*`)
-3. **Local cfg override** (`settings.local.cfg` or `settings.cfg`)
-4. **`config.json`**
-5. **Built-in defaults**
-
-Use `settings.example.cfg` as your local override template.
-
----
-
-## Standalone usage (CLI)
-
-Entry point:
+Run a first scrape:
 
 ```bash
-web-scraper --help
-```
-
-Core examples:
-
-```bash
-# Single URL
 web-scraper --url https://example.com --format markdown --export
-
-# Batch input with dynamic workers
-web-scraper --input urls.txt --format text --workers auto --merge --output-name merged.txt
-
-# Sitemap tree extraction only
-web-scraper --input https://example.com/sitemap.xml --site-tree --format json --output-name sitemap_tree.json
-
-# Use custom config files
-web-scraper --config ./config.json --local-config ./settings.local.cfg --url https://example.com
 ```
-
-Key CLI options:
-
-- `--url`, `--input`, `--crawl`
-- `--format` (`markdown`, `text`, `html`, `metadata`, `screenshot`, `pdf`, `json`, `xml`, `csv`)
-- `--workers` (`auto|max|dynamic|<int>`)
-- `--delay`
-- `--export`, `--merge`, `--output-dir`, `--temp-dir`, `--output-name`, `--clean`
-- `--contacts`
-- `--playbook`
-- `--config`, `--local-config`
-- `--headless`, `--verbose`, `--diagnostics`
 
 ---
 
-## MCP server usage (agentic integration)
+## End-to-End Flow
 
-Entry point:
+### Simple flow
 
-```bash
-web-scraper-server --help
+```mermaid
+flowchart TD
+  A[Input URL(s)] --> B[Runtime Config Resolution]
+  B --> C[Primary Fetch/Crawl Pipeline]
+  C --> D[Parse + Extract]
+  D --> E[Format + Write Output]
 ```
 
-### Local stdio (recommended for desktop agents)
+### Advanced flow (dynamic routing)
+
+```mermaid
+flowchart TD
+  A[Input URL(s)] --> B[Resolve Config: CLI > ENV > Files > Defaults]
+  B --> C[Host Profile Lookup]
+  C --> D[Playwright Primary Attempt]
+  D --> E{Blocked or Degraded?}
+  E -- No --> F[Parse + Extract + Save]
+  E -- Yes --> G[Native Browser Fallback Chain]
+  G --> H{Solved?}
+  H -- Yes --> I[Record Telemetry]
+  H -- No --> J[Optional Interactive Challenge Solve]
+  J --> I
+  I --> K[Host Learning Candidate/Promotion]
+  K --> F
+```
+
+> GitHub renders Mermaid natively. Some package indexes may not render Mermaid; use `INSTRUCTIONS.md` for text flow details.
+
+---
+
+## How to Use It
+
+## 1) CLI (fastest entry)
+
+Minimal:
+
+```bash
+web-scraper --url https://example.com --format markdown --export
+```
+
+Batch + merge:
+
+```bash
+web-scraper --input urls.txt --workers auto --format text --merge --output-name merged.txt
+```
+
+Diagnostics wrapper:
+
+```bash
+web-scraper --run-diagnostic challenge_matrix --diagnostic-url https://target-site.tld/resource --diagnostic-runs-per-variant 2
+```
+
+Optional toolkit auto-commit (off by default):
+
+```bash
+web-scraper --run-diagnostic toolkit_route --diagnostic-url https://target-site.tld/resource --diagnostic-auto-commit-host-profile
+```
+
+Strict progression gating + artifact capture:
+
+```bash
+web-scraper \
+  --run-diagnostic toolkit_route \
+  --diagnostic-url https://target-site.tld/resource \
+  --diagnostic-require-2xx \
+  --diagnostic-save-artifacts \
+  --diagnostic-artifacts-dir ./scripts/out/artifacts
+```
+
+## 2) MCP (agentic mode)
+
+Local stdio:
 
 ```bash
 web-scraper-server --stdio
 ```
 
-### Remote HTTP/streamable-http
+Remote transport:
 
 ```bash
-web-scraper-server \
-  --transport streamable-http \
-  --host 0.0.0.0 \
-  --port 8000 \
-  --path /mcp
+web-scraper-server --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp
 ```
 
-With API key:
-
-```bash
-set WST_MCP_API_KEY=your-secret-key
-web-scraper-server --transport streamable-http --host 0.0.0.0 --port 8000 --path /mcp
-```
-
-Or:
-
-```bash
-web-scraper-server --transport streamable-http --api-key your-secret-key
-```
-
-### Recommended remote deployment shape (best practice)
-
-1. Run MCP server as a **system service** on Ubuntu.
-2. Put Nginx/Caddy in front for **TLS** termination.
-3. Keep `require_api_key=true` for remote access.
-4. Tune concurrency in `settings.local.cfg`.
-5. Use `start_job/poll_job` for large workloads.
-
-Example `systemd` unit:
-
-```ini
-[Unit]
-Description=Web Scraper Toolkit MCP Server
-After=network.target
-
-[Service]
-User=ubuntu
-WorkingDirectory=/opt/webscraper
-Environment=WST_MCP_API_KEY=change-me
-ExecStart=/usr/bin/web-scraper-server --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp --config /opt/webscraper/config.json --local-config /opt/webscraper/settings.local.cfg
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
-```
-
----
-
-## MCP tools
-
-### Scraping
-- `scrape_url(url, selector?, max_length?, format?, timeout_profile?)`
-- `batch_scrape(urls, format?, timeout_profile?, workers?)`
-- `screenshot(url, path, timeout_profile?)`
-- `save_pdf(url, path, timeout_profile?)`
-- `get_metadata(url, timeout_profile?)`
-
-### Discovery
-- `get_sitemap(url, keywords?, limit?, timeout_profile?)`
-- `crawl_site(url, timeout_profile?)`
-- `extract_contacts(url, timeout_profile?)`
-- `batch_contacts(urls, timeout_profile?)`
-- `extract_links(url, filter_external?, timeout_profile?)`
-- `search_web(query, timeout_profile?)`
-- `deep_research(query, timeout_profile?)`
-
-### Forms / utility
-- `fill_form(url, fields, submit_selector?, save_session?, session_name?, timeout_profile?)`
-- `extract_tables(url, table_selector?, timeout_profile?)`
-- `click_element(url, selector, timeout_profile?)`
-- `health_check()`
-- `validate_url(url, timeout_profile?)`
-- `detect_content_type(url, timeout_profile?)`
-- `download_file(url, path, timeout_profile?)`
-
-### Content
-- `chunk_text(text, max_chunk_size?, overlap?)`
-- `get_token_count(text, model?)`
-- `truncate_text(text, max_tokens?, model?)`
-
-### Management + runtime
-- `configure_scraper(headless?, browser_type?, timeout_ms?)`
-- `configure_stealth(respect_robots?, stealth_mode?)`
-- `configure_runtime(overrides_json)`  
-- `reload_runtime_config(config_path?, local_config_path?)`
-- `get_config()`
-- `configure_retry(max_attempts?, initial_delay?, max_delay?)`
-- `clear_cache()`, `get_cache_stats()`
-- `clear_session(session_id?)`, `new_session()`, `list_sessions()`
-- `get_history(limit?)`, `clear_history()`
-- `run_playbook(playbook_json, proxies_json?, timeout_profile?)`
-
-### Async job lifecycle (long-running tasks)
-- `start_job(job_type, payload_json, timeout_profile?)`
-- `poll_job(job_id, include_result?)`
-- `cancel_job(job_id)`
-- `list_jobs(limit?)`
-
-Supported `start_job` types:
-- `batch_scrape`
-- `deep_research`
-- `run_playbook`
-- `batch_contacts`
-
----
-
-## Concurrency and timeout model
-
-### Concurrency
-
-- CLI workers resolve dynamically from host capacity when using `auto`.
-- MCP process workers and inflight limits are dynamic/configurable.
-- Batch operations use dedicated, configurable worker limits.
-- Crawler defaults can be tuned globally in runtime config.
-
-### Timeout profiles
-
-Built-in profiles:
-- `fast`
-- `standard`
-- `research`
-- `long`
-
-Profiles include:
-- `soft_seconds`
-- `hard_seconds`
-- `extension_seconds`
-- `allow_extension`
-
-Timeouts are **scaled by work units** for batch/heavier calls.
-
----
-
-## Fast result handling pattern (remote horsepower, local control)
-
-For high parallel workloads (e.g., 40–80+ concurrent tasks on server hardware):
-
-1. Call `start_job(...)` from your local agent/runtime.
-2. Poll with `poll_job(job_id)` until terminal state.
-3. Pull structured result payload into local memory/store.
-
-This avoids long blocking calls and keeps laptop resources light.
-
----
-
-## Remote file output strategy
-
-If your goal is “compute remotely, consume locally,” prefer:
-
-- `scrape_url`, `batch_scrape`, `extract_contacts`, `deep_research`
-- async jobs (`start_job`/`poll_job`)
-
-Use remote file tools only when explicitly needed:
-
-- `screenshot`, `save_pdf`, `download_file`
-
-All file writes are constrained to `runtime.safe_output_root`.
-Set `safe_output_root` to an isolated directory if remote files are required.
-
----
-
-## Config files
-
-### `config.json`
-
-Use the `runtime` section for dynamic behavior:
-
-```json
-{
-  "runtime": {
-    "default_timeout_profile": "standard",
-    "safe_output_root": "./output",
-    "concurrency": {
-      "cli_workers_default": "auto",
-      "mcp_process_workers": 0,
-      "mcp_inflight_limit": 0,
-      "mcp_batch_workers": 0,
-      "crawler_default_workers": 0
-    },
-    "server": {
-      "transport": "stdio",
-      "host": "127.0.0.1",
-      "port": 8000,
-      "path": "/mcp",
-      "require_api_key": false,
-      "api_key_env": "WST_MCP_API_KEY"
-    }
-  }
-}
-```
-
-### `settings.local.cfg` / `settings.cfg`
-
-Use for machine/local overrides.  
-See: `settings.example.cfg`.
-
----
-
-## Environment variables
-
-Common runtime env vars:
-
-- `WST_CONFIG_JSON`
-- `WST_LOCAL_CFG`
-- `WST_TIMEOUT_PROFILE`
-- `WST_MCP_PROCESS_WORKERS`
-- `WST_MCP_INFLIGHT_LIMIT`
-- `WST_MCP_BATCH_WORKERS`
-- `WST_CLI_WORKERS_DEFAULT`
-- `WST_SERVER_TRANSPORT`
-- `WST_SERVER_HOST`
-- `WST_SERVER_PORT`
-- `WST_SERVER_PATH`
-- `WST_SERVER_REQUIRE_API_KEY`
-- `WST_SERVER_API_KEY_ENV`
-- `WST_MCP_API_KEY`
-- `WST_SAFE_OUTPUT_ROOT`
-
----
-
-## Agent integration snippets
-
-### Claude Desktop / Cursor style (stdio)
-
-```json
-{
-  "mcpServers": {
-    "web-scraper": {
-      "command": "web-scraper-server",
-      "args": ["--stdio"]
-    }
-  }
-}
-```
-
-### Remote MCP endpoint
-
-Point your client to:
-
-`http://<host>:<port>/<path>`
-
-with `x-api-key` header (or Bearer token) if enabled.
-
-Python client example:
+## 3) Python API
 
 ```python
 import asyncio
-from fastmcp import Client
+from web_scraper_toolkit.browser.config import BrowserConfig
+from web_scraper_toolkit.browser.playwright_handler import PlaywrightManager
 
-async def main():
-    async with Client("https://mcp.example.com/mcp", auth="YOUR_API_KEY") as client:
-        result = await client.call_tool("start_job", {
-            "job_type": "batch_scrape",
-            "payload_json": "{\"urls\": [\"https://readyforus.app\", \"https://claragurney.com\"], \"format\": \"markdown\"}",
-            "timeout_profile": "research"
-        })
-        print(result.data)
+async def main() -> None:
+    cfg = BrowserConfig.from_dict({
+        "headless": True,
+        "browser_type": "chromium",
+        "native_fallback_policy": "on_blocked",
+        "host_profiles_enabled": True,
+        "host_profiles_path": "./host_profiles.json",
+        "host_profiles_read_only": False,
+    })
+
+    async with PlaywrightManager(cfg) as manager:
+        content, final_url, status = await manager.smart_fetch("https://example.com")
+        print({"status": status, "url": final_url, "has_content": bool(content)})
 
 asyncio.run(main())
 ```
 
 ---
 
-## Remote integration testing
+## Safety Model (OS input + anti-bot interactions)
 
-### Smoke script (recommended)
+When toolkit enters OS-level mouse challenge solving:
+- It warns the operator before input takeover.
+- It validates that the browser is foreground/active.
+- It verifies click/hold coordinates are inside active window bounds.
+- It refuses OS interaction in headless mode.
+- `pyautogui` failsafe remains active (move cursor to a screen corner to abort).
 
-```bash
-python verify_remote_mcp.py --remote-url https://mcp.example.com/mcp --targets https://readyforus.app https://claragurney.com
-```
-
-Environment-based variant:
-
-```bash
-export WST_REMOTE_MCP_URL=https://mcp.example.com/mcp
-export WST_REMOTE_MCP_API_KEY=your-secret-key
-python verify_remote_mcp.py
-```
-
-### Pytest remote suite (optional)
-
-```bash
-export WST_REMOTE_MCP_URL=https://mcp.example.com/mcp
-export WST_REMOTE_MCP_API_KEY=your-secret-key
-pytest -q tests/test_remote_mcp_integration.py
-```
-
-These tests are skipped unless `WST_REMOTE_MCP_URL` is set.
+Optional env override:
+- `WST_OS_INPUT_WARNING_SECONDS` (default: `3`)
 
 ---
 
-## Notes
+## Configuration Model
 
-- No local machine paths, private hostnames, or private IPs should be committed.
-- Keep secrets in environment variables or local cfg files ignored by git.
-- For heavy remote deployments, tune concurrency + timeout profiles together.
+Precedence order:
+1. Explicit CLI/MCP arguments
+2. Environment variables (`WST_*`)
+3. `settings.local.cfg` / `settings.cfg`
+4. `config.json`
+5. Built-in defaults
+
+Key files:
+- `config.example.json`
+- `settings.example.cfg`
+- `host_profiles.example.json`
+- `INSTRUCTIONS.md` (full operations runbook)
 
 ---
 
-## Author
+## Full Usage and Operations
 
-Created by **Roy Dawson IV**  
-GitHub: https://github.com/imyourboyroy  
-PyPI: https://pypi.org/user/ImYourBoyRoy/
+For exhaustive setup, deployment, troubleshooting, CLI/MCP option coverage, and diagnostics workflows, read:
+
+- **`INSTRUCTIONS.md`**
+- **`docs/config_schema.md`** (config + host profile schema contract)
+- **`docs/api_stability.md`** (API/deprecation policy)
+- **`docs/support_matrix.md`** (platform/browser support matrix)
+- **`docs/release_checklist.md`** (ship checklist)
+
+Canonical script diagnostics now use `scripts/diag_*.py` names.
+
+---
+
+## Verified Outputs
+
+The following output blocks are copied from deterministic command runs in this repository.
+
+### Verified Output A — `diag_toolkit_zoominfo --help`
+
+Command:
+
+```bash
+python scripts/diag_toolkit_zoominfo.py --help
+```
+
+Expected output:
+
+```text
+usage: diag_toolkit_zoominfo.py [-h] [--url URL] [--timeout-ms TIMEOUT_MS]
+                                [--skip-interactive]
+                                [--include-headless-stage]
+                                [--log-level {DEBUG,INFO,WARNING,ERROR}]
+                                [--auto-commit-host-profile]
+                                [--host-profiles-path HOST_PROFILES_PATH]
+                                [--read-only] [--require-2xx]
+                                [--save-artifacts]
+                                [--artifacts-dir ARTIFACTS_DIR]
+```
+
+### Verified Output B — CLI includes strict/artifact diagnostic flags
+
+Command:
+
+```bash
+python -m web_scraper_toolkit.cli --help
+```
+
+Expected excerpt:
+
+```text
+  --diagnostic-require-2xx
+                        Require final HTTP 2xx status for toolkit diagnostic
+                        stage success.
+  --diagnostic-save-artifacts
+                        Persist per-stage diagnostic artifacts for toolkit
+                        route diagnostics.
+  --diagnostic-artifacts-dir DIAGNOSTIC_ARTIFACTS_DIR
+                        Optional artifacts directory override for toolkit
+                        route diagnostics.
+```
+
+### Verified Output C — mocked diagnostic report payload (from deterministic test)
+
+File/fixture expectation used in `tests/test_script_diagnostics.py`:
+
+```json
+{
+  "summary": {
+    "progressed_stages": 1
+  }
+}
+```
+
+---
+
+## Production Deployment Checklist
+
+Before release tags, execute and verify:
+
+```bash
+ruff format --check .
+ruff check src
+mypy
+pytest -q -m "not integration"
+python -m build
+python -m twine check dist/*
+python scripts/clean_workspace.py --dry-run
+```
+
+For full release/security gates, see `docs/release_checklist.md`.
+
+---
+
+## Support Matrix
+
+- Python: 3.10–3.13
+- OS: Windows, Linux, macOS
+- Native fallback channels: chrome, msedge, chromium
+- Interactive OS-level challenge solving: headed desktop sessions only
+
+Details and limitations: `docs/support_matrix.md`.
+
+---
+
+## Author & Links
+
+Created by: **Roy Dawson IV**  
+GitHub: <https://github.com/imyourboyroy>  
+PyPi: <https://pypi.org/user/ImYourBoyRoy/>

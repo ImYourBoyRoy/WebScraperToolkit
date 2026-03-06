@@ -17,12 +17,9 @@ from ...parsers.scraping_tools import (
     capture_screenshot,
     save_as_pdf,
 )
-from ...parsers.config import ParserConfig
 from ...browser.playwright_crawler import WebCrawler
 from ...core.runtime import resolve_worker_count
 from .config import GLOBAL_BROWSER_CONFIG, get_runtime_config
-
-GLOBAL_PARSER_CONFIG = ParserConfig()
 
 
 async def scrape_single_url(
@@ -35,11 +32,11 @@ async def scrape_single_url(
     if format == "markdown":
         return read_website_markdown(
             url,
-            config=GLOBAL_PARSER_CONFIG,
+            config=GLOBAL_BROWSER_CONFIG,
             selector=selector,
             max_length=max_length,
         )
-    return read_website_content(url, config=GLOBAL_PARSER_CONFIG)
+    return read_website_content(url, config=GLOBAL_BROWSER_CONFIG)
 
 
 async def scrape_batch(
@@ -85,11 +82,11 @@ async def scrape_batch(
 
 async def take_screenshot(url: str, path: str) -> bool:
     """Captures a screenshot."""
-    data = capture_screenshot(url, path, config=GLOBAL_PARSER_CONFIG)
+    data = capture_screenshot(url, path, config=GLOBAL_BROWSER_CONFIG)
     return bool(data)
 
 
 async def save_url_pdf(url: str, path: str) -> bool:
     """Saves URL to PDF."""
-    data = save_as_pdf(url, path, config=GLOBAL_PARSER_CONFIG)
+    data = save_as_pdf(url, path, config=GLOBAL_BROWSER_CONFIG)
     return bool(data)

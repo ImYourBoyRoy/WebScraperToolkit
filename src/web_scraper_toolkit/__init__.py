@@ -1,17 +1,14 @@
 # ./src/web_scraper_toolkit/__init__.py
 """
-Web Scraper Toolkit
-===================
-
-Root package exposing the unified API for the toolkit.
-Aggregates components from core, browser, and parsers sub-packages.
-
-Usage:
-    from src.web_scraper_toolkit import WebCrawler, BrowserConfig
-
+Expose the public WebScraperToolkit package API used by CLI, MCP, and Python imports.
+Run: import this package directly (e.g., `import web_scraper_toolkit`) to access re-exported primitives.
+Inputs: Python import calls and package metadata resolution during runtime/build/install workflows.
+Outputs: stable symbols for configs, crawlers, diagnostics runners, parser helpers, and utility functions.
+Side effects: imports submodules to bind public exports, which may initialize module-level constants/loggers.
+Operational notes: this is the canonical API surface; keep exports intentional and synchronized with docs/tests.
 """
 
-__version__ = "0.2.4"
+__version__ = "0.3.0"
 
 # Configs (Modular)
 from .browser.config import BrowserConfig
@@ -22,7 +19,30 @@ from .server.config import ServerConfig
 from .core.logger import setup_logger
 from .core.runtime import load_runtime_settings, resolve_worker_count
 from .core.diagnostics import verify_environment, print_diagnostics
-from .browser.playwright_handler import PlaywrightManager
+from .core.script_diagnostics import (
+    ScriptDiagnosticsRunner,
+    run_toolkit_route_diagnostic,
+    run_challenge_matrix_diagnostic,
+    run_bot_check_diagnostic,
+    run_browser_info_diagnostic,
+)
+from .browser.playwright_handler import (
+    PlaywrightManager,
+    BotBlockReason,
+    classify_bot_block,
+)
+from .browser.host_profiles import (
+    HostProfileStore,
+    normalize_host,
+    sanitize_routing_profile,
+)
+from .browser.domain_identity import registrable_domain, host_lookup_candidates
+from .browser.serp_native import (
+    sanitize_headless_user_agent,
+    build_serp_client_hints,
+    is_serp_allowlisted,
+    is_serp_blocked,
+)
 from .browser.playwright_crawler import WebCrawler
 from .core.input import load_urls_from_source
 from .crawler.engine import AutonomousCrawler
@@ -60,7 +80,23 @@ __all__ = [
     "resolve_worker_count",
     "verify_environment",
     "print_diagnostics",
+    "ScriptDiagnosticsRunner",
+    "run_toolkit_route_diagnostic",
+    "run_challenge_matrix_diagnostic",
+    "run_bot_check_diagnostic",
+    "run_browser_info_diagnostic",
     "PlaywrightManager",
+    "BotBlockReason",
+    "classify_bot_block",
+    "HostProfileStore",
+    "normalize_host",
+    "registrable_domain",
+    "host_lookup_candidates",
+    "sanitize_routing_profile",
+    "sanitize_headless_user_agent",
+    "build_serp_client_hints",
+    "is_serp_allowlisted",
+    "is_serp_blocked",
     "WebCrawler",
     "AutonomousCrawler",
     "Playbook",

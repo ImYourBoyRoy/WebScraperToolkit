@@ -44,8 +44,20 @@ def _run_coro_sync(coro: Coroutine[Any, Any, T]) -> T:
     return result.result()
 
 
+def _resolve_browser_config(
+    config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]],
+) -> BrowserConfig:
+    """Resolve any supported config input into BrowserConfig."""
+    if isinstance(config, BrowserConfig):
+        return config
+    if isinstance(config, dict):
+        return BrowserConfig.from_dict(config)
+    return BrowserConfig()
+
+
 async def _arun_search(
-    search_query: str, config: Optional[Union[Dict[str, Any], ParserConfig]] = None
+    search_query: str,
+    config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]] = None,
 ) -> str:
     """Enhanced search using DuckDuckGo (HTML version) to avoid blocks."""
     manager = None
@@ -63,7 +75,8 @@ async def _arun_search(
 
         from ...browser.playwright_handler import PlaywrightManager
 
-        manager = PlaywrightManager(config=BrowserConfig())
+        browser_cfg = _resolve_browser_config(config)
+        manager = PlaywrightManager(config=browser_cfg)
         await manager.start()
 
         # DDG HTML often checks for 'content-type' form submission, but GET usually works for simple queries.
@@ -139,7 +152,8 @@ async def _arun_search(
 
 
 def general_web_search(
-    search_query: str, config: Optional[Union[Dict[str, Any], ParserConfig]] = None
+    search_query: str,
+    config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]] = None,
 ) -> str:
     """
     Performs a web search using a search engine to find information or relevant URLs.
@@ -153,7 +167,8 @@ def general_web_search(
 
 
 async def _arun_deep_research(
-    search_query: str, config: Optional[Union[Dict[str, Any], ParserConfig]] = None
+    search_query: str,
+    config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]] = None,
 ) -> str:
     """Async helper for deep research using DuckDuckGo + Content Crawl."""
     logger.info(f"Executing Deep Research (via DDG) for query: {search_query}")
@@ -163,7 +178,8 @@ async def _arun_deep_research(
     try:
         from ...browser.playwright_handler import PlaywrightManager
 
-        manager = PlaywrightManager(config=BrowserConfig())
+        browser_cfg = _resolve_browser_config(config)
+        manager = PlaywrightManager(config=browser_cfg)
         await manager.start()
 
         # --- 1. Perform Search (Reuse DDG logic directly if possible, but distinct here) ---
@@ -245,7 +261,8 @@ async def _arun_deep_research(
 
 
 def deep_research_with_google(
-    search_query: str, config: Optional[Union[Dict[str, Any], ParserConfig]] = None
+    search_query: str,
+    config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]] = None,
 ) -> str:
     """
     Performs a deep research task. It searches using DuckDuckGo (more reliable locally),

@@ -7,6 +7,12 @@ on:
     branches: [ main, master ]
   pull_request:
   workflow_dispatch:
+    inputs:
+      run_integration:
+        description: "Run integration tests (live network/browser)"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -50,12 +56,14 @@ jobs:
       - name: Ruff lint
         run: ruff check src
 
-      # - name: Mypy type-check
-      #   run: mypy src/web_scraper_toolkit
-      #   continue-on-error: true  # Strict typing is a work in progress
+      - name: Mypy type-check
+        run: mypy
 
       - name: Run tests
-        run: pytest -q
+        run: pytest -q -m "not integration"
+
+      - name: Workspace hygiene dry run
+        run: python scripts/clean_workspace.py --dry-run
 
       - name: Build sdist and wheel
         run: python -m build
@@ -67,3 +75,80 @@ jobs:
         run: |
           python -m pip install --force-reinstall dist/*.whl
           python -c "import web_scraper_toolkit, subprocess, sys; print('Toolkit version:', getattr(web_scraper_toolkit, '__version__', 'unknown')); subprocess.run(['web-scraper', '--help'], check=True)"
+
+  security:
+    name: security gates
+    runs-on: ubuntu-latest
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Upgrade pip
+        run: python -m pip install -U pip
+
+      - name: Install security tooling
+        run: python -m pip install -U bandit pip-audit
+
+      - name: Run Bandit (high severity only)
+        run: python -m bandit -q -r src/web_scraper_toolkit -lll -iii
+
+      - name: Build dependency audit requirements
+        run: |
+          python - <<'PY'
+          import pathlib
+          import tomllib
+
+          pyproject = pathlib.Path("pyproject.toml")
+          data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+          deps = list(data.get("project", {}).get("dependencies", []))
+          out = pathlib.Path(".audit-requirements.txt")
+          out.write_text("\n".join(deps) + "\n", encoding="utf-8")
+          print(out.read_text(encoding="utf-8"))
+          PY
+
+      - name: Run pip-audit
+        run: python -m pip_audit -r .audit-requirements.txt --strict
+
+      - name: Run Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  integration:
+    name: integration tests (manual)
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_integration == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      SKIP_CF_TEST: "0"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Upgrade pip
+        run: python -m pip install -U pip
+
+      - name: Install project and test tooling
+        run: |
+          python -m pip install -e .
+          python -m pip install -U pytest pytest-asyncio
+
+      - name: Install Playwright browsers
+        run: playwright install --with-deps chromium
+
+      - name: Run integration tests
+        run: pytest -q -m integration

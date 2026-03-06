@@ -49,6 +49,8 @@ from .mcp_tools import (
     register_form_tools,
     register_content_tools,
     register_management_tools,
+    register_browser_interactive_tools,
+    register_diagnostics_tools,
 )
 
 
@@ -282,6 +284,8 @@ register_discovery_tools(mcp, create_envelope, format_error, run_in_process)
 register_form_tools(mcp, create_envelope, format_error, run_in_process)
 register_content_tools(mcp, create_envelope, format_error, run_in_process)
 register_management_tools(mcp, create_envelope, format_error, run_in_process)
+register_browser_interactive_tools(mcp, create_envelope, format_error, run_in_process)
+register_diagnostics_tools(mcp, create_envelope, format_error, run_in_process)
 
 logger.info("MCP Server initialized with tool registry")
 

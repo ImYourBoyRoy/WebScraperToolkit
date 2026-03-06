@@ -15,16 +15,14 @@ from ...parsers.scraping_tools import (
     general_web_search,
     deep_research_with_google,
 )
-from ...parsers.config import ParserConfig
-
-GLOBAL_PARSER_CONFIG = ParserConfig()
+from .config import GLOBAL_BROWSER_CONFIG
 
 
 async def perform_search(query: str) -> str:
     """Performs a web search."""
-    return general_web_search(query, config=GLOBAL_PARSER_CONFIG)
+    return general_web_search(query, config=GLOBAL_BROWSER_CONFIG)
 
 
 async def perform_deep_research(query: str) -> str:
     """Performs deep research (search + crawl)."""
-    return deep_research_with_google(query, config=GLOBAL_PARSER_CONFIG)
+    return deep_research_with_google(query, config=GLOBAL_BROWSER_CONFIG)

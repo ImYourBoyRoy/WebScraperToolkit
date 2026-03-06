@@ -1,135 +1,159 @@
 {
-	"browser": {
-		"headless": true,
-		"browser_type": "chromium",
-		"viewport_width": 1280,
-		"viewport_height": 800,
-		"timeout": 30000
-	},
-	"parser": {
-		"ignore_links": false,
-		"ignore_images": false,
-		"body_width": 0,
-		"extract_opengraph": true,
-		"extract_twitter_cards": true
-	},
-	"sitemap": {
-		"max_concurrent": 4,
-		"max_depth": 3,
-		"request_timeout": 15
-	},
-	"http": {
-		"connection_pool_limit": 100,
-		"connection_per_host": 10,
-		"dns_cache_ttl": 300,
-		"total_timeout": 30,
-		"connect_timeout": 10
-	},
-	"retry": {
-		"max_attempts": 3,
-		"initial_delay_seconds": 1.0,
-		"max_delay_seconds": 30.0,
-		"exponential_base": 2.0,
-		"jitter": true
-	},
-	"proxie": {
-		"validation_url": "https://httpbin.org/ip",
-		"timeout_seconds": 10,
-		"max_concurrent_checks": 50,
-		"rotation_strategy": "round_robin",
-		"enforce_secure_ip": true,
-		"max_retries": 3,
-		"cooldown_seconds": 300
-	},
-	"crawler": {
-		"default_user_agent": "WebScraperToolkit/1.0 (Crawler)",
-		"default_max_depth": 3,
-		"default_max_pages": 100,
-		"default_crawl_delay": 1.0,
-		"global_ignore_robots": false,
-		"request_timeout": 30
-	},
-	"playbook": {
-		"respect_robots": true,
-		"max_depth": 3,
-		"max_pages": 100,
-		"crawl_delay": 1.0,
-		"ai_context": false,
-		"validation_enabled": false,
-		"reuse_rules": true
-	},
-	"cache": {
-		"enabled": true,
-		"ttl_seconds": 300,
-		"directory": "./cache",
-		"max_size_mb": 100
-	},
-	"session": {
-		"persist": true,
-		"directory": "./sessions",
-		"reuse_browser": true
-	},
-	"chunking": {
-		"enabled": false,
-		"max_chunk_size": 8000,
-		"overlap": 200
-	},
-	"temp_directory": "./temp",
-	"server": {
-		"name": "Web Scraper Toolkit",
-		"port": 8000,
-		"host": "localhost",
-		"log_level": "INFO"
-	},
-	"runtime": {
-		"default_timeout_profile": "standard",
-		"safe_output_root": "./output",
-		"job_retention_seconds": 3600,
-		"max_job_records": 1000,
-		"concurrency": {
-			"cli_workers_default": "auto",
-			"cli_workers_max": 32,
-			"mcp_process_workers": 0,
-			"mcp_inflight_limit": 0,
-			"mcp_batch_workers": 0,
-			"crawler_default_workers": 0,
-			"crawler_max_workers": 128,
-			"cpu_reserve": 1
-		},
-		"server": {
-			"transport": "stdio",
-			"host": "127.0.0.1",
-			"port": 8000,
-			"path": "/mcp",
-			"require_api_key": false,
-			"api_key_env": "WST_MCP_API_KEY",
-			"expose_server_banner": true
-		},
-		"timeouts": {
-			"fast": {
-				"soft_seconds": 20,
-				"hard_seconds": 45,
-				"extension_seconds": 10,
-				"allow_extension": true
-			},
-			"standard": {
-				"soft_seconds": 60,
-				"hard_seconds": 180,
-				"extension_seconds": 60,
-				"allow_extension": true
-			},
-			"research": {
-				"soft_seconds": 180,
-				"hard_seconds": 900,
-				"extension_seconds": 300,
-				"allow_extension": true
-			},
-			"long": {
-				"soft_seconds": 600,
-				"hard_seconds": 3600,
-				"extension_seconds": 900,
-				"allow_extension": true
-			}
-		}
-	}
+  "browser": {
+    "headless": true,
+    "browser_type": "chromium",
+    "viewport_width": 1280,
+    "viewport_height": 800,
+    "timeout": 30000,
+    "native_fallback_policy": "on_blocked",
+    "native_browser_channels": [
+      "chrome",
+      "msedge"
+    ],
+    "native_browser_headless": false,
+    "native_context_mode": "incognito",
+    "native_profile_dir": "",
+    "interactive_channel": "chrome",
+    "interactive_context_mode": "incognito",
+    "interactive_profile_dir": "",
+    "stealth_mode": true,
+    "stealth_profile": "baseline",
+    "serp_strategy": "none",
+    "serp_retry_policy": "none",
+    "serp_retry_backoff_seconds": 12.0,
+    "serp_allowlist_only": true,
+    "serp_debug_capture_headers": false,
+    "host_profiles_enabled": true,
+    "host_profiles_path": "./host_profiles.json",
+    "host_profiles_read_only": false,
+    "host_learning_enabled": true,
+    "host_learning_apply_mode": "safe_subset",
+    "host_learning_promotion_threshold": 2
+  },
+  "parser": {
+    "ignore_links": false,
+    "ignore_images": false,
+    "body_width": 0,
+    "extract_opengraph": true,
+    "extract_twitter_cards": true
+  },
+  "sitemap": {
+    "max_concurrent": 4,
+    "max_depth": 3,
+    "request_timeout": 15
+  },
+  "http": {
+    "connection_pool_limit": 100,
+    "connection_per_host": 10,
+    "dns_cache_ttl": 300,
+    "total_timeout": 30,
+    "connect_timeout": 10
+  },
+  "retry": {
+    "max_attempts": 3,
+    "initial_delay_seconds": 1.0,
+    "max_delay_seconds": 30.0,
+    "exponential_base": 2.0,
+    "jitter": true
+  },
+  "proxie": {
+    "validation_url": "https://httpbin.org/ip",
+    "timeout_seconds": 10,
+    "max_concurrent_checks": 50,
+    "rotation_strategy": "round_robin",
+    "enforce_secure_ip": true,
+    "max_retries": 3,
+    "cooldown_seconds": 300
+  },
+  "crawler": {
+    "default_user_agent": "WebScraperToolkit/1.0 (Crawler)",
+    "default_max_depth": 3,
+    "default_max_pages": 100,
+    "default_crawl_delay": 1.0,
+    "global_ignore_robots": false,
+    "request_timeout": 30
+  },
+  "playbook": {
+    "respect_robots": true,
+    "max_depth": 3,
+    "max_pages": 100,
+    "crawl_delay": 1.0,
+    "ai_context": false,
+    "validation_enabled": false,
+    "reuse_rules": true
+  },
+  "cache": {
+    "enabled": true,
+    "ttl_seconds": 300,
+    "directory": "./cache",
+    "max_size_mb": 100
+  },
+  "session": {
+    "persist": true,
+    "directory": "./sessions",
+    "reuse_browser": true
+  },
+  "chunking": {
+    "enabled": false,
+    "max_chunk_size": 8000,
+    "overlap": 200
+  },
+  "temp_directory": "./temp",
+  "server": {
+    "name": "Web Scraper Toolkit",
+    "port": 8000,
+    "host": "localhost",
+    "log_level": "INFO"
+  },
+  "runtime": {
+    "default_timeout_profile": "standard",
+    "safe_output_root": "./output",
+    "job_retention_seconds": 3600,
+    "max_job_records": 1000,
+    "concurrency": {
+      "cli_workers_default": "auto",
+      "cli_workers_max": 32,
+      "mcp_process_workers": 0,
+      "mcp_inflight_limit": 0,
+      "mcp_batch_workers": 0,
+      "crawler_default_workers": 0,
+      "crawler_max_workers": 128,
+      "cpu_reserve": 1
+    },
+    "server": {
+      "transport": "stdio",
+      "host": "127.0.0.1",
+      "port": 8000,
+      "path": "/mcp",
+      "require_api_key": false,
+      "api_key_env": "WST_MCP_API_KEY",
+      "expose_server_banner": true
+    },
+    "timeouts": {
+      "fast": {
+        "soft_seconds": 20,
+        "hard_seconds": 45,
+        "extension_seconds": 10,
+        "allow_extension": true
+      },
+      "standard": {
+        "soft_seconds": 60,
+        "hard_seconds": 180,
+        "extension_seconds": 60,
+        "allow_extension": true
+      },
+      "research": {
+        "soft_seconds": 180,
+        "hard_seconds": 900,
+        "extension_seconds": 300,
+        "allow_extension": true
+      },
+      "long": {
+        "soft_seconds": 600,
+        "hard_seconds": 3600,
+        "extension_seconds": 900,
+        "allow_extension": true
+      }
+    }
+  }
 }

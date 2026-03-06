@@ -1,0 +1,9 @@
+{
+  "include_ruff": true,
+  "include_mypy": false,
+  "include_pytest": true,
+  "include_build": true,
+  "include_twine_check": true,
+  "parallel_prebuild": true,
+  "require_prebuild_success_for_build": true
+}

@@ -62,9 +62,9 @@ jobs:
             
             # Simple check or warn if static version in toml differs from git tag
             if built_ver != exp:
-                print(f"WARNING: Built version {built_ver} != tag version {exp}")
-                print("ensure pyproject.toml version matches your git tag!")
-                # raise SystemExit(1) # Uncomment to enforce strict match logic
+                print(f"ERROR: Built version {built_ver} != tag version {exp}")
+                print("pyproject.toml version must match the release git tag.")
+                raise SystemExit(1)
             else:
                 print("Verified version:", built_ver)
           PY
