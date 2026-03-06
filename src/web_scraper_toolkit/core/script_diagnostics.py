@@ -18,6 +18,7 @@ import sys
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -39,10 +40,11 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def split_cli_args(raw: str) -> List[str]:
-    """Split a shell-like argument string into argv tokens."""
+@lru_cache(maxsize=512)
+def _split_cli_args_cached(raw: str) -> tuple[str, ...]:
+    """Cached argv splitter for hot-path diagnostic argument parsing."""
     if not raw.strip():
-        return []
+        return ()
     tokens = shlex.split(raw, posix=False)
     normalized: List[str] = []
     for token in tokens:
@@ -50,7 +52,12 @@ def split_cli_args(raw: str) -> List[str]:
             normalized.append(token[1:-1])
         else:
             normalized.append(token)
-    return normalized
+    return tuple(normalized)
+
+
+def split_cli_args(raw: str) -> List[str]:
+    """Split a shell-like argument string into argv tokens."""
+    return list(_split_cli_args_cached(raw))
 
 
 def _safe_read_json(path: Path) -> Optional[Any]:

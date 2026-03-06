@@ -17,6 +17,7 @@ from .sitemap import (
     parse_sitemap_urls as parse_sitemap,
     extract_sitemap_tree,
 )
+from .content import FetchResult, aread_website_markdown_result
 from .scraping_tools import read_website_markdown, read_website_content
 
 # Re-exports from extraction sub-package (backward compatibility)
@@ -31,6 +32,8 @@ from .search.serp_parser import SerpParser
 __all__ = [
     # Core
     "MarkdownConverter",
+    "FetchResult",
+    "aread_website_markdown_result",
     "read_website_markdown",
     "read_website_content",
     # Sitemap

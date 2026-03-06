@@ -10,6 +10,7 @@ import asyncio
 import logging
 import re
 from concurrent.futures import Future
+from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any, Coroutine, Dict, List, Optional, TypeVar, Union
 
@@ -21,6 +22,34 @@ from ..browser.config import BrowserConfig
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
+
+
+@dataclass(frozen=True)
+class FetchResult:
+    """Structured fetch result that preserves markdown plus routing metadata."""
+
+    markdown: str
+    final_url: str
+    status_code: Optional[int]
+    route_selected: str = ""
+    host_profile_applied: str = ""
+    challenge_detected: bool = False
+    blocked_reason: str = ""
+    artifact_paths: Dict[str, str] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def as_dict(self) -> Dict[str, Any]:
+        return {
+            "markdown": self.markdown,
+            "final_url": self.final_url,
+            "status_code": self.status_code,
+            "route_selected": self.route_selected,
+            "host_profile_applied": self.host_profile_applied,
+            "challenge_detected": self.challenge_detected,
+            "blocked_reason": self.blocked_reason,
+            "artifact_paths": dict(self.artifact_paths),
+            "metadata": dict(self.metadata),
+        }
 
 
 def _run_coro_sync(coro: Coroutine[Any, Any, T]) -> T:
@@ -154,13 +183,51 @@ def _dict_to_browser_config(config: Dict[str, Any]) -> "BrowserConfig":
     return BrowserConfig.from_dict(config)
 
 
-async def aread_website_markdown(
+def _extract_route_selected(metadata: Dict[str, Any]) -> str:
+    """Resolve a stable route label from Playwright smart-fetch metadata."""
+    candidate_values: List[str] = []
+    for key in ("attempt_profile", "route_selected", "fetch_route", "strategy"):
+        value = metadata.get(key)
+        if isinstance(value, str) and value.strip():
+            candidate_values.append(value.strip())
+    resolved_routing = metadata.get("resolved_routing", {})
+    if isinstance(resolved_routing, dict):
+        for key in ("strategy", "primary_strategy", "mode"):
+            value = resolved_routing.get(key)
+            if isinstance(value, str) and value.strip():
+                candidate_values.append(value.strip())
+    return candidate_values[0] if candidate_values else ""
+
+
+def _extract_artifact_paths(metadata: Dict[str, Any]) -> Dict[str, str]:
+    """Collect artifact-like path fields without assuming a rigid metadata schema."""
+    artifact_paths: Dict[str, str] = {}
+    for key, value in metadata.items():
+        if not isinstance(value, str) or not value.strip():
+            continue
+        lowered_key = key.lower()
+        lowered_value = value.lower()
+        if (
+            "path" in lowered_key
+            or "artifact" in lowered_key
+            or "screenshot" in lowered_key
+        ):
+            artifact_paths[key] = value
+            continue
+        if lowered_value.endswith(
+            (".png", ".jpg", ".jpeg", ".pdf", ".html", ".json", ".md")
+        ):
+            artifact_paths[key] = value
+    return artifact_paths
+
+
+async def aread_website_markdown_result(
     website_url: str,
     config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]] = None,
     selector: Optional[str] = None,
     max_length: Optional[int] = None,
     playwright_manager: Optional[Any] = None,
-) -> str:
+) -> FetchResult:
     """Async version of read_website_markdown.
 
     Fetches a website and converts the content to clean Markdown.
@@ -192,6 +259,19 @@ async def aread_website_markdown(
 
         # Use Smart Fetch for robustness
         content, final_url, status_code = await manager.smart_fetch(url=website_url)
+        fetch_metadata = (
+            manager.get_last_fetch_metadata()
+            if hasattr(manager, "get_last_fetch_metadata")
+            else {}
+        )
+        if not isinstance(fetch_metadata, dict):
+            fetch_metadata = {}
+        route_selected = _extract_route_selected(fetch_metadata)
+        host_profile_applied = str(
+            fetch_metadata.get("active_host_profile_applied", "")
+        ).strip()
+        blocked_reason = str(fetch_metadata.get("blocked_reason", "")).strip()
+        challenge_detected = blocked_reason.lower() not in {"", "none"}
 
         if status_code == 200 and content:
             # Selector filtering (BeautifulSoup)
@@ -201,7 +281,17 @@ async def aread_website_markdown(
                 if selected_tag:
                     content = str(selected_tag)
                 else:
-                    return f"Error: Selector '{selector}' not found on {website_url}"
+                    return FetchResult(
+                        markdown=f"Error: Selector '{selector}' not found on {website_url}",
+                        final_url=final_url,
+                        status_code=status_code,
+                        route_selected=route_selected,
+                        host_profile_applied=host_profile_applied,
+                        challenge_detected=challenge_detected,
+                        blocked_reason=blocked_reason,
+                        artifact_paths=_extract_artifact_paths(fetch_metadata),
+                        metadata=fetch_metadata,
+                    )
 
             # Convert to Markdown
             markdown = MarkdownConverter.to_markdown(content, base_url=final_url)
@@ -218,17 +308,66 @@ async def aread_website_markdown(
             logger.info(
                 f"Successfully scraped and converted {len(markdown)} chars from {final_url}"
             )
-            return output
-        else:
-            return f"Error: Failed to retrieve content from {website_url}. Status code: {status_code}"
+            return FetchResult(
+                markdown=output,
+                final_url=final_url,
+                status_code=status_code,
+                route_selected=route_selected,
+                host_profile_applied=host_profile_applied,
+                challenge_detected=challenge_detected,
+                blocked_reason=blocked_reason,
+                artifact_paths=_extract_artifact_paths(fetch_metadata),
+                metadata=fetch_metadata,
+            )
+
+        return FetchResult(
+            markdown=(
+                f"Error: Failed to retrieve content from {website_url}. "
+                f"Status code: {status_code}"
+            ),
+            final_url=final_url,
+            status_code=status_code,
+            route_selected=route_selected,
+            host_profile_applied=host_profile_applied,
+            challenge_detected=challenge_detected,
+            blocked_reason=blocked_reason,
+            artifact_paths=_extract_artifact_paths(fetch_metadata),
+            metadata=fetch_metadata,
+        )
     except Exception as e:
         logger.error(
             f"An error occurred while scraping {website_url}: {e}", exc_info=True
         )
-        return f"An error occurred while scraping the website: {str(e)}"
+        return FetchResult(
+            markdown=f"An error occurred while scraping the website: {str(e)}",
+            final_url=website_url,
+            status_code=None,
+            blocked_reason="exception",
+            challenge_detected=False,
+            artifact_paths={},
+            metadata={"error": str(e)},
+        )
     finally:
         if owns_manager and manager:
             await manager.stop()
+
+
+async def aread_website_markdown(
+    website_url: str,
+    config: Optional[Union[Dict[str, Any], ParserConfig, BrowserConfig]] = None,
+    selector: Optional[str] = None,
+    max_length: Optional[int] = None,
+    playwright_manager: Optional[Any] = None,
+) -> str:
+    """Backward-compatible markdown fetch API returning only markdown text."""
+    result = await aread_website_markdown_result(
+        website_url,
+        config=config,
+        selector=selector,
+        max_length=max_length,
+        playwright_manager=playwright_manager,
+    )
+    return result.markdown
 
 
 # Backward-compatible alias
