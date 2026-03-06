@@ -1,0 +1,18 @@
+[
+  {
+    "source": "C:/Users/Roy/Desktop/AI_tools/WebScraperToolkit/docs/diagrams/advanced_flow.mmd",
+    "output": "C:/Users/Roy/Desktop/AI_tools/WebScraperToolkit/docs/assets/diagrams/advanced_flow.webp",
+    "output_width": 880,
+    "output_height": 3104,
+    "theme": "neutral",
+    "format": "webp"
+  },
+  {
+    "source": "C:/Users/Roy/Desktop/AI_tools/WebScraperToolkit/docs/diagrams/simple_flow.mmd",
+    "output": "C:/Users/Roy/Desktop/AI_tools/WebScraperToolkit/docs/assets/diagrams/simple_flow.webp",
+    "output_width": 2706,
+    "output_height": 140,
+    "theme": "neutral",
+    "format": "webp"
+  }
+]

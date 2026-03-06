@@ -79,33 +79,15 @@ web-scraper --url https://example.com --format markdown --export
 
 ### Simple flow
 
-```mermaid
-flowchart TD
-  A[Input URL(s)] --> B[Runtime Config Resolution]
-  B --> C[Primary Fetch/Crawl Pipeline]
-  C --> D[Parse + Extract]
-  D --> E[Format + Write Output]
-```
+![Simple flow diagram](https://raw.githubusercontent.com/ImYourBoyRoy/WebScraperToolkit/main/docs/assets/diagrams/simple_flow.webp)
 
 ### Advanced flow (dynamic routing)
 
-```mermaid
-flowchart TD
-  A[Input URL(s)] --> B[Resolve Config: CLI > ENV > Files > Defaults]
-  B --> C[Host Profile Lookup]
-  C --> D[Playwright Primary Attempt]
-  D --> E{Blocked or Degraded?}
-  E -- No --> F[Parse + Extract + Save]
-  E -- Yes --> G[Native Browser Fallback Chain]
-  G --> H{Solved?}
-  H -- Yes --> I[Record Telemetry]
-  H -- No --> J[Optional Interactive Challenge Solve]
-  J --> I
-  I --> K[Host Learning Candidate/Promotion]
-  K --> F
-```
+![Advanced routing flow diagram](https://raw.githubusercontent.com/ImYourBoyRoy/WebScraperToolkit/main/docs/assets/diagrams/advanced_flow.webp)
 
-> GitHub renders Mermaid natively. Some package indexes may not render Mermaid; use `INSTRUCTIONS.md` for text flow details.
+> These diagrams are rendered from Mermaid source files for GitHub/PyPI compatibility.
+> Sources: `docs/diagrams/*.mmd`  
+> Rebuild command: `python scripts/render_mermaid_diagrams.py --write-manifest`
 
 ---
 

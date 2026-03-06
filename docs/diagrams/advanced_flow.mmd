@@ -1,0 +1,14 @@
+%% ./docs/diagrams/advanced_flow.mmd
+flowchart TB
+  A["Input URLs"] --> B["Resolve config precedence"]
+  B --> C["Lookup host profile"]
+  C --> D["Primary Playwright attempt"]
+  D --> E{"Blocked or degraded?"}
+  E -- "No" --> F["Parse, extract, and save"]
+  E -- "Yes" --> G["Native browser fallback chain"]
+  G --> H{"Solved?"}
+  H -- "Yes" --> I["Record telemetry"]
+  H -- "No" --> J["Interactive challenge solve"]
+  J --> I
+  I --> K["Host learning promotion or demotion"]
+  K --> F

@@ -1,0 +1,6 @@
+%% ./docs/diagrams/simple_flow.mmd
+flowchart LR
+  A["Input URLs"] --> B["Resolve runtime config"]
+  B --> C["Fetch and crawl pipeline"]
+  C --> D["Parse and extract content"]
+  D --> E["Format and write output"]
