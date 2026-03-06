@@ -95,8 +95,7 @@ web-scraper --url https://example.com --format markdown --export
 ![Advanced routing flow diagram](https://raw.githubusercontent.com/ImYourBoyRoy/WebScraperToolkit/main/docs/assets/diagrams/advanced_flow.webp)
 
 > These diagrams are rendered from Mermaid source files for GitHub/PyPI compatibility.
-> Sources: `docs/diagrams/*.mmd`  
-> Rebuild command: `python scripts/render_mermaid_diagrams.py --write-manifest`
+> Sources: `docs/diagrams/*.mmd`
 
 ---
 

@@ -198,16 +198,6 @@ Workspace hygiene helper:
 python scripts/clean_workspace.py --dry-run
 ```
 
-### 5.1 README/PyPI flow diagram rendering
-
-Render Mermaid source files to high-resolution static images:
-
-```bash
-python scripts/render_mermaid_diagrams.py --write-manifest
-```
-
-Sources live in `docs/diagrams/*.mmd` and outputs are written to `docs/assets/diagrams/`.
-
 ---
 
 ## 6) Host Learning Lifecycle (auto domain routing)
