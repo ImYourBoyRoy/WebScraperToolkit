@@ -141,7 +141,9 @@ def write_stage_artifacts(
     stage_dir.mkdir(parents=True, exist_ok=True)
 
     stage_json_path = stage_dir / "stage_result.json"
-    stage_json_path.write_text(json.dumps(asdict(stage_result), indent=2), encoding="utf-8")
+    stage_json_path.write_text(
+        json.dumps(asdict(stage_result), indent=2), encoding="utf-8"
+    )
 
     excerpt_path = stage_dir / "content_excerpt.html"
     if stage_result.content_excerpt.strip():
@@ -913,7 +915,10 @@ async def run_suite(
     save_artifacts: bool,
     artifacts_dir: str,
 ) -> Dict[str, Any]:
-    run_id = datetime.now(timezone.utc).strftime("diag_%Y%m%dT%H%M%S_") + uuid.uuid4().hex[:8]
+    run_id = (
+        datetime.now(timezone.utc).strftime("diag_%Y%m%dT%H%M%S_")
+        + uuid.uuid4().hex[:8]
+    )
     artifacts_root = Path(artifacts_dir).resolve()
     plans = build_stage_plans(
         skip_interactive=skip_interactive,

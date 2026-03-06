@@ -82,7 +82,9 @@ def run_cleanup(project_root: Path, dry_run: bool) -> CleanStats:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Clean runtime artifacts from workspace.")
+    parser = argparse.ArgumentParser(
+        description="Clean runtime artifacts from workspace."
+    )
     parser.add_argument(
         "--project-root",
         default=str(Path(__file__).resolve().parents[1]),
