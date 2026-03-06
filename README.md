@@ -1,5 +1,14 @@
 # Web Scraper Toolkit
 
+![PyPI - Version](https://img.shields.io/pypi/v/web-scraper-toolkit?style=for-the-badge&logo=pypi&logoColor=white)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/web-scraper-toolkit?style=for-the-badge&logo=python&logoColor=white)
+![GitHub License](https://img.shields.io/github/license/ImYourBoyRoy/WebScraperToolkit?style=for-the-badge)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ImYourBoyRoy/WebScraperToolkit/ci.yml?branch=main&style=for-the-badge&label=CI)
+![Ruff](https://img.shields.io/badge/Ruff-Lint%20%2B%20Format-4A4A4A?style=for-the-badge&logo=ruff&logoColor=white)
+![MCP Ready](https://img.shields.io/badge/MCP-Agentic%20Ready-7B61FF?style=for-the-badge)
+
+**Expertly crafted by [Roy Dawson IV](https://github.com/imyourboyroy)**
+
 ## Use Case Synopsis
 
 Web Scraper Toolkit is a production-grade scraping and browser automation platform for:
