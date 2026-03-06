@@ -10,7 +10,6 @@ __pycache__/
 .Python
 build/
 dist/
-web_scraper_toolkit-*/
 downloads/
 eggs/
 .eggs/
