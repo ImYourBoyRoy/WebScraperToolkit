@@ -56,7 +56,9 @@ class TestCloudflareBypass(unittest.IsolatedAsyncioTestCase):
         logger.info("Content length: %d", len(content) if content else 0)
 
         if status == 200 and content and len(content) > 20_000:
-            logger.info("SUCCESS: Cloudflare bypassed and substantial content retrieved.")
+            logger.info(
+                "SUCCESS: Cloudflare bypassed and substantial content retrieved."
+            )
             self.assertTrue(True)
             return
 

@@ -229,7 +229,9 @@ class ScriptDiagnosticsRunner:
             stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
             report_path = self.out_dir / f"get_browser_info_{stamp}.json"
             report_path.parent.mkdir(parents=True, exist_ok=True)
-            report_path.write_text(json.dumps(parsed_stdout, indent=2), encoding="utf-8")
+            report_path.write_text(
+                json.dumps(parsed_stdout, indent=2), encoding="utf-8"
+            )
         finalized = self._finalize(run, report_path)
         if parsed_stdout is not None and finalized["report_json"] is None:
             finalized["report_json"] = parsed_stdout

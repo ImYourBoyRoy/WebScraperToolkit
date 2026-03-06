@@ -11,7 +11,10 @@ Operational notes: pure helper methods to keep stateful flows concise.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Literal, Optional, Tuple
+import tempfile
+from typing import Any, Dict, Optional, Tuple
+
+from playwright.async_api import Page
 
 from .constants import BotBlockReason, SerpProvider, classify_bot_block
 from ..serp_native import is_serp_allowlisted
@@ -118,4 +121,3 @@ class PlaywrightStrategySupportMixin:
         if self.native_profile_dir:
             return self.native_profile_dir, False
         return tempfile.mkdtemp(prefix=f"wst_native_{channel}_"), True
-

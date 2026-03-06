@@ -62,7 +62,10 @@ def register_job_tools(ctx: ManagementRegistrationContext) -> None:
             return create_envelope(
                 "success",
                 {"job_id": job_id},
-                meta={"job_type": normalized_job_type, "timeout_profile": timeout_profile},
+                meta={
+                    "job_type": normalized_job_type,
+                    "timeout_profile": timeout_profile,
+                },
             )
         except Exception as exc:
             return format_error("start_job", exc)

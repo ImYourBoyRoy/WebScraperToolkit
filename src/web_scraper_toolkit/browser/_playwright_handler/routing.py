@@ -14,7 +14,7 @@ from __future__ import annotations
 import datetime
 from typing import Any, Dict, Literal, Mapping, Optional, cast
 
-from ..host_profiles import normalize_host, sanitize_routing_profile
+from ..host_profiles import sanitize_routing_profile
 
 
 class PlaywrightRoutingMixin:
@@ -172,4 +172,3 @@ class PlaywrightRoutingMixin:
             datetime.timezone.utc
         ).strftime("run_%Y%m%dT%H%M%S%fZ")
         return metadata
-

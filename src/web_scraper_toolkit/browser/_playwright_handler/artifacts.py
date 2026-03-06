@@ -12,7 +12,7 @@ Operational notes: final orchestration layer for split Playwright manager intern
 from __future__ import annotations
 
 import logging
-from typing import Any, Mapping, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Mapping, Optional, Tuple
 
 from playwright.async_api import Page
 
@@ -20,6 +20,9 @@ from .constants import SerpProvider
 from ..host_profiles import normalize_host
 
 logger = logging.getLogger("web_scraper_toolkit.browser.playwright_handler")
+
+if TYPE_CHECKING:
+    from ..playwright_handler import PlaywrightManager
 
 
 class PlaywrightSmartFetchArtifactsMixin:
@@ -312,4 +315,3 @@ class PlaywrightSmartFetchArtifactsMixin:
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         await self.stop()
-

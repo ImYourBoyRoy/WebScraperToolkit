@@ -109,4 +109,3 @@ class PlaywrightLifecycleMixin:
             except Exception as e:
                 logger.error("Error stopping Playwright: %s", e, exc_info=True)
         self._playwright = None
-

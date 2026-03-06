@@ -50,7 +50,9 @@ def latest_file_in_zoominfo_matrix_runs(*, out_dir: Path) -> Optional[Path]:
     matrix_root = out_dir / "zoominfo_diagnostic_matrix"
     candidates: list[Path] = []
     if matrix_root.exists():
-        candidates.extend(matrix_root.glob("run_*/zoominfo_diagnostic_matrix_results.json"))
+        candidates.extend(
+            matrix_root.glob("run_*/zoominfo_diagnostic_matrix_results.json")
+        )
     candidates = sorted(candidates, key=lambda path: path.stat().st_mtime, reverse=True)
     return candidates[0] if candidates else None
 

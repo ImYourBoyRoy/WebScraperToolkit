@@ -19,7 +19,9 @@ def parse_arguments(args=None, defaults=None):
     defaults = defaults or {}
     parser = argparse.ArgumentParser(description="Web Scraper Toolkit CLI")
 
-    parser.add_argument("--diagnostics", action="store_true", help="Run diagnostic checks.")
+    parser.add_argument(
+        "--diagnostics", action="store_true", help="Run diagnostic checks."
+    )
     parser.add_argument(
         "--run-diagnostic",
         type=str,
@@ -161,7 +163,9 @@ def parse_arguments(args=None, defaults=None):
         action="store_true",
         help="Capture screenshots during bot_check diagnostics.",
     )
-    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging.")
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable verbose logging."
+    )
     parser.add_argument(
         "--config",
         type=str,
@@ -187,7 +191,9 @@ def parse_arguments(args=None, defaults=None):
         action="store_true",
         help="If input is a single URL, crawl it for links (same domain).",
     )
-    parser.add_argument("--export", "-e", action="store_true", help="Export individual files.")
+    parser.add_argument(
+        "--export", "-e", action="store_true", help="Export individual files."
+    )
     parser.add_argument(
         "--contacts",
         action="store_true",
@@ -314,7 +320,11 @@ def parse_arguments(args=None, defaults=None):
         help="JSON payload for manual --host-profile-host active routing override.",
     )
 
-    parser.add_argument("--merge", action="store_true", help="Merge all output content into a single file.")
+    parser.add_argument(
+        "--merge",
+        action="store_true",
+        help="Merge all output content into a single file.",
+    )
     parser.add_argument(
         "--workers",
         "-w",
@@ -343,8 +353,12 @@ def parse_arguments(args=None, defaults=None):
         default=None,
         help="Directory for intermediate files (cleaned if --clean is used).",
     )
-    parser.add_argument("--output-name", type=str, help="Filename for the final merged output.")
-    parser.add_argument("--clean", action="store_true", help="Delete intermediate files after merging.")
+    parser.add_argument(
+        "--output-name", type=str, help="Filename for the final merged output."
+    )
+    parser.add_argument(
+        "--clean", action="store_true", help="Delete intermediate files after merging."
+    )
     parser.add_argument(
         "--site-tree",
         action="store_true",

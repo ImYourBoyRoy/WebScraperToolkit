@@ -205,7 +205,9 @@ def register_browser_interactive_tools(
                     "No active browser session. Call browser_navigate first.",
                 )
             state_payload = await session.hover(selector)
-            return create_envelope("success", state_payload, meta={"selector": selector})
+            return create_envelope(
+                "success", state_payload, meta={"selector": selector}
+            )
         except Exception as e:
             return format_error("browser_hover", e)
 

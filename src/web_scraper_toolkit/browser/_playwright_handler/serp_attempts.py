@@ -19,8 +19,17 @@ from typing import Any, Dict, Literal, Optional, Tuple, cast
 
 from playwright.async_api import async_playwright
 
-from ..serp_native import build_serp_client_hints, is_serp_blocked, sanitize_headless_user_agent
-from .constants import BotBlockReason, SERP_NATIVE_LAUNCH_ARGS, SerpProvider, classify_bot_block
+from ..serp_native import (
+    build_serp_client_hints,
+    is_serp_blocked,
+    sanitize_headless_user_agent,
+)
+from .constants import (
+    BotBlockReason,
+    SERP_NATIVE_LAUNCH_ARGS,
+    SerpProvider,
+    classify_bot_block,
+)
 
 logger = logging.getLogger("web_scraper_toolkit.browser.playwright_handler")
 
@@ -210,4 +219,3 @@ class PlaywrightSerpAttemptsMixin:
                 return content, final_url, status
 
         return last_result
-

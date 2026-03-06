@@ -123,10 +123,14 @@ def register_config_tools(ctx: ManagementRegistrationContext) -> None:
     ) -> str:
         """Configure stealth mode and robots.txt compliance."""
         try:
-            logger.info("Tool Call: configure_stealth respect_robots=%s", respect_robots)
+            logger.info(
+                "Tool Call: configure_stealth respect_robots=%s", respect_robots
+            )
             result = update_stealth_config(respect_robots=respect_robots)
             result["stealth_mode"] = stealth_mode
-            return create_envelope("success", "Stealth configuration updated.", meta=result)
+            return create_envelope(
+                "success", "Stealth configuration updated.", meta=result
+            )
         except Exception as exc:
             return format_error("configure_stealth", exc)
 
@@ -160,7 +164,10 @@ def register_config_tools(ctx: ManagementRegistrationContext) -> None:
             return create_envelope(
                 "success",
                 {"message": "Runtime config reloaded.", "runtime": updated},
-                meta={"config_path": config_path, "local_config_path": local_config_path},
+                meta={
+                    "config_path": config_path,
+                    "local_config_path": local_config_path,
+                },
             )
         except Exception as exc:
             return format_error("reload_runtime_config", exc)
@@ -247,6 +254,8 @@ def register_config_tools(ctx: ManagementRegistrationContext) -> None:
                 initial_delay=initial_delay,
                 max_delay=max_delay,
             )
-            return create_envelope("success", "Retry configuration updated", meta=result)
+            return create_envelope(
+                "success", "Retry configuration updated", meta=result
+            )
         except Exception as exc:
             return format_error("configure_retry", exc)

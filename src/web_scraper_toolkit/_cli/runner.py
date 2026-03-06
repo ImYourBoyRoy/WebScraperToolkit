@@ -151,7 +151,9 @@ async def run_main_async(
             "elapsed_ms": result.get("elapsed_ms"),
             "report_path": result.get("report_path"),
         }
-        console.print(PanelCls(json_module.dumps(summary, indent=2), title="Diagnostic Summary"))
+        console.print(
+            PanelCls(json_module.dumps(summary, indent=2), title="Diagnostic Summary")
+        )
 
         if args.verbose:
             console.print(
@@ -166,7 +168,9 @@ async def run_main_async(
         return
 
     if args.site_tree and args.input:
-        console.print(f"[bold cyan]Extracting Sitemap Tree from:[/bold cyan] {args.input}")
+        console.print(
+            f"[bold cyan]Extracting Sitemap Tree from:[/bold cyan] {args.input}"
+        )
         urls = await extract_sitemap_tree_fn(args.input)
 
         if not urls:
@@ -189,7 +193,9 @@ async def run_main_async(
                 json_module.dump(urls, handle, indent=2)
         elif out_path.endswith(".xml"):
             with open(out_path, "w", encoding="utf-8") as handle:
-                handle.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+                handle.write(
+                    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                )
                 for item in urls:
                     handle.write(f"  <url><loc>{item}</loc></url>\n")
                 handle.write("</urlset>")
@@ -279,7 +285,9 @@ async def run_main_async(
         console.print(f"[dim]Loaded {len(target_urls)} URLs from source[/dim]")
         if not target_urls and args.input.startswith("http"):
             if "sitemap" not in args.input and not args.input.endswith(".xml"):
-                console.print("[yellow]⚠️  Input looked like a webpage URL but not a sitemap.[/yellow]")
+                console.print(
+                    "[yellow]⚠️  Input looked like a webpage URL but not a sitemap.[/yellow]"
+                )
                 console.print("   Use --url for single pages.")
 
     if not target_urls and not args.host_profile_host:
@@ -316,7 +324,9 @@ async def run_main_async(
     if args.host_learning is not None:
         browser_merged["host_learning_enabled"] = args.host_learning == "on"
     if args.host_learning_threshold is not None and args.host_learning_threshold > 0:
-        browser_merged["host_learning_promotion_threshold"] = args.host_learning_threshold
+        browser_merged["host_learning_promotion_threshold"] = (
+            args.host_learning_threshold
+        )
 
     b_config = BrowserConfigCls.from_dict(browser_merged)
 
@@ -332,7 +342,9 @@ async def run_main_async(
             if args.host_profile_json:
                 profile_payload = json_module.loads(args.host_profile_json)
                 if not isinstance(profile_payload, dict):
-                    raise ValueError("--host-profile-json must decode to a JSON object.")
+                    raise ValueError(
+                        "--host-profile-json must decode to a JSON object."
+                    )
                 active = profile_store.set_host_profile(
                     args.host_profile_host,
                     profile_payload,
@@ -352,7 +364,12 @@ async def run_main_async(
                 )
             else:
                 snapshot = profile_store.export_profiles(host=args.host_profile_host)
-                console.print(PanelCls(json_module.dumps(snapshot, indent=2), title="Host Profile Snapshot"))
+                console.print(
+                    PanelCls(
+                        json_module.dumps(snapshot, indent=2),
+                        title="Host Profile Snapshot",
+                    )
+                )
         except Exception as exc:
             console.print(f"[bold red]Host profile command failed:[/bold red] {exc}")
             sys_module.exit(1)
@@ -370,12 +387,18 @@ async def run_main_async(
         config_table.add_row("Delay", str(args.delay))
         config_table.add_row("Headless", str(b_config.headless))
         config_table.add_row("Native Fallback", str(b_config.native_fallback_policy))
-        config_table.add_row("Native Channels", ",".join(b_config.native_browser_channels))
+        config_table.add_row(
+            "Native Channels", ",".join(b_config.native_browser_channels)
+        )
         config_table.add_row("Native Context", b_config.native_context_mode)
         config_table.add_row("Host Profiles", str(b_config.host_profiles_enabled))
-        config_table.add_row("Host Profiles ReadOnly", str(b_config.host_profiles_read_only))
+        config_table.add_row(
+            "Host Profiles ReadOnly", str(b_config.host_profiles_read_only)
+        )
         config_table.add_row("Host Learning", str(b_config.host_learning_enabled))
-        config_table.add_row("Host Learn Threshold", str(b_config.host_learning_promotion_threshold))
+        config_table.add_row(
+            "Host Learn Threshold", str(b_config.host_learning_promotion_threshold)
+        )
         config_table.add_row("Output Dir", args.output_dir)
         console.print(config_table)
 

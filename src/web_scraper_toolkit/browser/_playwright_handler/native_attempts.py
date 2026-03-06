@@ -15,7 +15,6 @@ import asyncio
 import json
 import logging
 import shutil
-import tempfile
 from time import perf_counter
 from typing import Any, Dict, Optional, Tuple, cast
 
@@ -457,4 +456,3 @@ class PlaywrightNativeAttemptsMixin:
                     await context.close()
                 except Exception:
                     pass
-

@@ -440,4 +440,3 @@ class PlaywrightPageOpsMixin:
         await page.wait_for_timeout(1000)
 
         return await PerimeterXSolver.solve_press_and_hold(page)
-

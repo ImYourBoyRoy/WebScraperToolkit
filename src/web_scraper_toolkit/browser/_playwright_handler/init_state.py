@@ -357,4 +357,3 @@ class PlaywrightInitStateMixin:
     def get_last_fetch_metadata(self) -> Dict[str, Any]:
         """Return metadata captured by the most recent smart_fetch call."""
         return dict(self._last_fetch_metadata)
-

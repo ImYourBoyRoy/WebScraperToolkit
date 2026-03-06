@@ -34,7 +34,9 @@ class TestInteractiveSessionControls(unittest.IsolatedAsyncioTestCase):
         session, page = self._build_session()
         page.wait_for_selector = AsyncMock()
 
-        result = await session.wait_for(selector="#results", state="visible", timeout_ms=4200)
+        result = await session.wait_for(
+            selector="#results", state="visible", timeout_ms=4200
+        )
 
         page.wait_for_selector.assert_awaited_once_with(
             "#results",
@@ -49,7 +51,9 @@ class TestInteractiveSessionControls(unittest.IsolatedAsyncioTestCase):
         session, _ = self._build_session()
 
         with self.assertRaises(ValueError):
-            await session.wait_for(selector="#results", state="eventually", timeout_ms=1000)
+            await session.wait_for(
+                selector="#results", state="eventually", timeout_ms=1000
+            )
 
     async def test_press_key_focuses_selector(self) -> None:
         session, page = self._build_session()
@@ -59,7 +63,9 @@ class TestInteractiveSessionControls(unittest.IsolatedAsyncioTestCase):
         page.locator = MagicMock(return_value=locator)
         page.keyboard = SimpleNamespace(press=AsyncMock())
 
-        result = await session.press_key("Enter", selector="input[name='q']", delay_ms=50)
+        result = await session.press_key(
+            "Enter", selector="input[name='q']", delay_ms=50
+        )
 
         locator.focus.assert_awaited_once_with(timeout=10000)
         page.keyboard.press.assert_awaited_once_with("Enter", delay=50)
@@ -93,8 +99,18 @@ class TestInteractiveSessionControls(unittest.IsolatedAsyncioTestCase):
             "count": 2,
             "truncated": False,
             "elements": [
-                {"index": 0, "tag": "button", "text": "Search", "selector_hint": "#search"},
-                {"index": 1, "tag": "a", "text": "Pricing", "selector_hint": "a[href='/pricing']"},
+                {
+                    "index": 0,
+                    "tag": "button",
+                    "text": "Search",
+                    "selector_hint": "#search",
+                },
+                {
+                    "index": 1,
+                    "tag": "a",
+                    "text": "Pricing",
+                    "selector_hint": "a[href='/pricing']",
+                },
             ],
         }
         page.evaluate = AsyncMock(return_value=interaction_map)

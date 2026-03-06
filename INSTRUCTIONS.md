@@ -366,6 +366,10 @@ python verify_remote_mcp.py --remote-url https://your-domain/mcp --api-key "$WST
 - **Playwright browser missing**  
   Run `playwright install`.
 
+- **MCP log location**  
+  Server logs default to `./logs/mcp_server.log`.  
+  Override directory with `WST_LOG_DIR=/path/to/logs`.
+
 - **Desktop solver unavailable**  
   Install desktop extra: `pip install web-scraper-toolkit[desktop]` and ensure GUI display is available.
 

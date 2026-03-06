@@ -20,6 +20,7 @@ import sys
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from functools import partial
+from pathlib import Path
 from typing import Any, Awaitable, Dict, Optional
 from weakref import WeakKeyDictionary
 
@@ -55,8 +56,11 @@ from .mcp_tools import (
 
 
 logger = logging.getLogger("mcp_server")
+LOG_DIR = Path(os.getenv("WST_LOG_DIR", "logs")).resolve()
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+MCP_SERVER_LOG_PATH = LOG_DIR / "mcp_server.log"
 logging.basicConfig(
-    filename="mcp_server.log",
+    filename=str(MCP_SERVER_LOG_PATH),
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )

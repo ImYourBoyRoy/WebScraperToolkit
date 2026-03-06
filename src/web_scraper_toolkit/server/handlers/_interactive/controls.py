@@ -367,7 +367,9 @@ async def run_accessibility_tree(
     root_handle = None
     root_selector = (selector or "").strip()
     if root_selector:
-        root_handle = await page.locator(root_selector).first.element_handle(timeout=10000)
+        root_handle = await page.locator(root_selector).first.element_handle(
+            timeout=10000
+        )
         if root_handle is None:
             raise ValueError(f"No element matched selector: {root_selector}")
 
@@ -375,7 +377,9 @@ async def run_accessibility_tree(
         root=root_handle,
         interesting_only=bool(interesting_only),
     )
-    trimmed = _trim_accessibility_tree(raw_tree, max_nodes=max_nodes, max_text_length=max_text_length)
+    trimmed = _trim_accessibility_tree(
+        raw_tree, max_nodes=max_nodes, max_text_length=max_text_length
+    )
     trimmed["interesting_only"] = bool(interesting_only)
     trimmed["root_selector"] = root_selector or "document"
     return trimmed

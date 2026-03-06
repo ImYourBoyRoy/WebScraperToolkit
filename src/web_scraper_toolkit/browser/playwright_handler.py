@@ -106,7 +106,9 @@ class PlaywrightManager(
                 )
                 try:
                     self._browser = await self._playwright.chromium.launch(
-                        **cast(Any, {"headless": self.headless, "args": self.launch_args})
+                        **cast(
+                            Any, {"headless": self.headless, "args": self.launch_args}
+                        )
                     )
                     self._browser_launch_fallback_used = True
                     logger.info(
@@ -138,6 +140,7 @@ __all__ = [
     "BotBlockReason",
     "SerpProvider",
     "WaitUntilState",
+    "random",
     "classify_bot_block",
     "DEFAULT_USER_AGENTS",
     "COMMON_VIEWPORTS",
