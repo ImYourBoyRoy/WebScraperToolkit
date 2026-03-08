@@ -1,0 +1,1035 @@
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Access to this page has been denied' URL: https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[*] Selected 'aria_button': 253x50 at (834, 504) [2 candidates]
+[*] Found 'Press & Hold' challenge!
+[*] Running behavioral warmup (scroll + mouse movement)...
+[*] Bbox: x=834 y=504 w=253 h=50
+[*] Window: screenX=0 screenY=0 chromeH=87 outerH=1032 innerH=945 dpr=1
+[*] Target center: viewport (960, 530) → screen (960, 616) [dpr=1]
+[*] OS mouse → screen (960, 616)
+[*] OS mouseDown — holding until challenge completes (max 15s)...
+[*] Challenge completed detected at 3.9s!
+[*] OS mouseUp after 3.9s.
+[*] Settling 3.5s for PX clearance flow...
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"H0EfQR9BUnFeVh1SHR0eUhZMHB1MSBgcSh5PSxsYGhgbGksaSBpLTR4dTRodGEsdGBlKHBcbGE1PHEgfH0odHEsaTBsfSBkYGRdPFhlPTUgUSEFDZ39afh9iamtnf2NsXgFmaGIFeH9XbRppRUxKHBtcQx0fHxhUXWRmG0x/fWABbHp4VEFHQVxiH0NpFmFEYmpKShxMWHRsfH12HWFLGxljen5LeH8TExQfHh4eFFdhYB8ZdH0aGX1CeWZvZldGX3doaR9BWUhERmRtX0MdWEloT18XWRxFZxl8AXRjXhtmSExUXmZIV2hnGHxiQGVjRxkfWGZ3WUBFWx9dVnd/QhlES2oaVG1EemlUQFxEZn0ba1lgV00eahxHeh9gQUp2RVgeamtFW30eX34dSgFnGhdAYGZoWkhcSFhJQ3hmbGZAZnhUQkIYX09FYVdXXWsaRUpPQWVCSXpPeHRaTE1cXh0FeUhmT2N5eB1
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"H0EfQR9BUnFeVh1SHR0eUk8YGxlMF0sXGEgeTB0bTxsZHxgcGhgaFhpMHR1LFhtMTB4ZT00XGBYcHE0fSx4aF0xIGkhNTEpLTRtKGBsaSB8USH1DSkNWGWJiVFt0VkQZdAVHHUVtbHlLVmh2bxsFYkJpT2QFF20fZ39oaEhPZHkXbEJhZHZtegVAQWhPbHpmdEMdS350Z2t7G0JjY2ZUTXpFekwWVG8TExQfHh4eFGZsGVRPSWgBHnhmb0MFbUZbaFkZYnZpWQVEGR8BflYcZmR4RRlYRR5aQGcbW0kWXVt9V19mal4fSV5jV0QaG34YZ19NSGl7ZRZ2Q2N0dEkZa1lbVkJee3RoV18dTWJ6H0Z9GGx9aHlreBgcSVdhdB5cHRlbWh8aGFQZTG9ERUhrGHx8aBdgFkRrQVdEYkwdRV9kaAV0YGRtREN+SUMZQ2BcfR9NHEteH3pJYmNXH2keGVpFTURcWm1hV2Z
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/b45fc6bc-66e1-4b00-ac66-db587a260af6
+[REQ] GET blob:https://www.zoominfo.com/4284f6a8-85fe-494c-ae07-3e19fd5d0576
+[REQ] GET blob:https://www.zoominfo.com/161f8b24-251a-4d9a-88ea-b00b23f5d706
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=18d0dc38-1a04-11f1-a824-5356484c7559&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772874000000
+[RES] 200 blob:https://www.zoominfo.com/4284f6a8-85fe-494c-ae07-3e19fd5d0576
+[RES] 200 blob:https://www.zoominfo.com/161f8b24-251a-4d9a-88ea-b00b23f5d706
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"H0EfQR9BUnFeVh1SHR0eUhsZGRpPS00YHB0fHUtNSB4bGR0WHkwYTUxLSBwaHhwZGU9LFxZLGh1MHh9LS01ISx5NF0tITxofFxkZSh0bHR8USht+SVdjWExiQmIdZXYffhl3Z0BXXQV8an1ffUVCYHlGZkJ6VG0BVEQZeEJaemwcH1dFYFhbVndkXld7QnxiQ34fbU9AbH9qWEVFQ2UfHXcXF2BNQG8TExQfHh4eFGt8Qm1Ya3xdZUx0YEJoanl4X3pbdh5MT0tdQ0UeaEprHUtNaExfGX97HU1bel4eFklrG2x/WGtfH19jY1xtH3lARUJ+dkpLSEp3Qx1/QXx7Vn5ZbGR7dkFKRk9jWH4ZWnxrG20cQh8XYkZ0Vk1sTGVoSFZ8GF9MbRteGxZXHEVJXxtDflxNTWccbU9hBVZHBUd7YmBtbwFWXB5eHHYXHnZWeklESFhBZmVvTFtbRHhDQXxEeG1pSmBLdBp
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772874000000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772874000000
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=18d0dc38-1a04-11f1-a824-5356484c7559&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772874000000
+[+] PX challenge PASSED! Waiting for natural page transition...
+[*] Waiting up to 20s for natural page transition...
+[REQ] GET https://fst-ec.perimeterx.net/?id=18d0dcfe-1a04-11f1-a824-a7923be4e68d
+[RES] 200 https://fst-ec.perimeterx.net/?id=18d0dcfe-1a04-11f1-a824-a7923be4e68d
+[*] Title at 2.0s: 'Access to this page has been denied'
+[-] Natural page transition timed out.
+[*] PX cookies after challenge: ['_pxhd', '_pxvid', '_px3', '_pxde']
+[*] Natural redirect timed out, trying page.reload()...
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 307 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[RES] 429 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] GET https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1?ray=9d886a0cb9402b2a
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: <could not read>
+[RES] 200 https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1?ray=9d886a0cb9402b2a
+[REQ] GET blob:https://www.zoominfo.com/d5fbfec0-6a35-422d-b21f-97b0f701285b
+[REQ] GET https://challenges.cloudflare.com/turnstile/v0/g/ea2d291c0fdc/api.js?onload=MNurp8&render=explicit
+[RES] 200 https://challenges.cloudflare.com/turnstile/v0/g/ea2d291c0fdc/api.js?onload=MNurp8&render=explicit
+[REQ] POST https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/661919601:1772871743:HKkEyt34tfcHni24UIypPor9bWBF7PPM_f6ni7kRqAc/9d886a0cb9402b2a/5.3_IOP8co.dtLKaawgXEpihM2Z32QCxPRl2Ijw9_1g-1772874073-1.2.1.1-bDY9rguOXTaVSoO9.0dVNPMzXXOwM_6NG0mcoSWtcLKMG2f3M_GRUl1VQBhkKM3W
+[REQ] GET blob:https://www.zoominfo.com/55f895a8-6157-468a-88b4-c2e8d7608178
+[RES] 200 https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/661919601:1772871743:HKkEyt34tfcHni24UIypPor9bWBF7PPM_f6ni7kRqAc/9d886a0cb9402b2a/5.3_IOP8co.dtLKaawgXEpihM2Z32QCxPRl2Ijw9_1g-1772874073-1.2.1.1-bDY9rguOXTaVSoO9.0dVNPMzXXOwM_6NG0mcoSWtcLKMG2f3M_GRUl1VQBhkKM3W
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/ov2/av0/rch/0kh0t/0x4AAAAAAADnOjc0PNeA8qVm/light/fbE/new/normal?lang=auto
+[RES] 200 blob:https://www.zoominfo.com/55f895a8-6157-468a-88b4-c2e8d7608178
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/ov2/av0/rch/0kh0t/0x4AAAAAAADnOjc0PNeA8qVm/light/fbE/new/normal?lang=auto
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/cmg/1
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/cmg/1
+[REQ] GET blob:https://challenges.cloudflare.com/1470f2e4-7190-454c-b7c5-90ce47b8e194
+[REQ] POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/940041827:1772871743:n2766kOZ9T-GUJfajjL_w3-8YFFzt4AZyIWppymlT2M/9d886a101c293203/kxkuoTGBr2z3W.CHUcsBg5BnBYJcnrfVJVmw5NEFRU0-1772874073-1.2.1.1-Hs_ifFcceG6YL2HtF.CghZj2gV._vNUlpO1rO7GALZh2XzPOM3CaXiOjndSwiS2b
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/940041827:1772871743:n2766kOZ9T-GUJfajjL_w3-8YFFzt4AZyIWppymlT2M/9d886a101c293203/kxkuoTGBr2z3W.CHUcsBg5BnBYJcnrfVJVmw5NEFRU0-1772874073-1.2.1.1-Hs_ifFcceG6YL2HtF.CghZj2gV._vNUlpO1rO7GALZh2XzPOM3CaXiOjndSwiS2b
+[REQ] GET blob:https://challenges.cloudflare.com/ff3b8e6e-3d52-45c2-b6cf-2395b270c9bb
+[RES] 200 blob:https://challenges.cloudflare.com/ff3b8e6e-3d52-45c2-b6cf-2395b270c9bb
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/pat/9d886a101c293203/1772874073958/d4f4d878f2fef80a7e003b588d882e8f2b63034c57577df1fc5e5cc53e2ced80/1oMWQ4H15kMv7aH
+[RES] 401 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/pat/9d886a101c293203/1772874073958/d4f4d878f2fef80a7e003b588d882e8f2b63034c57577df1fc5e5cc53e2ced80/1oMWQ4H15kMv7aH
+[REQ] GET blob:https://challenges.cloudflare.com/ff3b8e6e-3d52-45c2-b6cf-2395b270c9bb
+[REQ] GET blob:https://challenges.cloudflare.com/ff3b8e6e-3d52-45c2-b6cf-2395b270c9bb
+[REQ] GET blob:https://challenges.cloudflare.com/ff3b8e6e-3d52-45c2-b6cf-2395b270c9bb
+[RES] 200 blob:https://challenges.cloudflare.com/ff3b8e6e-3d52-45c2-b6cf-2395b270c9bb
+[RES] 200 blob:https://challenges.cloudflare.com/ff3b8e6e-3d52-45c2-b6cf-2395b270c9bb
+[REQ] GET blob:https://challenges.cloudflare.com/ff3b8e6e-3d52-45c2-b6cf-2395b270c9bb
+[RES] 200 blob:https://challenges.cloudflare.com/ff3b8e6e-3d52-45c2-b6cf-2395b270c9bb
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/d/9d886a101c293203/1772874073959/mCp-KxtJ8kwPC-C
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/d/9d886a101c293203/1772874073959/mCp-KxtJ8kwPC-C
+[REQ] POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/940041827:1772871743:n2766kOZ9T-GUJfajjL_w3-8YFFzt4AZyIWppymlT2M/9d886a101c293203/kxkuoTGBr2z3W.CHUcsBg5BnBYJcnrfVJVmw5NEFRU0-1772874073-1.2.1.1-Hs_ifFcceG6YL2HtF.CghZj2gV._vNUlpO1rO7GALZh2XzPOM3CaXiOjndSwiS2b
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/940041827:1772871743:n2766kOZ9T-GUJfajjL_w3-8YFFzt4AZyIWppymlT2M/9d886a101c293203/kxkuoTGBr2z3W.CHUcsBg5BnBYJcnrfVJVmw5NEFRU0-1772874073-1.2.1.1-Hs_ifFcceG6YL2HtF.CghZj2gV._vNUlpO1rO7GALZh2XzPOM3CaXiOjndSwiS2b
+[REQ] POST https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/661919601:1772871743:HKkEyt34tfcHni24UIypPor9bWBF7PPM_f6ni7kRqAc/9d886a0cb9402b2a/5.3_IOP8co.dtLKaawgXEpihM2Z32QCxPRl2Ijw9_1g-1772874073-1.2.1.1-bDY9rguOXTaVSoO9.0dVNPMzXXOwM_6NG0mcoSWtcLKMG2f3M_GRUl1VQBhkKM3W
+[*] Verify attempt 1: title='Just a moment...' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Verify attempt 2: title='Just a moment...' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Verify attempt 3: title='Just a moment...' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[-] Could not verify real page content after retries.
+Title : Just a moment...
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[RES] 200 https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/661919601:1772871743:HKkEyt34tfcHni24UIypPor9bWBF7PPM_f6ni7kRqAc/9d886a0cb9402b2a/5.3_IOP8co.dtLKaawgXEpihM2Z32QCxPRl2Ijw9_1g-1772874073-1.2.1.1-bDY9rguOXTaVSoO9.0dVNPMzXXOwM_6NG0mcoSWtcLKMG2f3M_GRUl1VQBhkKM3W
+[REQ] POST https://www.zoominfo.com/c/amco-ranger/5000168
+[RES] 403 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] GET https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=18d0dc38-1a04-11f1-a824-5356484c7559&v=18d0dcfe-1a04-11f1-a824-a7923be4e68d&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[-] ❌ Failed to bypass target site.
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=18d0dc38-1a04-11f1-a824-5356484c7559&v=18d0dcfe-1a04-11f1-a824-a7923be4e68d&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[RES] 200 https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://tzm.px-cloud.net/ns?c=18d0dc38-1a04-11f1-a824-5356484c7559
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] GET blob:https://www.zoominfo.com/59ccfdeb-f2e3-40c2-b286-338a80fd390e
+[REQ] GET blob:https://www.zoominfo.com/af14e486-f04b-4e7f-aab2-81f34c7d55a8
+[REQ] GET blob:https://www.zoominfo.com/180b82fe-59d5-4183-aeca-c7315c10c56b
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=18d0dc38-1a04-11f1-a824-5356484c7559&v=18d0dcfe-1a04-11f1-a824-a7923be4e68d&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] HEAD https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772874000000
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772874000000
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEH9ke3BkAVFKc19nDxAeEFYQCEkQeXZGa2JfB2Flc2cPEAhUU15BVx4QeVxkU1F1ClFqZ2cPEAgQYmoDAwUGBxAeEGNeA0t1c2NKUUt7DxAIEEJKWlEQHhBWZQd0eUhzemBadw8QCFRTXkFXHhB2amgLfwJVUFdVew8QCBBRAwQCBVcCUFYLBQYEAVdWAgBQBgRXAwBWV1MEBQUCAgVTV1FWAVFWClNQClcLClMGBVZXBFYFBlNTA1MCBAcLCAEFCmsHRB1UekdwVGJ3fFF+QVt9X1ZiXFF9ZlNxBFoFB2BAf3pYQ2oCQVFdRld4QnNWdXEDQBlXQ1wZBVlmVVcCQ2JreBlKQkYCXwF1CkMCc3VVWXtVDw8IAwICAghZfXQCSHBKRgIFZgEDQFlVcAJndH5gSntwAQRISwtEc0todVVCWnFBC2pVHWtKZFxwBAZZS1VGfAVGdB17BVl2fAVnVQYZQWRXSnd+dHUEdwR4fxl+UERDQX5xU2p+CgIKZEhWYWoBBFxXAFxZGc1toe1NxAVVIWlt5dGVdenNUW2VLelVzWFRBc1QFUQdmBGB+ZFxkYURUW2IdGUtaQkgCHVplZFVAWnBbdH9TcUdbXgV^/YUsZAAV1ZXFhHUJdYGtrBWsEAVi9G`hzWmh3RFNqRn5GmZFN1f2Z9e2NWWHR7R2FiZgRkfHRXRFdTWwdl9AnYdB2NmYHEDBQFaWDGsDREZ3CwVZVQZ2XX1jW1hjQktdVUJ/Y0hBBGEHU2UDf0FqQ2cLdXh8cQBwXFF1YEhwa2NmC2QCXQcKR11NIf0V3eWRxSEFYUXMGCwpGe3p+BH90UVpad1pmS2EGWWFCKSENRGWRi9BAMHWl8CcXxjZnNDXEDdFaFVjW0pVnY1gLAk_tRdWNnBGFXYlwdBEtaRkhdYWhjX11FU2NXWHFTdEFEXHAZRV5ZSEJ7BkRlCwIZXQFTZEcdXwd6BAZrQn4ZYmh4BGNmX0dCU1BcWHph0B1cZd2dLa1xDW2BHcUFqQVt7RGnUHZXxUUGZeYx17CnKQASEFaRVlcY11nWmNKU0NkSHwKBQZ7dXMdQ0JzChAeEHRFWlx2ZHRZaHZdDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHV7NfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=MVIBEHc4GGQ1XA==&uuid=18d0dc38-1a04-11f1-a824-5356484c7559&ft=388&seq=1&en=NTA&bi=Z1hXFzJgFTYhAzIyfgtuNGZ+QFB2Uh00a0tEWlwZHhloeBQtIxAXKwkMIGxmeVlOZG0YKU9fEXQOD1IJITtUZ3xKUWshWWE6fH0RTyIeTzBrQxI/Xx8WHDN1F3w1BVs=&cs=6175e51fe596077e31f040fa106cf9d519537461e1ef062d99e22592c8c17e84&pc=9295538038778829&sid=195dcec2-1a04-11f1-9cb8-c722c0b5441d%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B8%F3%A0%84%B7%F3%A0%84%B4%F3%A0%84%B0%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B5%F3%A0%84%B3%F3%A0%84%B0&vid=18d0dcfe-1a04-11f1-a824-a7923be4e68d&ci=33bb4ba0-1a04-11f1-920b-87ea1fc6ed9b&pxhd=99axlT50kVbRNMKTdlhPn25J0fUAEIz8pthqhOM-WLKdi1EtJDhOL-MnKVXjwLmAX7Xi9kQNkA2OMoH8UH7NKg==:mxflQLsvOfMjuY97-Wq8TZOMpLMg7ImByjNzzJiQ77iIsw/hJ1aOa17v3wVvx6h9/t5Snab4CgZxD1nsxxHZELw-QqO/SM6NDgjGROvSSJo=&cts=195dd088-1a04-11f1-9cb8-c722c0b5441d
+[RES] 200 https://tzm.px-cloud.net/ns?c=18d0dc38-1a04-11f1-a824-5356484c7559
+[RES] 200 blob:https://www.zoominfo.com/af14e486-f04b-4e7f-aab2-81f34c7d55a8
+[RES] 200 blob:https://www.zoominfo.com/180b82fe-59d5-4183-aeca-c7315c10c56b
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772874000000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772874000000
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"H0EfQR9BUnFeVh1SHR0eUk0fGB4ZSx5MShcZGhgdS0oeHEwaGEsfHEpLTxgZGR4eGU9LTUodTUoWT0wWSxcWTxoZSksYShkaT08fTx4YGxcUHRkWdxtYAUhmW2xIfmtgTWJdR2FDSn5ATWF6T20YRhkbfFxjZkRfdh5dTUFaS2Reb0ppbR9cBUtfQAUZRXpJSx5ffndkBVZeWh5DHWkWXx5vaUlFZ0kTExQfHh4eFEVhaB5UbFZaHhl6HR9cRUlsHntoYnxWZ2wdGFRXF1hvV3RpSV5GbV0XdkkBd1Z4QGwYGkVXSVpgGVpoAWcZRWpgGXtJGgVdeEtWa2JoaRhrGGRjBWJMWF9dYm1PdmIWHhZ4VEp9dh0YQEscQEVvR3RnT20dSVRGR2VoeUFmb0hHeVdmSW9ESF1vSBlNG3oYfGJ4QHh9WEhHfgEFV0ZeVB4BRnl4SVxGbEdoY09tW0dCGWN9VwUcGWl5bX0
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEH9ke3BkAVFKc19nDxAeEFYQCEkQeXZGa2JfB2Flc2cPEAhUU15BVx4QeVxkU1F1ClFqZ2cPEAgQYmoDAwUGBxAeEGNeA0t1c2NKUUt7DxAIEEJKWlEQHhBWZQd0eUhzemBadw8QCFRTXkFXHhB2amgLfwJVUFdVew8QCBBRAwQCBVcCUFYLBQYEAVdWAgBQBgRXAwBWV1MEBQUCAgVTV1FWAVFWClNQClcLClMGBVZXBFYFBlNTA1MCBAcLCAEFCmsHRB1UekdwVGJ3fFF+QVt9X1ZiXFF9ZlNxBFoFB2BAf3pYQ2oCQVFdRld4QnNWdXEDQBlXQ1wZBVlmVVcCQ2JreBlKQkYCXwF1CkMCc3VVWXtVDw8IAwICAghZfXQCSHBKRgIFZgEDQFlVcAJndH5gSntwAQRISwtEc0todVVCWnFBC2pVHWtKZFxwBAZZS1VGfAVGdB17BVl2fAVnVQYZQWRXSnd+dHUEdwR4fxl+UERDQX5xU2p+CgIKZEhWYWoBBFxXAFxZGc1toe1NxAVVIWlt5dGVdenNUW2VLelVzWFRBc1QFUQdmBGB+ZFxkYURUW2IdGUtaQkgCHVplZFVAWnBbdH9TcUdbXgV^/YUsZAAV1ZXFhHUJdYGtrBWsEAVi9G`hzWmh3RFNqRn5GmZFN1f2Z9e2NWWHR7R2FiZgRkfHRXRFdTWwdl9AnYdB2NmYHEDBQFaWDGsDREZ3CwVZVQZ2XX1jW1hjQktdVUJ/Y0hBBGEHU2UDf0FqQ2cLdXh8cQBwXFF1YEhwa2NmC2QCXQcKR11NIf0V3eWRxSEFYUXMGCwpGe3p+BH90UVpad1pmS2EGWWFCKSENRGWRi9BAMHWl8CcXxjZnNDXEDdFaFVjW0pVnY1gLAk_tRdWNnBGFXYlwdBEtaRkhdYWhjX11FU2NXWHFTdEFEXHAZRV5ZSEJ7BkRlCwIZXQFTZEcdXwd6BAZrQn4ZYmh4BGNmX0dCU1BcWHph0B1cZd2dLa1xDW2BHcUFqQVt7RGnUHZXxUUGZeYx17CnKQASEFaRVlcY11nWmNKU0NkSHwKBQZ7dXMdQ0JzChAeEHRFWlx2ZHRZaHZdDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHV7NfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=MVIBEHc4GGQ1XA==&uuid=18d0dc38-1a04-11f1-a824-5356484c7559&ft=388&seq=1&en=NTA&bi=Z1hXFzJgFTYhAzIyfgtuNGZ+QFB2Uh00a0tEWlwZHhloeBQtIxAXKwkMIGxmeVlOZG0YKU9fEXQOD1IJITtUZ3xKUWshWWE6fH0RTyIeTzBrQxI/Xx8WHDN1F3w1BVs=&cs=6175e51fe596077e31f040fa106cf9d519537461e1ef062d99e22592c8c17e84&pc=9295538038778829&sid=195dcec2-1a04-11f1-9cb8-c722c0b5441d%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B8%F3%A0%84%B7%F3%A0%84%B4%F3%A0%84%B0%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B5%F3%A0%84%B3%F3%A0%84%B0&vid=18d0dcfe-1a04-11f1-a824-a7923be4e68d&ci=33bb4ba0-1a04-11f1-920b-87ea1fc6ed9b&pxhd=99axlT50kVbRNMKTdlhPn25J0fUAEIz8pthqhOM-WLKdi1EtJDhOL-MnKVXjwLmAX7Xi9kQNkA2OMoH8UH7NKg==:mxflQLsvOfMjuY97-Wq8TZOMpLMg7ImByjNzzJiQ77iIsw/hJ1aOa17v3wVvx6h9/t5Snab4CgZxD1nsxxHZELw-QqO/SM6NDgjGROvSSJo=&cts=195dd088-1a04-11f1-9cb8-c722c0b5441d
+   BODY: <could not read>
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"H0EfQR9BUnFeVh1SHR0eUkxITRhIFxpITRYWSEwXSBZLFx8cHhkWGh9NFxxPGRodSEtLSxlPSBkeGxoaT0sbGx4aS01PHk0eGU8ZSk8ZHxYUfGhBSXlkQH0FBXoWZkF2Z0h4Fhx6TGpEBWJdYHofeFteeHlKY0wZTUxsH0IWVBpfHGgXQG16SXQXfV4XGWlWehsFYxhYYF9qeFcYeFdlaGNcBWMZR0kTExQfHh4eFGN0SWh3fWpIR20ea1RHFkhbQUVCZgVPWlRgWWlIVhZ0bB0XSkoBQG1DQkB8Z3lAVn8bfURKdktLQEcBGFR8VkxAXhZ8Rk1YSG9gYlpCbXdlZ1xhemleZQFsdBxKQlhoZnkcQG0YZU9+ZX9BeXRdT0MYV2t2ZX1DaxYae2lAYWN5alheYEl3WHhHXXxKa2FHXEpJeXdHG39WbGBgRh0FSUAXGVxkQkNBFx0fHVR4eV12V2h+XxlDX3taY1p
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=18d0dc38-1a04-11f1-a824-5356484c7559&v=18d0dcfe-1a04-11f1-a824-a7923be4e68d&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=18d0dcfe-1a04-11f1-a824-a7923be4e68d
+[RES] 200 https://fst-ec.perimeterx.net/?id=18d0dcfe-1a04-11f1-a824-a7923be4e68d
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Access to this page has been denied' URL: https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[*] Selected 'aria_button': 253x50 at (834, 504) [2 candidates]
+[*] Found 'Press & Hold' challenge!
+[*] Running behavioral warmup (scroll + mouse movement)...
+[*] Bbox: x=834 y=504 w=253 h=50
+[*] Window: screenX=0 screenY=0 chromeH=87 outerH=1032 innerH=945 dpr=1
+[*] Target center: viewport (960, 530) → screen (960, 616) [dpr=1]
+[*] OS mouse → screen (960, 616)
+[*] OS mouseDown — holding until challenge completes (max 15s)...
+[*] Challenge completed detected at 3.7s!
+[*] OS mouseUp after 4.1s.
+[*] Settling 3.5s for PX clearance flow...
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"TTQ0NDQ0ASINBU4BTk5NARkcHEkcHk9PHxlJTEUcSh8ZSRxMHkhEHEwZTU5JREpLGRxLTEtEH05OSRtKHhtESU1NHBxOHE0eHhlESUtOSRxHMTNJOSU0GA0OMDUeBCoYCEsODCsUGAQ7GipPMU8EGQ8EMxoKTwwKKBoKFgktMStMRR4QNDwnOwg6ChoLTy0xRCclDyQ+NwU2NycEHCRJTRg1FwoeOTxAQEdMTU1NR007LgoILUVPFDMXDhkqDRk4JTpITyhPN0soORMeC0QeGDtWGi8eEg8ZNDo+CCoVUjw0PhdWKxsfKU0/NAg7H00MDBoKGzpMMTU2FSobEhQoSBMuFhpNOxQ5LCw+MRcbFR8bVgg7T0UROkoaFBcSPipJOgw1OgwrSQ4rBQdSEAsWKUURFigPBA8uNis3EFIELw8lGhROKjgSDRgkHzQ/FD4eVhMrDxgfDDcuLCgQFzk5OBg8NBUlCDxOVgw
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"TTQ0NDQ0ASINBU4BTk5NAUkYSBtLRBhKTB9ITBtPS0xOTE4eTElOTUtJRUtFGBxKHERNSU5FH0pLTk8cS01NS05FGxgcTERLSxkbRB4cH09HEDQUGhsNLTNSGj4FRDwUSS8UHxo0FQlLPDEQBSdWJxovCzYnLhgHFhpIOFIsLRZNFhZPHzJWEgsRK1Y3MAocFi4eKTIqUjYUOQtKEy1JS0kLCTQISzxAQEdMTU1NRzMIEhcZNglNLTlSNhQYO1Y2Dw08Fz82OkotBTc3Dwg3RTwISRQbJQ8USw0rD01OLilNGAQ2DSdLGEo8Ng8USzk3K0VKKiolDjkyGxlNLx8wBBJEDjMbSAs1KlIvNxcrFjBSPBQJHAgPMk80FxkMMzlKCQw0T0g+KTJLHk0LKks7STEFTw0uNS8XDi0fThsHShA3TBc1DQkMSy8tSUhECko7FT4SDCs0ExUyPiUoF1YMTDMKL08KMx4eCi0
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/3900a5c1-1607-47e1-9d5a-e2d4c09360a5
+[REQ] GET blob:https://www.zoominfo.com/09c8cbec-8fc7-4740-8214-5e30cf3f16aa
+[REQ] GET blob:https://www.zoominfo.com/17db4ccc-a7c4-4994-bcfc-4c5a8945bba4
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=86e0c3a5-1a0a-11f1-ac28-964a15cefff3&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772876400000
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772876400000
+[+] PX challenge PASSED! Waiting for natural page transition...
+[*] Waiting up to 20s for natural page transition...
+[RES] 200 blob:https://www.zoominfo.com/09c8cbec-8fc7-4740-8214-5e30cf3f16aa
+[RES] 200 blob:https://www.zoominfo.com/17db4ccc-a7c4-4994-bcfc-4c5a8945bba4
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772876760000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772876760000
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"TTQ0NDQ0ASINBU4BTk5NARtPTkgbG0VNThtKTUwYGERKT08fG0hEHx5KG09JRUUZREhLGxlOSkRPTBtMHk9LRUxNTk5OSU9PSRweT0VLSUVHCD8fSkUKKDU4ODBIESw/JBwKBE4IRTU5FQ8yBCcVOEU/RQxKFCk2BQgNLRMIOBEnBy80LygJFBIVJykrOTI5ByUVMjg+GSgJTCgPHhQuTjsHNScNEgpAQEdMTU1NRxw3DwsuEUgeGU4XOjwsFTUsEzwnDxdJNzVEETEFNBY5BAwWCTIcLjczGj5MFwsFDwosFCgZC01SKTdNDhInExhMKQ1OPjE8TDsHKkQYCjQwDUUyNTcMFz8PMzUTGQcnETIJMhYsFwlMBzcqLikeBDk/CDpPTxROLh4YPDdLOwo2FA8UET4vOy4SHBAkKxQ2STIfJTwqBQ9NEwQvBy01FQs0LE8TNwsMDQk1KRVWKCwkKCwxMws2GxoeDRc
+[*] Title at 2.2s: 'Access to this page has been denied'
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=86e0c3a5-1a0a-11f1-ac28-964a15cefff3&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=86e0c468-1a0a-11f1-ac28-a70148377f9c
+[-] Natural page transition timed out.
+[*] PX cookies after challenge: ['_pxhd', '_pxvid', '_px3', '_pxde']
+[*] Natural redirect timed out, trying page.reload()...
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 403 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/b/c/beacon
+[REQ] GET https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=86e0c3a5-1a0a-11f1-ac28-964a15cefff3&v=86e0c468-1a0a-11f1-ac28-a70148377f9c&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=86e0c3a5-1a0a-11f1-ac28-964a15cefff3&v=86e0c468-1a0a-11f1-ac28-a70148377f9c&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[RES] 200 https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] GET https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://tzm.px-cloud.net/ns?c=86e0c3a5-1a0a-11f1-ac28-964a15cefff3
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/b6cc9cc9-cd3d-4a15-a686-ade3b999fb01
+[REQ] GET blob:https://www.zoominfo.com/b2307556-884e-4f71-b27f-3e01eacd1a75
+[REQ] GET blob:https://www.zoominfo.com/34d75b9a-3b64-41f8-97fa-5255007bddc5
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=86e0c3a5-1a0a-11f1-ac28-964a15cefff3&v=86e0c468-1a0a-11f1-ac28-a70148377f9c&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] HEAD https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772876400000
+[RES] 200 https://tzm.px-cloud.net/ns?c=86e0c3a5-1a0a-11f1-ac28-964a15cefff3
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 blob:https://www.zoominfo.com/b2307556-884e-4f71-b27f-3e01eacd1a75
+[REQ] GET https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEH9ke3VkAVFKc19nDxAeEFYQCEkQV1VnfGN2SkFxXEEPEAhUU15BVx4QYQFjCn9jBlZic2MPEAgQYmoDAwUGBxAeEH8ARXd5amdzc1p/DxAIEEJKWlEQHhBjYXsAaEVgfn9eAg8QCFRTXkFXHhB1X2dGa3QKe35kdw8QCBBRAlYHBwRTAwQECgJXCwAHVAZQUAUHUAcKBlECCgMLBVACBAEFVFEDBFFXCwMLC1MFVAQLC1FQVgQDAAcHUQUECEZiaHoEQgdFBlhKY3oCSkNndgdIQ1l/dFtaeWh5YUReVl9/ZUtrYwVxV2EZRxkCdVxXC3BGQXMGcHR1Al9/eEtDW3lWAXRVa2JfUHZqQApbAV9oWHlVDw8IAwICAghgY0NYQVBRewQFUUpDYwR/ZGthRVBqeF5HA2ZzQQUDfGtFAVhXCn9dVnoGWH1+aFkZRWJBQ0oddh14YgZlSFVXdEVHXHlEVVh6VBlzdABidFBkdGUHeUVgVWoGR1oDRgQdWEBoQ3B7WXF2fXBBGZ3dmdlULSGMKUQtzaFEZd2UKRnpdQXx7XlpXCnB/QXACf0JXB2AKS3NRA3Z4QmcGUVFTXAVwVVh5RHYDQXF+eXoGfWNcRmoKQmhz^dl4Gd1FkXVh+QUtmdmi9Gt7fX8Zf2EKBQZ3U3NbAnsCfmRKXXRZW3h7WAEARl8dXHlgSlAKRg`JVYmpZYmmJYaGN9XQ9pYZXlzQQDBrGRlDcX9RYHVYX2QKdnkHCnxrX`mVoAHWRRYGB4fwBwUEJTGWt2WkNqAXpDalFXeUYCaFd5UXsAdHdFU3:tIQHZURkpXfGB1X2Z6WXhXWR1wd0pDRXFcfHDpjA0ADZ1^pQagYdX3aFCXwt2alpBdHtEWkADdUFCY2pddGh8C1VKXGhxV3x6YFdKBgZfHXcEUGZkQn9ee2pBIAHpDYXNKRmR3cUV/c2FoHXhbUAplXXhnBlRVAxlHWXAFd0JwS1B+ZXpEdkZWS1dKYF8ZeVF3V0pESwAKVkoDSEhVBGmJ6S3pZY0hKQnkEA3KNEWFtbUwpcSHtoc2RBBnFkA3FmBlNndl9DdURRaBAeEGNhewBoRVZ9f15zDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHV7NfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=EwxkTlVmejoXAg==&uuid=86e0c3a5-1a0a-11f1-ac28-964a15cefff3&ft=388&seq=1&en=NTA&bi=QAN3DBU7Mi0GWBUpWVBJL0ElZ0tRCTovTBBjQXtNOQJOIzc3BEwzMS5XB3dBIn5VQzY/MmgENm8pBHcSB2xzc1IRICJWBkYhACNvVF5CPXlMRjB0f01gARZ9ZGYSXnw=&cs=c2062b62822530f20f93f596417bba45a4c6263d72001778180ae5d25e952f57&pc=0645942109011909&sid=87d5ea71-1a0a-11f1-85b2-ddeca28fc921%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B8%F3%A0%84%B7%F3%A0%84%B6%F3%A0%84%B8%F3%A0%84%B4%F3%A0%84%B5%F3%A0%84%B9%F3%A0%84%B3%F3%A0%84%B0&vid=86e0c468-1a0a-11f1-ac28-a70148377f9c&ci=a5d39ca0-1a0a-11f1-b710-b7a39d0c5b80&pxhd=sKAcdqhqSX9vezbDkFmg9HBkliW7BSoCiRsMqB6HPU6P7IaZuPiJTDJEVNzyWarLv3Ox-u82U8TSsfSm/Yj1sQ==:VKonN4/nbwv0-O9ZLg1nDgdgc6LLzAcAjB1TDSNBQJuc5Zje7a-CPLiY4TyAFp2VGFwhlNjIMFkSKmarS3uv6X9AD0MUCXCYw47r0Xy2yZY=&cts=87d5ecc2-1a0a-11f1-85b2-ddeca28fc921
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"TTQ0NDQ0ASINBU4BTk5NAR5NGUhISxxMS0tFTRhET0gbSR8fSkgfSEVJHk1FTERKH01LTkobHkxLHhhETEREHEobS0REHh8ZS0xPSEgeSktHCS0nNUsNSApJFwUsNU0FDCg5SAcMFjA7FBU2JzYuCxEZEDAqBCQsSj4YLlYIVk06ExhEPwkOPEk/OzpNEDA3BAwUNhlOOxokLRAfOSUPRRROECcXNhpAQEdMTU1NRy8sDBcOHx40S0oeBQwsSzArJC4KHyU3EQhMKTwOSkwzJApOFxhFMBIZNUkXMjEnFlYKLQ4MBVI5UjctSSoHGhg7CggTNgsaFzUbVjw7Ty07Hys7Kkg2Ci8aJUkIFUwJS1IXDycMPzQWPjkyPw4oOCk5GkQHLEUeRDwnHlY4KkUJNRIOMzQRFRhFPzAOP00wDRhIL0UEPB5MOTcNKEkeHhwTSj8aFzYLOUwOPjE2NUkyLBMJJUUNJzw5EUk
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772876400000
+[RES] 200 blob:https://www.zoominfo.com/34d75b9a-3b64-41f8-97fa-5255007bddc5
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772876760000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772876760000
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEH9ke3VkAVFKc19nDxAeEFYQCEkQV1VnfGN2SkFxXEEPEAhUU15BVx4QYQFjCn9jBlZic2MPEAgQYmoDAwUGBxAeEH8ARXd5amdzc1p/DxAIEEJKWlEQHhBjYXsAaEVgfn9eAg8QCFRTXkFXHhB1X2dGa3QKe35kdw8QCBBRAlYHBwRTAwQECgJXCwAHVAZQUAUHUAcKBlECCgMLBVACBAEFVFEDBFFXCwMLC1MFVAQLC1FQVgQDAAcHUQUECEZiaHoEQgdFBlhKY3oCSkNndgdIQ1l/dFtaeWh5YUReVl9/ZUtrYwVxV2EZRxkCdVxXC3BGQXMGcHR1Al9/eEtDW3lWAXRVa2JfUHZqQApbAV9oWHlVDw8IAwICAghgY0NYQVBRewQFUUpDYwR/ZGthRVBqeF5HA2ZzQQUDfGtFAVhXCn9dVnoGWH1+aFkZRWJBQ0oddh14YgZlSFVXdEVHXHlEVVh6VBlzdABidFBkdGUHeUVgVWoGR1oDRgQdWEBoQ3B7WXF2fXBBGZ3dmdlULSGMKUQtzaFEZd2UKRnpdQXx7XlpXCnB/QXACf0JXB2AKS3NRA3Z4QmcGUVFTXAVwVVh5RHYDQXF+eXoGfWNcRmoKQmhz^dl4Gd1FkXVh+QUtmdmi9Gt7fX8Zf2EKBQZ3U3NbAnsCfmRKXXRZW3h7WAEARl8dXHlgSlAKRg`JVYmpZYmmJYaGN9XQ9pYZXlzQQDBrGRlDcX9RYHVYX2QKdnkHCnxrX`mVoAHWRRYGB4fwBwUEJTGWt2WkNqAXpDalFXeUYCaFd5UXsAdHdFU3:tIQHZURkpXfGB1X2Z6WXhXWR1wd0pDRXFcfHDpjA0ADZ1^pQagYdX3aFCXwt2alpBdHtEWkADdUFCY2pddGh8C1VKXGhxV3x6YFdKBgZfHXcEUGZkQn9ee2pBIAHpDYXNKRmR3cUV/c2FoHXhbUAplXXhnBlRVAxlHWXAFd0JwS1B+ZXpEdkZWS1dKYF8ZeVF3V0pESwAKVkoDSEhVBGmJ6S3pZY0hKQnkEA3KNEWFtbUwpcSHtoc2RBBnFkA3FmBlNndl9DdURRaBAeEGNhewBoRVZ9f15zDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHV7NfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=EwxkTlVmejoXAg==&uuid=86e0c3a5-1a0a-11f1-ac28-964a15cefff3&ft=388&seq=1&en=NTA&bi=QAN3DBU7Mi0GWBUpWVBJL0ElZ0tRCTovTBBjQXtNOQJOIzc3BEwzMS5XB3dBIn5VQzY/MmgENm8pBHcSB2xzc1IRICJWBkYhACNvVF5CPXlMRjB0f01gARZ9ZGYSXnw=&cs=c2062b62822530f20f93f596417bba45a4c6263d72001778180ae5d25e952f57&pc=0645942109011909&sid=87d5ea71-1a0a-11f1-85b2-ddeca28fc921%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B8%F3%A0%84%B7%F3%A0%84%B6%F3%A0%84%B8%F3%A0%84%B4%F3%A0%84%B5%F3%A0%84%B9%F3%A0%84%B3%F3%A0%84%B0&vid=86e0c468-1a0a-11f1-ac28-a70148377f9c&ci=a5d39ca0-1a0a-11f1-b710-b7a39d0c5b80&pxhd=sKAcdqhqSX9vezbDkFmg9HBkliW7BSoCiRsMqB6HPU6P7IaZuPiJTDJEVNzyWarLv3Ox-u82U8TSsfSm/Yj1sQ==:VKonN4/nbwv0-O9ZLg1nDgdgc6LLzAcAjB1TDSNBQJuc5Zje7a-CPLiY4TyAFp2VGFwhlNjIMFkSKmarS3uv6X9AD0MUCXCYw47r0Xy2yZY=&cts=87d5ecc2-1a0a-11f1-85b2-ddeca28fc921
+   BODY: <could not read>
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"TTQ0NDQ0ASINBU4BTk5NAU1ES0geGE4bHxtPTUpOGU0cTRweGxtKGBlIG0tISERFGUVORR5FS0hIGR9OTh9LTBxIRElPRUxOTRscSE1LHExHShUpJBMTBDInCBwMKDQYTSwRRQxMLx4aFy0wThc7Vic7SCdMCjwcSh8pSjYsSx5JDgkaJUgcKkktMiwRCjUOFCsLBSgeEgcPEDlKMg0zKg4XLiwYOBpAQEdMTU1NRy0UMBETOCVKCSgtNi0XMB8aHkwaK1IUMx4kKAcaKBg6Tk0rUhssGR4JFhs3CxMZNko+Oz4cKg01LCgLLSgJMzgpSDcaTjkWKC9ME1YtKlIQNyUaVg4RPhQpMD8UPzUoTgdKFREnCkwyEytWNw0bSz9WMUwnHDNLHBAkFxw5HEkFGEUwSAcxRSQ0RD5NOjoWHjJEFRs6FU4MCDo8NyseGx9EKQ04JTYMPgkXMSUqEygfJzhEEgpFCyRMF0s
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=86e0c3a5-1a0a-11f1-ac28-964a15cefff3&v=86e0c468-1a0a-11f1-ac28-a70148377f9c&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=86e0c468-1a0a-11f1-ac28-a70148377f9c
+[RES] 200 https://fst-ec.perimeterx.net/?id=86e0c468-1a0a-11f1-ac28-a70148377f9c
+[*] Verify attempt 1: title='Access to this page has been denied' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[!] Challenge still present after re-navigation.
+Title : Access to this page has been denied
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[-] ❌ Failed to bypass target site.
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Access to this page has been denied' URL: https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[*] Selected 'aria_button': 253x50 at (834, 504) [2 candidates]
+[*] Found 'Press & Hold' challenge!
+[*] Running behavioral warmup (scroll + mouse movement)...
+[*] Bbox: x=834 y=504 w=253 h=50
+[*] Window: screenX=0 screenY=0 chromeH=87 outerH=1032 innerH=945 dpr=1
+[*] Target center: viewport (960, 530) → screen (960, 616) [dpr=1]
+[*] OS mouse → screen (960, 616)
+[*] OS mouseDown — holding until challenge completes (max 15s)...
+[*] Challenge completed detected at 10.2s!
+[*] OS mouseUp after 10.2s.
+[*] Settling 3.5s for PX clearance flow...
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WVlZWVlYFDcYEFsUW1tYFFEMDgoODl1RWF5QXApRXlEMWQtYXFANDlsMWQkLWFELX1xbCgtdCV4MWF9eCl5aUVlfW1lRXAwJCVBfXgteDVpSMAcBBDEJOz8NJB0eChECPQ9ZGgUQMFwbJF0YDDxYJV0hWDIQGlkBAC0qUQcFIS4jETkvMDEYKx8mMiMsXlxeBio8HgUyCg8RABseIBwvUVpQJB45JQ9VVVJZWFhYUgMHKicvBjg4AiAHASYSMSNbLgc4Kw0tGysPMFwZJVonXSI5GjIdUA1cOxIePgIiEQZDMA1DMiUsXxwyGx4cMEc6DkMJXEcDXAowODwRPhwuJiYFHCMwKlALGCwCLSxHAgVbKTE4CS84JCJaIwZHJQY/MAYhPws5OR8REiEPWQU9PTsyOVsxGVwOLy4eMScsBi0COjwiDVE7CQAZKRAAX1gdGwdfRxgvUS4cATJYGgNYKx0rOiQnABInXxo
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WVlZWVlYFDcYEFsUW1tYFA5ZWwkNXgtRCwkMDA1QXVFZUFFZXQkKCwkOUFxeClhfXlgOWAwKDVoJWgwJXVxeXQ0NWFBaXlAMXFxbCVwOCwtSX18dWx07Ci1RAgMDJyklWgYCXQkcWzg9DyQHDA1aCkMYWxoHGD8fAEcZAV4hPA0sWi8jIVEdUSQOPFEvPCQ4JgNbGF0+UAMxBiQ5Elw6HC8xCSYNWjlVVVJZWFhYUjASJDIHBVFaBhxdOBwsGxESIhwcXkcJHgEKLAsPXVE/MRoZHTk5OR0CKi4fID4fRwJQCRg8HwAOHEckAFhaXD0GGD4rJloSQwNcAVwPDAFbIVkbBQkKGDwtKRgsMQEOHwZePAAxKgRbAgNZGCcYLh8SISMkABgGUFFfEjIHOSM7BhFDBCI/XT8fWjlRGxhDDh8hRwowAAAqRy88Dw0vIQwHPwAhOiFdOl4qADIeQzsRXTkKMQwYLA4jXFs
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/1595e69d-eb5c-43ee-a1f6-17dff0b00fea
+[REQ] GET blob:https://www.zoominfo.com/71b0c9ff-13c1-45e5-8010-9fa99a1d9a17
+[REQ] GET blob:https://www.zoominfo.com/d8c69020-2658-4e0b-b00a-846757e92113
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=cd036a99-1a4d-11f1-84f1-1d42b32143bb&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772905200000
+[RES] 200 blob:https://www.zoominfo.com/71b0c9ff-13c1-45e5-8010-9fa99a1d9a17
+[RES] 200 blob:https://www.zoominfo.com/d8c69020-2658-4e0b-b00a-846757e92113
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WVlZWVlYFDcYEFsUW1tYFAoJX1oOUFkKXV5RXl1bWFtbW1gNDQlZXV5QUF5QDgpcCg5ZDlFRWQoNWApRClELWgldXl8MWwkKCw4MWwpRWlhSDD5eJkdbMSteDjIsKx0rPzswGgEmLjFQPD86PDwqOF8CLQQuWxpeMAImRwxaGRFHDSEQIAAbBCECMRASGTsFRy8LLhA4WA4tOA0lGkMdLFxaJVACDClVVVJZWFhYUkdYGB0GKiZRIiE9MFsJCyM/PUcCBi1eISEGLRg9KkMGDgtcQydbMQMCAwtbGT4sLS9YOV5dAREAMDEeDSM4UQELAwkyQy8rBzANIgQYLBw7LC1cBRAOGSkxXwUQJg0EMiQeHicMJyQFGCU+GCNHLA5aHlAKHjEGOl8BLVE8QwIqDzkKGB4lDgoBKz89WSsfIgEDIgRZHwtHDjwSLiI/CVgyUVwyGAI7HCUOICkmPiopMSIgXRonMFAgPCA
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772905200000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772905680000
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=cd036a99-1a4d-11f1-84f1-1d42b32143bb&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772905680000
+[+] PX challenge PASSED! Waiting for natural page transition...
+[*] Waiting up to 20s for natural page transition...
+[REQ] GET https://fst-ec.perimeterx.net/?id=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1
+[*] Title at 2.0s: 'Access to this page has been denied'
+[-] Natural page transition timed out.
+[*] PX cookies after challenge: ['_pxhd', '_pxvid', '_px3', '_pxde']
+[*] Natural redirect timed out, trying page.reload()...
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 403 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/b/c/beacon
+[REQ] GET https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=cd036a99-1a4d-11f1-84f1-1d42b32143bb&v=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=cd036a99-1a4d-11f1-84f1-1d42b32143bb&v=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[RES] 200 https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] GET https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://tzm.px-cloud.net/ns?c=cd036a99-1a4d-11f1-84f1-1d42b32143bb
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/e9e27dba-dc28-4fc0-84f4-84b4f7a19314
+[REQ] GET blob:https://www.zoominfo.com/86e80590-e420-4442-8cf5-62f181dbaeb9
+[REQ] GET blob:https://www.zoominfo.com/a7ef6242-20bc-4656-954b-f2d979581a2c
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=cd036a99-1a4d-11f1-84f1-1d42b32143bb&v=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] HEAD https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772905200000
+[REQ] GET https://js.px-cloud.net/?t=d-f18x3vcpy-1772905734927&v=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1
+[RES] 200 blob:https://www.zoominfo.com/86e80590-e420-4442-8cf5-62f181dbaeb9
+[RES] 200 blob:https://www.zoominfo.com/a7ef6242-20bc-4656-954b-f2d979581a2c
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WVlZWVlYFDcYEFsUW1tYFFFeUVoOXlhZW1tcDloJWw1cW11dWF4LWQsNWgsJWAxfDg1YX19cWl4OWQtdXloLWVkKWQsJUV0NW1wNXgtRW1pSLwAJDgsOOjFRISI4WyMdWT4EODwPOxIRWFsGOhxcPyoEGi4cDlsNKzEqMSIAOCYYBlwmIA9ZKVEkDlFdKQUsXwosWSwsD19bEAMKCyM5XVErAiADPB9VVVJZWFhYUgEYWStbGhIABhwGURwNHT4QIyASERlaB1xHO14PIxopGiYYElA+Xj0qLhslXCcuK0cQCRomLB0pUSQ5USM8IQo/WVggOCwMOjgHHl46PSlRUS0GOl9YLz8CBxEMLB0bK1kdOD4pDiwqGgY7Mg0eOFAyBFlfOyBbMjERDgAYGBw5Lio4MTwJI0NRCSU4IwQNDAYfBisSBgwxHD8wPDgaQ1g9Gy1HOw4NGlEvQz1DOxA7EQQpLgxHAlgRPyM
+[RES] 200 https://js.px-cloud.net/?t=d-f18x3vcpy-1772905734927&v=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1
+[REQ] GET https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEHVnRkJmAwpCU1wCDxAeEFYQCEkQVmULdHlIf3pgYHMPEAhUU15BVx4QeUpnUHdlBwt6cWMPEAgQYmoDAwUGBxAeEGp1aEFrWl1+UGRVDxAIEEJKWlEQHhB1RWRAc2QHRlN2QQ8QCFRTXkFXHhB/AAJ2eWprcHBwVQ8QCBALBAsAVAQCAwEBBlQAUwFXBgEHBwIEUQNRVwBRUwJWBVRXAgUFBgAEVANRBwQAUQMDUANRUwsHVwEGVwRRCwEACHVaU1RRVGBrC3t4YgF5RwNkXmJmVWFISwIBXGBGBmVwXkB0RlQBV3FrcGt4WmJ8QlwGfHpVA3MLflQLB3NfdgVQdgN2dlUFAUpZUFF5YwcLcVh6WWZFDw8IAwICAghbQgNxAUBIWlxGXAtGV0dkSnl6SEtDAF0GHWEEVXlAc0B8QkgKZARncHRBfwZ9dHEdSlNAfHZHcwt+Ywt5ZntQZQMCemJ2VmBiXUQEYGdzCwt3XGAFAnVlWF1LVnZHQXGEDR2Jkc1R2cEBcYWh^iXRGIKaF4DBWF6AWhrS1RaQkJGY3RwYmtmU3kZC1N/YnleV1ZcRVxxSFxWa0ZlamZiQBkCZ0F3HWFUV0ALdRlnGWFKYUtec3RWHV9gCS2V5Snt3YlxFeAB8G`Q2F3XmcEC31HBkpYaW3NqAUB8SEBAVwELRgJkanxVcHdXQQp+ZltfWH52ZRlKZFtUVwEGQl}d/AwpGUAD^BzYERHVmtkUR1GeENhXENFQQcGiV0hZBVliYUF8AQsDd0Vmf0hxAUp4SH9cfQRAClpdflUZSGJRC3gCSBlnShlCCnVcYFVRWGJAapgZRAFhiakBDfUt3dWDUKYEJLYWNh1fEBbXAVEalFYB3cAeVh7c3RaXmhldR0FFBs0AKVwIERENqR0dLYgFTeHwZRGRnUEt0e3tmeEFmQWRdSnpTeXxDGVNIe2hiSgEGAHh9fQJWdHBdGQRLeh0DW1MCY0hUU1h4ampremFhW3F7XXtgX3NIRgJEe2VEZHhraD0sASHtRAHdHf10LW2KZQeXELXkFLAgNTRHRwaEgdV0ZzSHwKC0MKUUt1ehAeEGZwaApnVUIFVABnDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHV7NfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=PScNJHtMFFA5KA==&uuid=cd036a99-1a4d-11f1-84f1-1d42b32143bb&ft=388&seq=1&en=NTA&bi=FmgmJkNRZAdQMkMDDzofBRdPMWEHY2wFGno1aywoby0QSWEfUiVkG3g9UV0XSCh/FVxpGD5uYEV/PiZuVlUhXQt7c1sDaBALUUtnflN9OAcafWddfC5sfxFAZBgYNCo=&cs=13f4549da95c56364fe1714d21cdff6810a6f5d8da7ce2f2ad4dbed104135e49&pc=5825024024518229&sid=cda1988d-1a4d-11f1-b4bd-cacf99a0056c%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B0%F3%A0%84%B5%F3%A0%84%B7%F3%A0%84%B3%F3%A0%84%B4%F3%A0%84%B8%F3%A0%84%B2%F3%A0%84%B4&vid=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1&ci=e8f30280-1a4d-11f1-af63-5b0eb2eb7700&pxhd=MwYZ0NiZYsDtl1HLStpgUxgS1WrqW5exfvbjnNUEqIjqBqB5IBu3PyemE1V-w3txLrzqZLJKwlgSropk-/Svrw==:SD3k52GCE7NgbgFgPIziJRsEvl1x-szOGPkz6HygX-deXH3yYq8bDAsgwVrqhxSJVddIMFEwyhJDn-EshpdQ4/6u6Z5Ro9F0DhHY6cf6i5I=&cts=cda19a90-1a4d-11f1-b4bd-cacf99a0056c
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772905200000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772905680000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772905680000
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=cd036a99-1a4d-11f1-84f1-1d42b32143bb&v=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[RES] 200 https://tzm.px-cloud.net/ns?c=cd036a99-1a4d-11f1-84f1-1d42b32143bb
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEHVnRkJmAwpCU1wCDxAeEFYQCEkQVmULdHlIf3pgYHMPEAhUU15BVx4QeUpnUHdlBwt6cWMPEAgQYmoDAwUGBxAeEGp1aEFrWl1+UGRVDxAIEEJKWlEQHhB1RWRAc2QHRlN2QQ8QCFRTXkFXHhB/AAJ2eWprcHBwVQ8QCBALBAsAVAQCAwEBBlQAUwFXBgEHBwIEUQNRVwBRUwJWBVRXAgUFBgAEVANRBwQAUQMDUANRUwsHVwEGVwRRCwEACHVaU1RRVGBrC3t4YgF5RwNkXmJmVWFISwIBXGBGBmVwXkB0RlQBV3FrcGt4WmJ8QlwGfHpVA3MLflQLB3NfdgVQdgN2dlUFAUpZUFF5YwcLcVh6WWZFDw8IAwICAghbQgNxAUBIWlxGXAtGV0dkSnl6SEtDAF0GHWEEVXlAc0B8QkgKZARncHRBfwZ9dHEdSlNAfHZHcwt+Ywt5ZntQZQMCemJ2VmBiXUQEYGdzCwt3XGAFAnVlWF1LVnZHQXGEDR2Jkc1R2cEBcYWh^iXRGIKaF4DBWF6AWhrS1RaQkJGY3RwYmtmU3kZC1N/YnleV1ZcRVxxSFxWa0ZlamZiQBkCZ0F3HWFUV0ALdRlnGWFKYUtec3RWHV9gCS2V5Snt3YlxFeAB8G`Q2F3XmcEC31HBkpYaW3NqAUB8SEBAVwELRgJkanxVcHdXQQp+ZltfWH52ZRlKZFtUVwEGQl}d/AwpGUAD^BzYERHVmtkUR1GeENhXENFQQcGiV0hZBVliYUF8AQsDd0Vmf0hxAUp4SH9cfQRAClpdflUZSGJRC3gCSBlnShlCCnVcYFVRWGJAapgZRAFhiakBDfUt3dWDUKYEJLYWNh1fEBbXAVEalFYB3cAeVh7c3RaXmhldR0FFBs0AKVwIERENqR0dLYgFTeHwZRGRnUEt0e3tmeEFmQWRdSnpTeXxDGVNIe2hiSgEGAHh9fQJWdHBdGQRLeh0DW1MCY0hUU1h4ampremFhW3F7XXtgX3NIRgJEe2VEZHhraD0sASHtRAHdHf10LW2KZQeXELXkFLAgNTRHRwaEgdV0ZzSHwKC0MKUUt1ehAeEGZwaApnVUIFVABnDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHV7NfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=PScNJHtMFFA5KA==&uuid=cd036a99-1a4d-11f1-84f1-1d42b32143bb&ft=388&seq=1&en=NTA&bi=FmgmJkNRZAdQMkMDDzofBRdPMWEHY2wFGno1aywoby0QSWEfUiVkG3g9UV0XSCh/FVxpGD5uYEV/PiZuVlUhXQt7c1sDaBALUUtnflN9OAcafWddfC5sfxFAZBgYNCo=&cs=13f4549da95c56364fe1714d21cdff6810a6f5d8da7ce2f2ad4dbed104135e49&pc=5825024024518229&sid=cda1988d-1a4d-11f1-b4bd-cacf99a0056c%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B0%F3%A0%84%B5%F3%A0%84%B7%F3%A0%84%B3%F3%A0%84%B4%F3%A0%84%B8%F3%A0%84%B2%F3%A0%84%B4&vid=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1&ci=e8f30280-1a4d-11f1-af63-5b0eb2eb7700&pxhd=MwYZ0NiZYsDtl1HLStpgUxgS1WrqW5exfvbjnNUEqIjqBqB5IBu3PyemE1V-w3txLrzqZLJKwlgSropk-/Svrw==:SD3k52GCE7NgbgFgPIziJRsEvl1x-szOGPkz6HygX-deXH3yYq8bDAsgwVrqhxSJVddIMFEwyhJDn-EshpdQ4/6u6Z5Ro9F0DhHY6cf6i5I=&cts=cda19a90-1a4d-11f1-b4bd-cacf99a0056c
+   BODY: <could not read>
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WVlZWVlYFDcYEFsUW1tYFAxQW1xRClEOCgoJDQpcXFENWgkLUA1bDQpeWl5fWlhaDFoOCwkLDVhQUV1dUF9RUVlbXlBcDVgKXV8MDlpbWF1SLQ47PVkfLlFfLQlZXkcgURwjHwoxLwoBDAASIiI9ATk8XAABIB4wLSUxIiMpIg0QJycYJBoPLwUnGQteHQIKOgtQMTsKQy88JUdDXQxbKSYqCgMRGx9VVVJZWFhYUiUSHSoZAD0iOCklHRgrBkMlAiMGBzBQDQssBD8OIDINLRAdMSk7AVs+ByZDBEcOGAoiK1AaWVxaWiJcBz88BSpaDBwvB1xdJ1tHPB9YAiYdHzAjMVElHCwMGlwlH18/Rw8iIV4nES5DJCYRIgkgPR4lDwIfMVxDWCIOIgAPIi8CWV0dBSleB1laDRFRJQQ/Ego+XgUJIBwcDFs6WgUMPBIMGxsODD0rDz4EBVEBUSMaXVw7BB0CBTgHAj0
+[REQ] GET https://fst-ec.perimeterx.net/?id=cd036b6e-1a4d-11f1-84f1-e78e9a31adc1
+[*] Verify attempt 1: title='Access to this page has been denied' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[!] Challenge still present after re-navigation.
+Title : Access to this page has been denied
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[-] ❌ Failed to bypass target site.
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Access to this page has been denied' URL: https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[*] Selected 'aria_button': 253x50 at (834, 504) [2 candidates]
+[*] Found 'Press & Hold' challenge!
+[*] Running behavioral warmup (scroll + mouse movement)...
+[*] Bbox: x=834 y=504 w=253 h=50
+[*] Window: screenX=0 screenY=0 chromeH=87 outerH=1032 innerH=945 dpr=1
+[*] Target center: viewport (960, 530) → screen (960, 616) [dpr=1]
+[*] OS mouse → screen (960, 616)
+[*] OS mouseDown — holding until challenge completes (max 15s)...
+[*] Challenge completed detected at 9.9s!
+[*] OS mouseUp after 10.0s.
+[*] Settling 3.5s for PX clearance flow...
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3OyJzIiJwc3QlJXcjdH9yI3B0dHQidnV+Jn90JnRyI352cHJ2cXB2JiRyJHQkc3YmdSF+JH53I3Z0IXVwJiZ+fiR9L34iHXcmER4SDSo+LBUpL3d/EiM9cBEVFxYkLQoAJRUUARB3Hwl2DXIuFD92A3dyd3IfFwoTJn4ONHMsEwQRNQwidgI9LhcRBiMUIQ8yDGxxIDQiBgZ6en12d3d3fSUAfggCDygOcA5oKjIOJS10DCQuCChwfz89KQMJdSZzaAIjDDJ2chV3AgsgIRQOKiEePS8JFDEAPxIBEj9+Hx4iNn81bCIlES0PKQgKdRIxPigFMTYJBgoBLTAgMXEyCCkWIhEkPg83BBIuATIyBjFwNwkEEiURDQ8TdB8XcnQFNTd2NQwGAQ8RcHINE3U1LhYCICYTLgwEBj1xHg8mEjE+FSEgfwE9EjUVBCx3dAsIAhM+fwIddyF+PRQ
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3ZyIiV/cyRyIiR/cCN3JXdydiZwfn5/JSZzJiNydSV3JiZxfncmdXAhJHFzIXFycHEifyF3dXdydCNwISYjdXJ9JnUhcQ0UEAkiEykGJCU0NSAdEHUeECAudCIRFDEJEAgDBAwPETc3BhNsdB0EdA4sEHY+ARJ+NTYJBQVsIyAGLAQpAhNxC2wDfhEKLncWcXAyFRFxAhZ6en12d3d3fR0MDg0+Mi4PDyQBDwwRNhEdJCUJCSoVdgQtFgUrBgl0aDAwHmw2cy4BLzYgCgoEbCssLSo+CSMUHXQtJQokFSMvNQQLfix2MD4NPT0iFyg+CwAKaDEmP3EwFHMkJAsgDTMdFjEuKSsXEyMNdX8PPxI+MyQxbHIODiYgfwsUJQkFDX8jJioXHjU+EgwvCDMrITYpJnVwPTQuAgssBHI0JDMfIyASJDQdaC0jE3MjBR8MEBMpLy0jFHA3Hit
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/24624970-3d4e-4864-a8e6-548a5344c1ac
+[REQ] GET blob:https://www.zoominfo.com/bc605886-918b-421b-9e95-38e08f0bbbd7
+[REQ] GET blob:https://www.zoominfo.com/3d121cec-3821-41b1-b5ce-44a65dc19033
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=61784ffa-1a56-11f1-a5e5-1d42b32143bb&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772908800000
+[RES] 200 blob:https://www.zoominfo.com/bc605886-918b-421b-9e95-38e08f0bbbd7
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772908800000
+[RES] 200 blob:https://www.zoominfo.com/3d121cec-3821-41b1-b5ce-44a65dc19033
+[+] PX challenge PASSED! Waiting for natural page transition...
+[*] Waiting up to 20s for natural page transition...
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772909280000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772909280000
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3cmIiJycX9ycyYhJCQiJn52IyUlJnIjfyJ1ISFzd3cmI39+I3ImIyF+cXF1JnZ0fn91cCVxd3AiISEhcSJ1cXJ9ARRyaCE0MCozKhIWHT0wBhUNDS4uNHUeDyALNw1zIxQJfhc1CAoLLws1PwQRdiMBLwAFFhF3LjEEMh0BNCBsAQ4fLx4ANSk3CyEqNCgIAiwjNwRwICB6en12d3d3fXYQBGhxHQkOfisLNXAdPy8uciEmIRcwHTMpKx5/dRMuDQxoFR4OIDQQBCEBBTRxfgB/PwkWMzQzCSQQfnIPCTB/IyoMPwsjDSZ3EGgPcwUVNSAfAAIjJREkPQoCIhMFfiIKfzF1ABQFCQofBX4VBX4AJQ4mcHcwPwgyLRZ0Fwk9dTE3LygJKiImN3JzEyIVEz49E3ZwMRUXJgA9DnAyNH4fbB09bGwkDww2IXcGKx83DBUCN3IGNSAXLSA
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=61784ffa-1a56-11f1-a5e5-1d42b32143bb&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=6178511a-1a56-11f1-a5e5-620043bc4f68
+[RES] 200 https://fst-ec.perimeterx.net/?id=6178511a-1a56-11f1-a5e5-620043bc4f68
+[*] Title at 2.0s: 'Access to this page has been denied'
+[-] Natural page transition timed out.
+[*] PX cookies after challenge: ['_pxhd', '_pxvid', '_px3', '_pxde']
+[*] Natural redirect timed out, trying page.reload()...
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 403 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/b/c/beacon
+[REQ] GET https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=61784ffa-1a56-11f1-a5e5-1d42b32143bb&v=6178511a-1a56-11f1-a5e5-620043bc4f68&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=61784ffa-1a56-11f1-a5e5-1d42b32143bb&v=6178511a-1a56-11f1-a5e5-620043bc4f68&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[RES] 200 https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] GET https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://tzm.px-cloud.net/ns?c=61784ffa-1a56-11f1-a5e5-1d42b32143bb
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/89df5e34-a3ce-4d90-8970-ea74b51869da
+[REQ] GET blob:https://www.zoominfo.com/b08cc3c8-7cf9-4113-82c2-f050737fbbfa
+[REQ] GET blob:https://www.zoominfo.com/23e54245-ced9-4466-9c37-58b9381bd825
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=61784ffa-1a56-11f1-a5e5-1d42b32143bb&v=6178511a-1a56-11f1-a5e5-620043bc4f68&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] HEAD https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772909400000
+[RES] 200 blob:https://www.zoominfo.com/b08cc3c8-7cf9-4113-82c2-f050737fbbfa
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3OyZ0fnd3JiZ1diJ3JnQmJSYjIn90diF2InJxJiF2fiV+d3V3fiEiJSV1Jn5+Ind3f390dyJyJXN0IiZ0JSZyd3V9Ny0MLSMgNysGDiEzdSwuKDczHyUMKXQrBSwuCgksA3QJKioJcAY3KTIxfxUVICAzHysyCSQQJisvNQUIDWwVPwE9DRYwEwgGNww2PxMIEAUoA3UTPyB6en12d3d3fSoxCyM+CygQJDBxDy4QHnM2IwZoJX4sbCQCDyslNwQCdBMsInV3MhArPQ0TPz1wBBIuHRMKH3Q1fx8MNABzFSgPADMocyMUNhQzBhIMMiZ3dyVzCgYeFy0EEQ5zLCElDzVxLCopCSh2JhUBCyEMKwYxCwIyCw4DLQBocxUxASkVMx8WCy8IBSMFEgMtLi0pLwN2Ngo/KQQmDjUPNCFxIi4CJSUJAQQOEXcyfnUKIgUedgI2cRAEAHAkMmw
+[RES] 200 blob:https://www.zoominfo.com/23e54245-ced9-4466-9c37-58b9381bd825
+[REQ] GET https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEFZLXnNQZnR+YHQKDxAeEFYQCEkQUGBWU3dLRh1qYVUPEAhUU15BVx4Qd0UDWXFkaF5odkUPEAgQYmoDAwUGBxAeEHlkQVdqAAoAdXVnDxAIEEJKWlEQHhB/ZH91ZAFjBXNfAg8QCFRTXkFXHhB+ZFFTZwBVBXVfew8QCBBTAQsCAlNTAANXAlMBU1BTVlcKAQNUA1cHBFNUAwtQCwIAAgtUV1BQAFMLC1cCAgoKAQJXB1AGAVdTAVBTBwIACEJYeVhWVUJec3tURgBZW11CRmpQeVwBXnBZW398WXYBfF9ffAVzQlxHRApgYFVVRmpeR3xRZVNeWkBwfXgZYEp0SHhjRWZ9c0J5Q0pmfWVwXXYAZkpVDw8IAwICAghfRH5WS35dZVFFBHpbZWsGQ1ZzHVALWRlRd3peUEJxdwFmWVcAAkdlXkh4ZkpIBXFnW2hmf2oBQApqeUF1BmBdenVGXQZWYUNhRnNneUdTAgJQBn9za2JYcWR7BllUUHpABFlfXHxGdA1NgdH5^UeV5zRH5i3R357dlh1HQZgRHRcYEZqY35afXBWcGd2WFtYXFp2A0N/SlxxU3tAekFUBFdbd1BQfHRxe2QCRwsAf1dwa9GwN3QwRl`cXUFUUcZdABaYFpzWXaF1YhkLAEsHSBlHZgV1V1F5GXlrVh1VRV9If2VKRGtgXVFRC3cHfldaV0Z8ZXlrc}WV+aGBbUE^[F5QHXYrAHQFaSH5lHXVhenNlUEZHcEN+W1pgYQZwa0peHXkLR0ZjUxl7cwJ5f0F6fXphY153HUJzeX98EdVx2SnN+C0taXEhrf0daYkd4VH1+dgZaQGhLYHQGdmVma^Htfd2JYC1x4QEZmdBlnWFEDWnBXiZ0tnQkpLAVoKdWdxaHkEcVdkdX%3EVVRWFTQFd1V3hBZQYdREZrXVkESlpjQFVnRGDKFbfUp4VQtDZ3FiVwNCd0d6fAJ9a35mdlxqeVVgVkh6VUdheGILZFVUYWRlSHpzcXtIaGUEeUNLA19IBUACWH1EWV5TdQcKaEoLQ72oCfF5lWUhaRlp+Y34CWGZBQ0tFC1BhX0EFRkNBRRAeEHNIAwJXZ2RjUXcGDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=YGIXISYJCVVkbQ==&uuid=61784ffa-1a56-11f1-a5e5-1d42b32143bb&ft=388&seq=1&en=NTA&bi=fEYLSCl/Tmk6HGltZRQ1a31hGw9tTUZrcFQfBUYJRUN6Z0p0OAlOchITezN9ZgIRf3JDdlRASisVRA0HMi1dYmVVDmEwRDplPjIcEGJXEmxwUxhkQlMbRyo/GCRwGgA=&cs=80066ac4cb6861b7ee530bf3a1e44b6864db9a0cb06f3c715df4943dd5ca00a7&pc=6919209597992900&sid=621b7e0a-1a56-11f1-91ad-987e78ba9a34%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B0%F3%A0%84%B9%F3%A0%84%B4%F3%A0%84%B1%F3%A0%84%B9%F3%A0%84%B7%F3%A0%84%B8%F3%A0%84%B4&vid=6178511a-1a56-11f1-a5e5-620043bc4f68&ci=7d5b4880-1a56-11f1-b919-2d43c39f66b3&pxhd=e0zXoW0P-TiocBbdVXUw7NkDD9f5ilMdfFEAbgLT3uPRsDFlkiwVEv7XvFjK3B5yRom9CSyWt7fv7C-WPRSGdw==:zpVYKXab9hd2I-SbFEOQsDLSyEgxLAWru3sKSZkhu-4/P-Nm73RvABXfV7kHXnopnFRGDcLTyg8uG/jdf9M3R5YrOAyYsWGN1nkV-zE80lg=&cts=621b7fe0-1a56-11f1-91ad-987e78ba9a34
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772909400000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772909400000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772909400000
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=61784ffa-1a56-11f1-a5e5-1d42b32143bb&v=6178511a-1a56-11f1-a5e5-620043bc4f68&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[RES] 200 https://tzm.px-cloud.net/ns?c=61784ffa-1a56-11f1-a5e5-1d42b32143bb
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEFZLXnNQZnR+YHQKDxAeEFYQCEkQUGBWU3dLRh1qYVUPEAhUU15BVx4Qd0UDWXFkaF5odkUPEAgQYmoDAwUGBxAeEHlkQVdqAAoAdXVnDxAIEEJKWlEQHhB/ZH91ZAFjBXNfAg8QCFRTXkFXHhB+ZFFTZwBVBXVfew8QCBBTAQsCAlNTAANXAlMBU1BTVlcKAQNUA1cHBFNUAwtQCwIAAgtUV1BQAFMLC1cCAgoKAQJXB1AGAVdTAVBTBwIACEJYeVhWVUJec3tURgBZW11CRmpQeVwBXnBZW398WXYBfF9ffAVzQlxHRApgYFVVRmpeR3xRZVNeWkBwfXgZYEp0SHhjRWZ9c0J5Q0pmfWVwXXYAZkpVDw8IAwICAghfRH5WS35dZVFFBHpbZWsGQ1ZzHVALWRlRd3peUEJxdwFmWVcAAkdlXkh4ZkpIBXFnW2hmf2oBQApqeUF1BmBdenVGXQZWYUNhRnNneUdTAgJQBn9za2JYcWR7BllUUHpABFlfXHxGdA1NgdH5^UeV5zRH5i3R357dlh1HQZgRHRcYEZqY35afXBWcGd2WFtYXFp2A0N/SlxxU3tAekFUBFdbd1BQfHRxe2QCRwsAf1dwa9GwN3QwRl`cXUFUUcZdABaYFpzWXaF1YhkLAEsHSBlHZgV1V1F5GXlrVh1VRV9If2VKRGtgXVFRC3cHfldaV0Z8ZXlrc}WV+aGBbUE^[F5QHXYrAHQFaSH5lHXVhenNlUEZHcEN+W1pgYQZwa0peHXkLR0ZjUxl7cwJ5f0F6fXphY153HUJzeX98EdVx2SnN+C0taXEhrf0daYkd4VH1+dgZaQGhLYHQGdmVma^Htfd2JYC1x4QEZmdBlnWFEDWnBXiZ0tnQkpLAVoKdWdxaHkEcVdkdX%3EVVRWFTQFd1V3hBZQYdREZrXVkESlpjQFVnRGDKFbfUp4VQtDZ3FiVwNCd0d6fAJ9a35mdlxqeVVgVkh6VUdheGILZFVUYWRlSHpzcXtIaGUEeUNLA19IBUACWH1EWV5TdQcKaEoLQ72oCfF5lWUhaRlp+Y34CWGZBQ0tFC1BhX0EFRkNBRRAeEHNIAwJXZ2RjUXcGDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=YGIXISYJCVVkbQ==&uuid=61784ffa-1a56-11f1-a5e5-1d42b32143bb&ft=388&seq=1&en=NTA&bi=fEYLSCl/Tmk6HGltZRQ1a31hGw9tTUZrcFQfBUYJRUN6Z0p0OAlOchITezN9ZgIRf3JDdlRASisVRA0HMi1dYmVVDmEwRDplPjIcEGJXEmxwUxhkQlMbRyo/GCRwGgA=&cs=80066ac4cb6861b7ee530bf3a1e44b6864db9a0cb06f3c715df4943dd5ca00a7&pc=6919209597992900&sid=621b7e0a-1a56-11f1-91ad-987e78ba9a34%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B0%F3%A0%84%B9%F3%A0%84%B4%F3%A0%84%B1%F3%A0%84%B9%F3%A0%84%B7%F3%A0%84%B8%F3%A0%84%B4&vid=6178511a-1a56-11f1-a5e5-620043bc4f68&ci=7d5b4880-1a56-11f1-b919-2d43c39f66b3&pxhd=e0zXoW0P-TiocBbdVXUw7NkDD9f5ilMdfFEAbgLT3uPRsDFlkiwVEv7XvFjK3B5yRom9CSyWt7fv7C-WPRSGdw==:zpVYKXab9hd2I-SbFEOQsDLSyEgxLAWru3sKSZkhu-4/P-Nm73RvABXfV7kHXnopnFRGDcLTyg8uG/jdf9M3R5YrOAyYsWGN1nkV-zE80lg=&cts=621b7fe0-1a56-11f1-91ad-987e78ba9a34
+   BODY: <could not read>
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3N2ISR3cyQjcyQkJXB+I3R+dSZxJiV1JiRzJXAkcXJ+JHZ/I3N/fyNycyVyJnN3JSNwdCMidyZ/JXYkcXcmcX59bAIhITceBgh+DXdxJQA3LQIDMyITAxEgcXEIEDU2KQEUChM/NyImPgM2Fi93cysNBi4uEC4vKDAKaCISJC4MFS4ALQAoLyIQdQ4xDnIGcisxNCUWEQZ6en12d3d3fTQeCSswBXM2DSYTAh8DAit0NgAeMj5+FR8LdiUNc3AVKhYMdiQ1JgMfdiR2NzcTIyYqPws/FQk2ESgiD3B1Fw42KiR/CXMmFjc0KioLFj09IgYtIRMsbGg/CnYNACUGJXcJAzUvHQoAIx0AFxMgEylzLAIrFgkNIh8DEx8ddA51MDY1aDcmFwUqJgkXFHECBhBoHjZ2Kmg+Hw83ASgXIBAuJnZwEQwkLQk0MCw1JSgWDAEUNxE0FXYpNnU
+[REQ] GET https://fst-ec.perimeterx.net/?id=6178511a-1a56-11f1-a5e5-620043bc4f68
+[RES] 200 https://fst-ec.perimeterx.net/?id=6178511a-1a56-11f1-a5e5-620043bc4f68
+[*] Verify attempt 1: title='Access to this page has been denied' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[!] Challenge still present after re-navigation.
+Title : Access to this page has been denied
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[-] ❌ Failed to bypass target site.
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Access to this page has been denied' URL: https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[*] Selected 'aria_button': 253x50 at (834, 504) [2 candidates]
+[*] Found 'Press & Hold' challenge!
+[*] Running behavioral warmup (scroll + mouse movement)...
+[*] Bbox: x=834 y=504 w=253 h=50
+[*] Window: screenX=0 screenY=0 chromeH=87 outerH=1032 innerH=945 dpr=1
+[*] Target center: viewport (960, 530) → screen (960, 616) [dpr=1]
+[*] OS mouse → screen (960, 616)
+[*] OS mouseDown — holding until challenge completes (max 15s)...
+[*] Challenge completed detected at 10.1s!
+[*] OS mouseUp after 10.2s.
+[*] Settling 3.5s for PX clearance flow...
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3VwJiUhcn5zciEhdHZ3IyUlIXYmcCMmJHd0fyFxJiQld352InQjdyEmcCYmd3N/fnMhcH5/JnJydCJycHV3c399AB0uDnUsLi8UChYQNylxIjYyIyB3FTYSCH8yMT9xczIIDRcQKhQGNhMRdwxwbBIMEyUgLyIoLh8tHjQvKQVzIH83KD00HRAqDH8GMCk1AglxKwYPICB6en12d3d3fQIPDCoJCypyKWwQFj0JMigfMXEldxMLFj8SFB0EdRAxKzErdS81CnMyLRIFKRUoNh0SMiQLBiEECC8FCQYvHSkIBixsBSIxczY9DyQicAYlJCECEAsyKHEOLxYtdhMBBh4dEhIIIx4XMh0lLComFwsqdQgBBHYDDmwsEB4ef3EQCCsJfxMMcC41DhYUDCQAMAsXJXFzEwEfPQpsIwEgLzMvJSkvFSolcyEeDzI2dw8FcA92FBJsEgQOKy1
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3BwdCIjJSNxJXJydX90JHN1dHIhIXV1JCEhd3MlI3Ykfnd2I3J3I38iI3EjdXZwfyIjJCVxfiElcCVyfnJwfnV9Nisfd3ctNHQ3JSB2NT4gPjIedRcOCwQkFnE+FBUDJgAAdgV1PRVobC4VCGgJKnUmAQEUfgIeMQZsLi1wHgZyAAwUFx4NEQ0mCi43D3YwAiMBMy0BKwZ6en12d3d3fRAhLSoMLiMLfwMPC3AfDR8FDmwTIgsKD342JTQDJg00aHM3dz4FECEwLzARfnMmcHVzF3IjdyE0AQ4NDhN+NwEDMHQmDB4oDz4kFBQGdgI+C3QrCHY1FCMVEAF3cTATJCklJBV3LXIGbAkzDT4VJHE3DwslIy0SLi4zA2giCD0GcS0xKQhoFXUmAiQiA3J/NSB2Awh2DT4sFxUkCTIBJn8lNxFsKB8OKDMDPTQQdyYgdWg2FCwvKjIeAD0
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/b68ae432-a852-4254-adbe-5936658bbba6
+[REQ] GET blob:https://www.zoominfo.com/3a6a19f3-73b2-43b0-b7ff-762d2f2bc267
+[REQ] GET blob:https://www.zoominfo.com/06982221-d7f5-4d58-9050-665f16d516a0
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=788d5621-1a59-11f1-b69c-1d42b32143bb&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772910600000
+[+] PX challenge PASSED! Waiting for natural page transition...
+[*] Waiting up to 20s for natural page transition...
+[RES] 200 blob:https://www.zoominfo.com/3a6a19f3-73b2-43b0-b7ff-762d2f2bc267
+[RES] 200 blob:https://www.zoominfo.com/06982221-d7f5-4d58-9050-665f16d516a0
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772910600000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772910720000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772910720000
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O35+fyIkd3Eld3RwdSQiJSQhf3MhfnNzcCV2JnJ3cXR/In4idiUjcXJ0cCNwIX51dHd/d3AmJncjc3N3diYicSZ9AwUOLA0VMnQwBnUAHz4pDSQMAQgeDiIUN38pPggCDGwdHnQoNXcdKzYSLAUqBHM1Hgk/JCJzMT43LXMPCiV+fgY/FgkTbGg3diodNS4tdHUocA4SPxZ6en12d3d3fSshMCB+JHdxI3ULBjUTKDEdNBABbCwAPggTKXAQPTUNIig/LzUtAS8DcA0JBRMKAwYvCz53cih+dXM2CR1zDxUhbD80A38KCRQdCAQRBC0zACoFfg4iKTUBIwElJB8UNi1xJiMwdQMTIShxAnQdKQg1MBQ+N3YKMws2fz4WHykrBAwXNgsqC3Z+dnIILQx1ND4jCXFyETR0DxELdC4McQ0Ocw8GCQ52DBEhMz5sHnIEcAB3cxR2cCQJdnM
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=788d5621-1a59-11f1-b69c-1d42b32143bb&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=788d5723-1a59-11f1-b69c-37d77de140cd
+[RES] 200 https://fst-ec.perimeterx.net/?id=788d5723-1a59-11f1-b69c-37d77de140cd
+[*] Title at 2.0s: 'Access to this page has been denied'
+[-] Natural page transition timed out.
+[*] PX cookies after challenge: ['_pxhd', '_pxvid', '_px3', '_pxde']
+[*] Natural redirect timed out, trying page.reload()...
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 403 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/b/c/beacon
+[REQ] GET https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=788d5621-1a59-11f1-b69c-1d42b32143bb&v=788d5723-1a59-11f1-b69c-37d77de140cd&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=788d5621-1a59-11f1-b69c-1d42b32143bb&v=788d5723-1a59-11f1-b69c-37d77de140cd&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[RES] 200 https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] GET https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://tzm.px-cloud.net/ns?c=788d5621-1a59-11f1-b69c-1d42b32143bb
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/3fee5ecd-c496-42e4-b013-75cfd40e0b5e
+[REQ] GET blob:https://www.zoominfo.com/db6c7572-e218-48e5-b297-3b11f71661c1
+[REQ] GET blob:https://www.zoominfo.com/3484d225-b445-47ca-b4d7-8819d05d5dcc
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=788d5621-1a59-11f1-b69c-1d42b32143bb&v=788d5723-1a59-11f1-b69c-37d77de140cd&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] HEAD https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772910600000
+[RES] 200 blob:https://www.zoominfo.com/db6c7572-e218-48e5-b297-3b11f71661c1
+[RES] 200 blob:https://www.zoominfo.com/3484d225-b445-47ca-b4d7-8819d05d5dcc
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3OyNwJSVydCN+dX5+JX8kJH9/Jn92cyZwJn8lcHQmJXR2JnJ/fiV3ISNxf3QkInN/c3IhcH9xf3F1IncmIiMhdCV9dAoXcwopIC8wHwp3CnYsDAIjFQQpNRMiLjMycgN0EjV3EiYhKgoSaGxoJHdyDTJ0IS4CBDQ0AREDCzRyDxN0cyAOAh10LAl3I3MMDCIPEg0+PzcXCAZ6en12d3d3fQQ/DHY+MiEeKwUkcTIlLQEPKggCNGxyKRYUNTQEbHIfIH4QLyt0ASMsEDN+BiIhLnEVBQYJCXciNBApEjcGHRQ1IBUxCx8PcAFoL3IgJCJoPxEGJjQsDh4UAR8SBh0rCnRsaCl/MzYPFC4DKQl1Nyo/diAWBDEjcnEvJiwgMDcSNncrKH9+BXErdmhwES0sdS0MNB93IAkUHS0rFH8XBRQDJXMQLx4DHyM3MHMOEj4WFHYpEjQmHyt1ACs
+[REQ] GET https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEFZLXnNQZnR+YHQKDxAeEFYQCEkQUGBWU3dLRh1qYVUPEAhUU15BVx4Qd0UDWXFkaF5odkUPEAgQYmoDAwUGBxAeEHlkQVdqAAoAdXVnDxAIEEJKWlEQHhB/ZH91ZAFjBXNfAg8QCFRTXkFXHhB+ZFFTZwBVBXVfew8QCBBWBVBQBwFWCwALC1AKUVEKClMKAwZTBVMKUAUBU1ABA1MHCgtQAlRWBAoBUVcGCgYHVAUKBAoEAFcCU1dWVAFQCAF/YgZ/XFVaRWp/An8DWXl3VmBxXEBmV1tGRwd2AWdAAmdTVF9/Zx0ZHVECB3hHAVRbd3FBQXRkdn5BB3pmAQZVe3doAVl8AlYGeXlXemd4S0pCYn1zDw8IAwICAghxSnkDS0dUa15wUQRHUFh0el99d0EZB1xjYUBBcRkHalULZVpeAXRWWWVGC3NXVFsEYHBzfHwCV0FlXGdCc2hhQFVgRH5qegV0HVoHVVFXHUpkc1NBWXtrYXRqZ3NoXnG8BGR1cCkZDemFbdlx^8AEJfSgNiVY3FEVgcEWlNZVUVCZ0MCXl0KC39AEXgMdBWRYWQBYeUFqAlV8YWhYXmEKYnBhdlAGZVprdmpWQkUGe2dLGY2EDXGdB`U2peAHVeQgFfRFVlUwarJ9AWUCR0B/UH1kQkdiWnxxcQRWBVBgaFpdQwEHY1lnZhlCBgJYZXUFXVVwZlxfGZkNzRl0FNiAX1xakh:zdgNTYAt0endZe35ZYQYGaEtrQABWUHcdXWZ0U0RcWFdcY0RHAn9XYFpVeHlaWQVaBlF7cBlLA3hrZEthcDXpLBmF4aH5wAFd9B1RhBEB7Ant9fUt1WX5TQpEpifxlgUAdlakdBSn_QDBAF+Vhl?nS3hAeUBwRGhgUHtzAAVnYAV1ZkYCeGZnGVpmfXdDWFpfWwNgWlBKBFQdfWRge15VQFxjSGZzdkhVRxl8ZkoHf0dUVGUCSHlbeFdnSn4FYlRHXWdVBHFxZE0tiWQF/X3QdfkEdAh13cEhcX1Bl[BEB2RmMHWV0CQXRTR7lphA1NaBGBqYGdBVH0AXlZwVX5wBHwEZgMZAkp5RhAeEHNIAwJXZ2RjUXcGDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=YGIXISYJCVVkbQ==&uuid=788d5621-1a59-11f1-b69c-1d42b32143bb&ft=388&seq=1&en=NTA&bi=fEYLSCl/Tmk6HGltZRQ1a31hGw9tTUZrcFQfBUYJRUN6Z0p0OAlOchITezN9ZgIRf3JDdlRASisVRA0HMi1dYmVVDmEwRDplPjIcEGJXEmxwUxhkQlMbRyo/GCRwGgA=&cs=34a3c4e5e3c8b72d1281e17034660060eba3cdc10e6ebce2d1fcb789a801ba66&pc=2551062639998100&sid=7a0d0412-1a59-11f1-a334-11e6a14dc544%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B1%F3%A0%84%B0%F3%A0%84%B7%F3%A0%84%B4%F3%A0%84%B7%F3%A0%84%B5%F3%A0%84%B9%F3%A0%84%B9&vid=788d5723-1a59-11f1-b69c-37d77de140cd&ci=94cbc5f0-1a59-11f1-aa8f-dd15e50fdf85&pxhd=COYI76ex/QbGJmsVknm3cxZk6pCZvFQe/7wcnqekLYG58BrX-lJszpx1xMNqeayJka9IUjVOaVDvmaOgmCRU-w==:zirFooQbNbW8H/Tfrn14LmfO085f3Q2QZQjJfVy7bRlj-1FUYfYTr3tVIDFys0m3Pf/xVXLZajXNRD8VdxriHOh8-g0sxFmMuXTvv7uZRqY=&cts=7a0d07d6-1a59-11f1-a334-11e6a14dc544
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772910600000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772910720000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772910720000
+[RES] 200 https://tzm.px-cloud.net/ns?c=788d5621-1a59-11f1-b69c-1d42b32143bb
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEFZLXnNQZnR+YHQKDxAeEFYQCEkQUGBWU3dLRh1qYVUPEAhUU15BVx4Qd0UDWXFkaF5odkUPEAgQYmoDAwUGBxAeEHlkQVdqAAoAdXVnDxAIEEJKWlEQHhB/ZH91ZAFjBXNfAg8QCFRTXkFXHhB+ZFFTZwBVBXVfew8QCBBWBVBQBwFWCwALC1AKUVEKClMKAwZTBVMKUAUBU1ABA1MHCgtQAlRWBAoBUVcGCgYHVAUKBAoEAFcCU1dWVAFQCAF/YgZ/XFVaRWp/An8DWXl3VmBxXEBmV1tGRwd2AWdAAmdTVF9/Zx0ZHVECB3hHAVRbd3FBQXRkdn5BB3pmAQZVe3doAVl8AlYGeXlXemd4S0pCYn1zDw8IAwICAghxSnkDS0dUa15wUQRHUFh0el99d0EZB1xjYUBBcRkHalULZVpeAXRWWWVGC3NXVFsEYHBzfHwCV0FlXGdCc2hhQFVgRH5qegV0HVoHVVFXHUpkc1NBWXtrYXRqZ3NoXnG8BGR1cCkZDemFbdlx^8AEJfSgNiVY3FEVgcEWlNZVUVCZ0MCXl0KC39AEXgMdBWRYWQBYeUFqAlV8YWhYXmEKYnBhdlAGZVprdmpWQkUGe2dLGY2EDXGdB`U2peAHVeQgFfRFVlUwarJ9AWUCR0B/UH1kQkdiWnxxcQRWBVBgaFpdQwEHY1lnZhlCBgJYZXUFXVVwZlxfGZkNzRl0FNiAX1xakh:zdgNTYAt0endZe35ZYQYGaEtrQABWUHcdXWZ0U0RcWFdcY0RHAn9XYFpVeHlaWQVaBlF7cBlLA3hrZEthcDXpLBmF4aH5wAFd9B1RhBEB7Ant9fUt1WX5TQpEpifxlgUAdlakdBSn_QDBAF+Vhl?nS3hAeUBwRGhgUHtzAAVnYAV1ZkYCeGZnGVpmfXdDWFpfWwNgWlBKBFQdfWRge15VQFxjSGZzdkhVRxl8ZkoHf0dUVGUCSHlbeFdnSn4FYlRHXWdVBHFxZE0tiWQF/X3QdfkEdAh13cEhcX1Bl[BEB2RmMHWV0CQXRTR7lphA1NaBGBqYGdBVH0AXlZwVX5wBHwEZgMZAkp5RhAeEHNIAwJXZ2RjUXcGDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=YGIXISYJCVVkbQ==&uuid=788d5621-1a59-11f1-b69c-1d42b32143bb&ft=388&seq=1&en=NTA&bi=fEYLSCl/Tmk6HGltZRQ1a31hGw9tTUZrcFQfBUYJRUN6Z0p0OAlOchITezN9ZgIRf3JDdlRASisVRA0HMi1dYmVVDmEwRDplPjIcEGJXEmxwUxhkQlMbRyo/GCRwGgA=&cs=34a3c4e5e3c8b72d1281e17034660060eba3cdc10e6ebce2d1fcb789a801ba66&pc=2551062639998100&sid=7a0d0412-1a59-11f1-a334-11e6a14dc544%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B1%F3%A0%84%B0%F3%A0%84%B7%F3%A0%84%B4%F3%A0%84%B7%F3%A0%84%B5%F3%A0%84%B9%F3%A0%84%B9&vid=788d5723-1a59-11f1-b69c-37d77de140cd&ci=94cbc5f0-1a59-11f1-aa8f-dd15e50fdf85&pxhd=COYI76ex/QbGJmsVknm3cxZk6pCZvFQe/7wcnqekLYG58BrX-lJszpx1xMNqeayJka9IUjVOaVDvmaOgmCRU-w==:zirFooQbNbW8H/Tfrn14LmfO085f3Q2QZQjJfVy7bRlj-1FUYfYTr3tVIDFys0m3Pf/xVXLZajXNRD8VdxriHOh8-g0sxFmMuXTvv7uZRqY=&cts=7a0d07d6-1a59-11f1-a334-11e6a14dc544
+   BODY: <could not read>
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O35xJXJydiYjfnBwJn8if3Nzfn9xc3ZydXIkcXR1fiYicnF1dyZ+JSF1JHIkcCN2cSJ/IXB0cCUkf3BwJnYjIyF9EhMfNQ1/Ly8ubC4IJjQtASIWNSMKHXQ9Bh9sHysvFykLPxcIDQguKncdLjRwC3AAdXJodA8wKSIKHhcULCMrCy8NAn8/CiZ+Py0wdC9/MCohES8qAzB6en12d3d3fR4PBXYEbHE+PSloCXMfEwMIFRUUIHNzLBIqbAokBBAVBRMDHSAUCx0ILj0iJgkNDmgTMwwEBQYgL3Y0CAp+NjI9fhQJASYkbCgFBTEIFgEAdAEAKwN3KysWICo/FTYWfwkNMzY9K3ZoFgwBHX4dAncQIxIvdggwfx51KykgLXYJCj8Xf3cMEz10IyQpBDMeBTEDKyUqHgspLTIjJREdKisfE3UXIjQJCA0Ifj0wNyIfPiANEwh+LxAFDDM
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=788d5621-1a59-11f1-b69c-1d42b32143bb&v=788d5723-1a59-11f1-b69c-37d77de140cd&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=788d5723-1a59-11f1-b69c-37d77de140cd
+[RES] 200 https://fst-ec.perimeterx.net/?id=788d5723-1a59-11f1-b69c-37d77de140cd
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3OyZzd3Z+c3V0dHMlJCVxIX4hf3IiI34iIXVzfncmIiQlJnJ0cyUldHJyfyZ1InAkdiImJHV3cSJ2dCRwfiJ2In99FWgyIj8KdAYBI350KSh0IiEBcmw1NgYoJRZzHx8DAQ8RAR0VKj8NLQJ1BjEUP3cOdSYiC349cyMNDjQoFXMidSosERYMPzQBCmwVJA42fwEIcnd2HiB6en12d3d3fSp0cSZzdw0XC34uFSAjMQofBTB/fiwWAX8jCgEFaB0xHX8dED8eAiguED0pdh8dPw8+CRAfEnV1JCshKRMVLR4/PnMUcHUqExIfCSEecRA0fwktLzMrMSwNdTISfzAPKDMOInUmfgYFHxB1dDR0Nj8+LXEiMw13KwkeBi8RJAozPT10EBY0AiYLIAt1BXU9cwMiFH40PiVoLDQfF3UPFAIBIBYSNBMNaCYKDAEiMAJsfh4jIwkkKGgGECt
+[*] Verify attempt 1: title='Access to this page has been denied' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[!] Challenge still present after re-navigation.
+Title : Access to this page has been denied
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[-] ❌ Failed to bypass target site.
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Access to this page has been denied' URL: https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[*] Selected 'aria_button': 253x50 at (834, 504) [2 candidates]
+[*] Found 'Press & Hold' challenge!
+[*] Running behavioral warmup (scroll + mouse movement)...
+[*] Bbox: x=834 y=504 w=253 h=50
+[*] Window: screenX=0 screenY=0 chromeH=87 outerH=1032 innerH=945 dpr=1
+[*] Target center: viewport (960, 530) → screen (960, 616) [dpr=1]
+[*] OS mouse → screen (960, 616)
+[*] OS mouseDown — holding until challenge completes (max 15s)...
+[*] Challenge completed detected at 8.0s!
+[*] OS mouseUp after 8.1s.
+[*] Settling 3.5s for PX clearance flow...
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3ElfyRwdSQidyV3d391fyFwcCNwdXV/I3F/cHZ2c3NzIn5/JXIlfyFwIn91ISQjJHYkIyMldXB1IXBxJXEmIiJ9dAQgMhF3EwloECYOMDAJCnUXFSpwCAUXchQGBR4jcCRsLhV3HR1oIDEBcH4SADEyITALBC0fEwkTcS0FNhF3MHMKBiMKcRINFTAfIAZxf3UtNiIDfhZ6en12d3d3fQlzIwY3LnIGKD4qcxUpHhArLhURFSMNIRcNcXERLwgxIRAxMzEqKSMFc34DaBcQbAIOMnN3MQIzIiIsCwA2fwwWIn5sICkzcg8PIwsDdRdwDHQoJjclFyM0EAMJEAwPcgB/dQAVHncTJDQKIA0wEiYgBCIGaCMTExF2IX8TLRMhFi0FcSB1FRB0CQk1NBYBK3Y9HxYPKwkhMTAJDAA/KhQyIQZsBDEGDxV+LDUELz4wPg8lNGg/Fi5+cCI
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3B/dXB+cXFxIXd2JXF0dXN3cXFzdSRxIiZxJHNwcnYkdHQmdiZzJnR0cXElIyZ0dSIhJX4kI3Jwd35xcHNxJXd9DBMsLHMtEjUtdAwzCTMlLhIXDn91JXIMJQoRcC8uIR4ecjIULwseEwghJjUgABc1FS0WaAITJCVyCz8yLDAlJRAFHwMGdyMqFn8JChJzdDB1dXUWPhZ6en12d3d3fR4gBSYWN3EvAQ0dPyUEPiR+JgICfy0wBgYyFgI0JnE/c3YVcjILHiMuBAwQInMWA3cxBA8PcTcLAy49LgAKMBUdczc+NhEwFQoVAXYJcHcwFn8PJXMRAHYFLAARPwolHzcscCtxPzQ+bCAJLxcWL3ByEw0RBH4tNAggIQQpEhANBQ8GK3RxDCsrfhQ3HXcQNQIEMS8UchR3EQ4PIQ89NB4ELQ4vMTBzIywAdTYQBHQSDwN1HgkNLwMfdSV
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/b411b94b-1c5c-4362-91c9-39da8068c15e
+[REQ] GET blob:https://www.zoominfo.com/2aa460a1-6036-4dca-adea-7ffe5e35ca0b
+[REQ] GET blob:https://www.zoominfo.com/eb728f7f-7d3a-457d-a5a5-a86e07230f23
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=486fee51-1a5a-11f1-bf21-1d42b32143bb&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772910600000
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772910600000
+[RES] 200 blob:https://www.zoominfo.com/2aa460a1-6036-4dca-adea-7ffe5e35ca0b
+[RES] 200 blob:https://www.zoominfo.com/eb728f7f-7d3a-457d-a5a5-a86e07230f23
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772910960000
+[+] PX challenge PASSED! Waiting for natural page transition...
+[*] Waiting up to 20s for natural page transition...
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772910960000
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3JycCN+dyF0InAkfn92fyN3ciZ+c3Yhcn91IiZwcCN+JnMkc3cmd3Ryd3BxInFwdSMlJHBxfndxdXMkISN1ISN9JDAjCz4MIz4NMwooDDIpEjcIEi8lKWwNED0sExYgBDYEKjF0Kyo9fyY2HXIEETE3MwYjHj0DIz0ADAgfBg0qCSA2FSs/BBIGIDUsHhUOMTJ/HnAuKjB6en12d3d3fS9oIS8/Aigvdyo+ExERAyYGEw4IbHIMHhIjEh09Kit/NWwsCAovCSICLnENFnAXLnUjNRB0DiYjBhUoaCUABX8IAjcDdAU1BQAAIBQPFiAdJTUPfikwNAMkLwp+K3R/DXcGJQ5/IwwgDgEDDH4JDzNoAn8GFx8gDRUVAwt2JnR/CjYqHyAsaBcuEXAVcCkVFikfDCsEKx49CQsiHxQ/NjULNXMtCi01IhABJRItHRMCFxR/IQsidg02dCI
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=486fee51-1a5a-11f1-bf21-1d42b32143bb&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=486fef0f-1a5a-11f1-bf21-0021c542bc39
+[*] Title at 2.0s: 'Access to this page has been denied'
+[-] Natural page transition timed out.
+[*] PX cookies after challenge: []
+[*] Natural redirect timed out, trying page.reload()...
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 403 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/b/c/beacon
+[REQ] GET https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=486fee51-1a5a-11f1-bf21-1d42b32143bb&v=486fef0f-1a5a-11f1-bf21-0021c542bc39&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=486fee51-1a5a-11f1-bf21-1d42b32143bb&v=486fef0f-1a5a-11f1-bf21-0021c542bc39&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[RES] 200 https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] GET https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://tzm.px-cloud.net/ns?c=486fee51-1a5a-11f1-bf21-1d42b32143bb
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/e7abeac2-d6a8-4715-824f-190f86396b1f
+[REQ] GET blob:https://www.zoominfo.com/4021cce8-39fe-4b83-bc0b-181090264135
+[REQ] GET blob:https://www.zoominfo.com/c09760d5-d8b5-4f0d-a749-82c24ee48240
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=486fee51-1a5a-11f1-bf21-1d42b32143bb&v=486fef0f-1a5a-11f1-bf21-0021c542bc39&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] HEAD https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772910600000
+[RES] 200 blob:https://www.zoominfo.com/4021cce8-39fe-4b83-bc0b-181090264135
+[RES] 200 blob:https://www.zoominfo.com/c09760d5-d8b5-4f0d-a749-82c24ee48240
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3Uhcnd+fyZ0cyFzcXcifnEjcH4iJnZwcyN2dnZxdnMlc3ZxJSYmdXZ+JnRyIXJzIiEiInBzJCN0dXVyfyV1JCN9IikREyIsKTUxBj4LMgwrLB8vHSRxCTIOPj4sASJ0A3V3FAEKMAl1JA4fIh0PBCoOCSQ9DDIrDD10ACZ1CzYifhEdfwB2IWweICkvEgNzLyESfmgfADB6en12d3d3fSVwLX8DcDcedAZ2di0qIS0UCg40IWwjFnMAdQU/dD9wJQogdnAIBREJFytyFB12ACYUHx4oPw89AyA0AC9xHSEQJB50HwkAcTR2CyoXBT8QLT0mHn4rASUINysUdmhsFT0VCxFzDAo9ASoTH2xyMQIzcipzFRAMJmgQICwfLgUyAzAJMn8FMQoiFB4uKzUeLxZwMRI2ETIsNB8gDWhoCxUdET4JMyF3Kn9wPXIxPTYoLQMGDAE2fgpwPhU
+[REQ] GET https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEFZLXnNQZnR+YHQKDxAeEFYQCEkQUGBWU3dLRh1qYVUPEAhUU15BVx4Qd0UDWXFkaF5odkUPEAgQYmoDAwUGBxAeEHlkQVdqAAoAdXVnDxAIEEJKWlEQHhB/ZH91ZAFjBXNfAg8QCFRTXkFXHhB+ZFFTZwBVBXVfew8QCBAAVAcCCwpTAQZUBgQCVwsEVgULV1MDBQZWAwMDBAMGUAYDBFBTUwADC1MBB1QHBldUV1cFBlFWAQAABwpQAFFWCFdcZGZXWVxARHNLfkd5XllqWmhRBHxHe0tLWXRXAXYAAmF0f0V8AFF7aldoenFfe3xRSHlHXnlIAXVTAH5DVwtkaAp1A1QZa1VcWmd2BlpUZwsdanVFDw8IAwICAghQBVgKdgVCawFzAwNYX1RYYX97QVQZVmMGdQBwSgFKBVB/VQMFfXBkfGJeB2FoA3VTYWprXUp6SHZVQXVaBGhUZVFrAWp8dQRBA35fYnBKZVhIU2sLXnRQfUJeYQMdGWGBIYH5kBnl/SHRfZmo^ZB0R3RgdifBmBleVMdZVVZaltwR3ZFfEcKcER/V2FrW15Aa1pjBURnQ2RHWUFqVXgdHX5gaGRLfEZUAl8KBUgHREhDX9GVh2c3l0Qwt/BUtgYwAdakd9SEJ`YWUpxWAVcXwJDS3ZUfHBaS1pleBl/C1F9RXFfCnlYYktTSAdzf1VjfFQGeFpgXFahKe1pje3rGgKRmFfY^AJ/VHlEeHt7eVxLVXN8dlh1YFB3KBARlc0NQQ1QZQGJ/ZF99CwFlB0h4WkdKYkt3RwtjY19cUUFzVmZnXA?MGAF15GWtbAEoCAmJeSld2cGZYcD3t9QkhQANUpAeFpicK3FrQgJQemtcenV5RQVIe3d9BwFDSHRdfF1mSwJKYmRzdHxWe0MCZXl0CktTRlB5VAd0AAB2YU%3EEZe0FhVnGtFZ0dkfHNid1RHXndgA2dGWgZUYVdxfUVRcUtGBGQCW0BWamh9fUpn[SwMCSEZTeGVbGXlaXgBnQR0ZVgVQC3QBRmgGS1tXRUtEa7lN4C3UDBloZUGILVHgdfGh8SwB8ah1VHUh0AlhRShAeEHNIAwJXZ2RjUXcGDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=YGIXISYJCVVkbQ==&uuid=486fee51-1a5a-11f1-bf21-1d42b32143bb&ft=388&seq=1&en=NTA&bi=fEYLSCl/Tmk6HGltZRQ1a31hGw9tTUZrcFQfBUYJRUN6Z0p0OAlOchITezN9ZgIRf3JDdlRASisVRA0HMi1dYmVVDmEwRDplPjIcEGJXEmxwUxhkQlMbRyo/GCRwGgA=&cs=ef089525f2999b1d5019714312bb2ea79d103ef4ff916ab7258be8b5325ef88a&pc=5682868383221770&sid=496b9a0b-1a5a-11f1-a935-bfb772e5bdf0%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B1%F3%A0%84%B1%F3%A0%84%B0%F3%A0%84%B9%F3%A0%84%B4%F3%A0%84%B0%F3%A0%84%B8%F3%A0%84%B1&vid=486fef0f-1a5a-11f1-bf21-0021c542bc39&ci=6350bb10-1a5a-11f1-93bb-e92c614c98d5&pxhd=COYI76ex/QbGJmsVknm3cxZk6pCZvFQe/7wcnqekLYG58BrX-lJszpx1xMNqeayJka9IUjVOaVDvmaOgmCRU-w==:4Q9BSsjwkPj6yG4kX6Nh-A8tbIGUg1wq7q9HV-tjYpsUhosuBJVcRnFrCcRZeINAiR8VTgQ/0Id2y2sqRcqBWUgvcRE/m0aPnULq9mqPFc0=&cts=496b9c12-1a5a-11f1-a936-bfb772e5bdf0
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772910600000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772911080000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772911080000
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=486fee51-1a5a-11f1-bf21-1d42b32143bb&v=486fef0f-1a5a-11f1-bf21-0021c542bc39&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[RES] 200 https://tzm.px-cloud.net/ns?c=486fee51-1a5a-11f1-bf21-1d42b32143bb
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEFZLXnNQZnR+YHQKDxAeEFYQCEkQUGBWU3dLRh1qYVUPEAhUU15BVx4Qd0UDWXFkaF5odkUPEAgQYmoDAwUGBxAeEHlkQVdqAAoAdXVnDxAIEEJKWlEQHhB/ZH91ZAFjBXNfAg8QCFRTXkFXHhB+ZFFTZwBVBXVfew8QCBAAVAcCCwpTAQZUBgQCVwsEVgULV1MDBQZWAwMDBAMGUAYDBFBTUwADC1MBB1QHBldUV1cFBlFWAQAABwpQAFFWCFdcZGZXWVxARHNLfkd5XllqWmhRBHxHe0tLWXRXAXYAAmF0f0V8AFF7aldoenFfe3xRSHlHXnlIAXVTAH5DVwtkaAp1A1QZa1VcWmd2BlpUZwsdanVFDw8IAwICAghQBVgKdgVCawFzAwNYX1RYYX97QVQZVmMGdQBwSgFKBVB/VQMFfXBkfGJeB2FoA3VTYWprXUp6SHZVQXVaBGhUZVFrAWp8dQRBA35fYnBKZVhIU2sLXnRQfUJeYQMdGWGBIYH5kBnl/SHRfZmo^ZB0R3RgdifBmBleVMdZVVZaltwR3ZFfEcKcER/V2FrW15Aa1pjBURnQ2RHWUFqVXgdHX5gaGRLfEZUAl8KBUgHREhDX9GVh2c3l0Qwt/BUtgYwAdakd9SEJ`YWUpxWAVcXwJDS3ZUfHBaS1pleBl/C1F9RXFfCnlYYktTSAdzf1VjfFQGeFpgXFahKe1pje3rGgKRmFfY^AJ/VHlEeHt7eVxLVXN8dlh1YFB3KBARlc0NQQ1QZQGJ/ZF99CwFlB0h4WkdKYkt3RwtjY19cUUFzVmZnXA?MGAF15GWtbAEoCAmJeSld2cGZYcD3t9QkhQANUpAeFpicK3FrQgJQemtcenV5RQVIe3d9BwFDSHRdfF1mSwJKYmRzdHxWe0MCZXl0CktTRlB5VAd0AAB2YU%3EEZe0FhVnGtFZ0dkfHNid1RHXndgA2dGWgZUYVdxfUVRcUtGBGQCW0BWamh9fUpn[SwMCSEZTeGVbGXlaXgBnQR0ZVgVQC3QBRmgGS1tXRUtEa7lN4C3UDBloZUGILVHgdfGh8SwB8ah1VHUh0AlhRShAeEHNIAwJXZ2RjUXcGDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=YGIXISYJCVVkbQ==&uuid=486fee51-1a5a-11f1-bf21-1d42b32143bb&ft=388&seq=1&en=NTA&bi=fEYLSCl/Tmk6HGltZRQ1a31hGw9tTUZrcFQfBUYJRUN6Z0p0OAlOchITezN9ZgIRf3JDdlRASisVRA0HMi1dYmVVDmEwRDplPjIcEGJXEmxwUxhkQlMbRyo/GCRwGgA=&cs=ef089525f2999b1d5019714312bb2ea79d103ef4ff916ab7258be8b5325ef88a&pc=5682868383221770&sid=496b9a0b-1a5a-11f1-a935-bfb772e5bdf0%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B1%F3%A0%84%B1%F3%A0%84%B0%F3%A0%84%B9%F3%A0%84%B4%F3%A0%84%B0%F3%A0%84%B8%F3%A0%84%B1&vid=486fef0f-1a5a-11f1-bf21-0021c542bc39&ci=6350bb10-1a5a-11f1-93bb-e92c614c98d5&pxhd=COYI76ex/QbGJmsVknm3cxZk6pCZvFQe/7wcnqekLYG58BrX-lJszpx1xMNqeayJka9IUjVOaVDvmaOgmCRU-w==:4Q9BSsjwkPj6yG4kX6Nh-A8tbIGUg1wq7q9HV-tjYpsUhosuBJVcRnFrCcRZeINAiR8VTgQ/0Id2y2sqRcqBWUgvcRE/m0aPnULq9mqPFc0=&cts=496b9c12-1a5a-11f1-a936-bfb772e5bdf0
+   BODY: <could not read>
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3d0JnV+diZ2I3J2JXB3JH91JXJ2JCMhIXF2JHYjc350dXR/f3YkcnFyfyJ0dSEiJXJzcXF3dnEkdHIhdiJwcnF9Ij0LcAgDKCwOCnMqPzUKHwkqEj93BAMICxNsMwp3AxIvdGgeNDRoFAwwPTJyH3YyL3EBNhQpcQ93ATcUCGgFMAEXbAANPwkwNRchMBctDjYBMXMwJhZ6en12d3d3fQwBEC0raBYFdzIOdj0NDQssNjYmNgovASMQCw8tdxM9KRMgIhIzLwMOAWwTJQlxcwl/JHchABEtKTQ9FXEOdHcPLyYSAXcwBSgfKhEKC3ckCywBKjMTKzY9DBc3DQUVBnE1Dh0TIgE+JXJxASwLKSkQCXIzBTEhd2gQFSloDBULMj03cBF/LjFoaCAPDih2cS89PywSBTZ2IWgmLCp/LDFzBSkKfygoNnMENHJ3ERU+ADMsdgYlAit/dB0
+[REQ] GET https://fst-ec.perimeterx.net/?id=486fef0f-1a5a-11f1-bf21-0021c542bc39
+[RES] 200 https://fst-ec.perimeterx.net/?id=486fef0f-1a5a-11f1-bf21-0021c542bc39
+[*] Verify attempt 1: title='Access to this page has been denied' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[!] Challenge still present after re-navigation.
+Title : Access to this page has been denied
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[-] ❌ Failed to bypass target site.
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Access to this page has been denied' URL: https://www.zoominfo.com/c/amco-ranger/5000168 | webdriver=False
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[*] Selected 'aria_button': 253x50 at (834, 504) [2 candidates]
+[*] Found 'Press & Hold' challenge!
+[*] Running behavioral warmup (scroll + mouse movement)...
+[*] Bbox: x=834 y=504 w=253 h=50
+[*] Window: screenX=0 screenY=0 chromeH=87 outerH=1032 innerH=945 dpr=1
+[*] Target center: viewport (960, 530) → screen (960, 616) [dpr=1]
+[*] OS mouse → screen (960, 616)
+[*] OS mouseDown — holding until challenge completes (max 15s)...
+[*] Challenge completed detected at 3.2s!
+[*] OS mouseUp after 3.2s.
+[*] Settling 3.5s for PX clearance flow...
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3O3YjfyF/dyRxJXZyJnV1JSYidX90InEmcSN0I3d2ISZycSMmISV+JnMkIiZ1d3FzJnB+fn4iJXJ0cXEjciIidHJ9cmwvdw4pPQgiPSwdM3EyMhI2FBJ3AywCLhYNBiIRMQkJPx5zdh1+FhMgBhY/BXIgcWgINj8AI3MjBBQOLxV1dQwzDA8gdiANFSsuczEeJGhxLSYPaCB6en12d3d3fSkxPnIPcSswPQEQPR8VEx8PLxUUDR4vcC0uJjMPHwIhCz4DNndybAx/Iil3cxEGIhZxAhQpcBMULzM3LTEKLh0TFHA3PxVzD3AKIxEwEAEkbH4FHgkFCiYvfg8JMiw3ITFxMDUMNAYqdQEOHQ4yNjMmdSZxLiMvDyoyACZwAihoPw8WfjILNDY0EAwzJBAoEzIuDBJsIj0xKRQqCHYtHywuCAgJfxAyEwt3IQ9sDRcmKR12DjN1BB8qCnM
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3OyImISQmcXMhfyFyJXZ0cXQidSYiIiMjcyZ3JSQhJH8hJXVzf3Ukd3QiIXJ0cXVxISNyd38mJnR1JnR1ISF2fnR9DxV+dHUINw0TCzMCMi83cC5yPhJ3cH8mKCRwNAwTMxcoAXEICT4IDShyfwlwdz4ddiZ2ABcBPX4JKwR1CAAOIwM1EgEANhVyaA81bBUJJXQkFRAAaBZ6en12d3d3fSsVBT4REwktCC8kEy92MgYXLiMTBA5/ESQFABYpNhUhPwt1InMicRM2NCUuKBI/dik0AhFoJC4WJgUAfmggJAAPLyszMwoBMg93DD4QFhcPPSAuBhJzPnciIhB/JSQQLX4ucQwxCCwudgoFARMNNAQNbC4yPX90MRAMd3QNfiojHhI0fzF1ADQTEhYLE3YNAw80C3YRMzUCbDAMPx4pdh8OLTN3HgVwAhELLhYCciMTEwYOADMrHXIFMAp
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/8bfd94cf-6b12-4345-b8b4-bb5a58279f0f
+[REQ] GET blob:https://www.zoominfo.com/08f2b224-be4e-4dd5-afb6-d07d07894c97
+[REQ] GET blob:https://www.zoominfo.com/1ce85406-61e2-48c9-bc64-88d0d67b57aa
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=76a259d2-1a5a-11f1-852f-5356484c7559&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772910600000
+[RES] 200 blob:https://www.zoominfo.com/08f2b224-be4e-4dd5-afb6-d07d07894c97
+[RES] 200 blob:https://www.zoominfo.com/1ce85406-61e2-48c9-bc64-88d0d67b57aa
+[+] PX challenge PASSED! Waiting for natural page transition...
+[*] Waiting up to 20s for natural page transition...
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772910600000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772911080000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772911080000
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3OyYlJnJ0ciUkcH5xInIiJncmcCNzd3BwJSEjd3MiciR0cSVzJX8iIXAlc3UkcXQlJX8hIXdxJnF0I34jdHF3JCN9MxcJMQI1cDd+JjYEN38zMR8MdihyBiZsISUuABUqdxQPDgZxEjQJfjYPD3QyJTYfaD0jKxMfAxQoczIALwUkEwpyHSUUDz0vDwAzfhQoEBcrcx0vHxZ6en12d3d3fXc+MyQlLyxzPXV+Dh4EJBMCFgMNdz4QDgsEHQI2MyoLAQwMLBIjN3U1FDcPKnYMBC1yFi8KCHMtEygffnQxDjcAdhNxITMtKSolCQ8kPgUJKzckIiwIMBMQDBc9NmhzKGx0ChIqdSYrFXcKFRAmNnR1JCIvPWxsLT90MHAlA3VwAQItKncEHiYDNWgdCDQvAzcTbAh0cA4xcjMEdDQOIhYFASUKdHMAEHACKx0NNSEvcgULEwEGCn4xKhA
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=76a259d2-1a5a-11f1-852f-5356484c7559&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=76a25ac6-1a5a-11f1-852f-1f7dc1d7962a
+[*] Title at 2.0s: 'Access to this page has been denied'
+[-] Natural page transition timed out.
+[*] PX cookies after challenge: []
+[*] Natural redirect timed out, trying page.reload()...
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 403 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/b/c/beacon
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: <could not read>
+[REQ] GET https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=76a259d2-1a5a-11f1-852f-5356484c7559&v=76a25ac6-1a5a-11f1-852f-1f7dc1d7962a&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=76a259d2-1a5a-11f1-852f-5356484c7559&v=76a25ac6-1a5a-11f1-852f-1f7dc1d7962a&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[RES] 200 https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] GET https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://tzm.px-cloud.net/ns?c=76a259d2-1a5a-11f1-852f-5356484c7559
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/a5cd42e6-bd2f-409e-bee5-bd60640d8cb7
+[REQ] GET blob:https://www.zoominfo.com/bd27503d-5342-42f7-8bed-498fd7177568
+[REQ] GET blob:https://www.zoominfo.com/fadc2a7c-ef65-4fbf-aebb-2c33a2163306
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=76a259d2-1a5a-11f1-852f-5356484c7559&v=76a25ac6-1a5a-11f1-852f-1f7dc1d7962a&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] HEAD https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772910600000
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 blob:https://www.zoominfo.com/bd27503d-5342-42f7-8bed-498fd7177568
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3OyIkJSQhJn4hJiFydSQmIiN/JXB2I3F2dnZxdSVxfyJzfnR+d3N+c3F2cyZ0I391fn91JCJzJnd0I3dyf352IyF9KQEwdhMNJAx2CBcuMBQDMSUBJC4uN3VyASkFJQ8sND4sH3AUHnAQLCUgLwI2Dnd1CRQ9dSssEQ9oNzAkdn52bH9yMz5yKRU3NxMhdiYkHwgpFRJsNRZ6en12d3d3fQwsdBcNDnAjDi0iFw93KAl1BCQMEAMEJRU0AgwDIxQfch9/IHQNLnItdn5zKwMGJgAXE3QtLXcLdQo2Li8uHjE1cmxoHgUoNSwmCAhyKC89CBYJMCEjL3ICDz5sHR9wPQolHjc0ISoCfw4rLBU9PXQRAnUKcSICEj5xAC80NX4AfjElczQOJAkqKxUOcAkuACRyIzYFMQkTcT8DMjIBDAZycw0vJgI2CgMjBiAeDBQoMRcPHj0yFiIBdyQ
+[RES] 200 blob:https://www.zoominfo.com/fadc2a7c-ef65-4fbf-aebb-2c33a2163306
+[REQ] GET https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEFZLXnNQZnR+YHQKDxAeEFYQCEkQUGBWU3dLRh1qYVUPEAhUU15BVx4Qd0UDWXFkaF5odkUPEAgQYmoDAwUGBxAeEHlkQVdqAAoAdXVnDxAIEEJKWlEQHhB/ZH91ZAFjBXNfAg8QCFRTXkFXHhB+ZFFTZwBVBXVfew8QCBBXUVBRVFMLVFNUBwBRU1dWClAFA1YEAwMDBABQBApXBgsBCwIGCwYEAwZTAVYKAAsKAFFXBlMCAVYCBwoLA1ZUCFx0RQNmeFF5A31iW0VhdkRQdFFbW0IAB3RccFB6WUFLWWoFYWsFZVlQVVp3Q3sCAHxhSABeWWR6HUJFUQMLAxkKB0ZLB1xgQkJmVANTUWp9XGBnGUBjDw8IAwICAgh5WQFieHsFVntYV2J6Al18AHFReWV2cVBgQXd5dlZhagdqClUBeFsHWAMLBl52c1N1YmYBWFgCfgB/Q1taW2tEQAcZHWtwXUBZU319B11aSH1jfEVUVloHd3pLGWhqBUh/UGtCQVRfdwp7XllgGSEgBZHcA^fwRXd2dLBHVaQUALdQtEUAZBe1F8X15gewV8iW3VRB1ZDcER8ZgRKdkdHdHlzBwZ4WlN3Q3929VnNVa3lhGXURiemtIR2NXdAJRVGNBaHt2XVl`aYZHVkBVpoZGBXcHYDUwV/ZQJgRnRwVnUdX1ZlYHdwdwIAeXlFSFMFRVRZHQdXRr2tgAnoCZGUBIGUBqZ^OQYDWkh7RkdqU2oAVmRjR2tDeGd8HdmUDXwdHe1h1WWR2S2dldgVddHlQYEh3VnMEakV3dWYAfnNdA3BheDQtkYGRLZHddfEVwQQVGGVYEBX5CYVUKYmR2Y`lcFRGUdalF7dGpeV3iR7AQVbc11?5YnwAfXVQBgFfdgtcEA1kFVXtBUFtrXHsKQ1Z3U1hiR1xjGUZGe1dcBEdiZkUEVFdYQVxHdGNxeUAASH18ZHpWQllAWlAZXFxERgcdY2sFeQcKV2ZzAFFAa3xfHVViVkZQB19HQEhqYEVWBWBTKC1hwYGJ6dmp3GWMFX7gUdfkt5eWIEWGZUWV1GSF1jVQZ/WXYKXFtiU1wdfxAeEHNIAwJXZ2RjUXcGDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=YGIXISYJCVVkbQ==&uuid=76a259d2-1a5a-11f1-852f-5356484c7559&ft=388&seq=1&en=NTA&bi=fEYLSCl/Tmk6HGltZRQ1a31hGw9tTUZrcFQfBUYJRUN6Z0p0OAlOchITezN9ZgIRf3JDdlRASisVRA0HMi1dYmVVDmEwRDplPjIcEGJXEmxwUxhkQlMbRyo/GCRwGgA=&cs=5177babfd2caf55a9aedaa91af0b81dfe6bab0d955cbdf8c3c99f0b230ecf98e&pc=7220159496012980&sid=7743ee30-1a5a-11f1-aadf-5751dfba05d6%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B1%F3%A0%84%B1%F3%A0%84%B1%F3%A0%84%B6%F3%A0%84%B6%F3%A0%84%B7%F3%A0%84%B9%F3%A0%84%B8&vid=76a25ac6-1a5a-11f1-852f-1f7dc1d7962a&ci=8ea876e0-1a5a-11f1-b8c5-eb8649243f0c&pxhd=hTLxGL0BOE3Om3pfCe5Bs6PP3Wk7cgFpZbaag85xXQd7Buwyj6hp83d9NF5P8ANr9wtmFOjryh4HOhbQI8rrCw==:JXyp4IBfjp9hZP4Izflr6qFQs6w8np0PD6BDeSL9tNtP0JKORtncqU7B2BGsn5mRDFRmvZaz5jKKiqydBmqbc6box0NarIpoPZv/qqkDSJw=&cts=7743efda-1a5a-11f1-aadf-5751dfba05d6
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772910600000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772911080000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772911080000
+[RES] 200 https://tzm.px-cloud.net/ns?c=76a259d2-1a5a-11f1-852f-5356484c7559
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEFZLXnNQZnR+YHQKDxAeEFYQCEkQUGBWU3dLRh1qYVUPEAhUU15BVx4Qd0UDWXFkaF5odkUPEAgQYmoDAwUGBxAeEHlkQVdqAAoAdXVnDxAIEEJKWlEQHhB/ZH91ZAFjBXNfAg8QCFRTXkFXHhB+ZFFTZwBVBXVfew8QCBBXUVBRVFMLVFNUBwBRU1dWClAFA1YEAwMDBABQBApXBgsBCwIGCwYEAwZTAVYKAAsKAFFXBlMCAVYCBwoLA1ZUCFx0RQNmeFF5A31iW0VhdkRQdFFbW0IAB3RccFB6WUFLWWoFYWsFZVlQVVp3Q3sCAHxhSABeWWR6HUJFUQMLAxkKB0ZLB1xgQkJmVANTUWp9XGBnGUBjDw8IAwICAgh5WQFieHsFVntYV2J6Al18AHFReWV2cVBgQXd5dlZhagdqClUBeFsHWAMLBl52c1N1YmYBWFgCfgB/Q1taW2tEQAcZHWtwXUBZU319B11aSH1jfEVUVloHd3pLGWhqBUh/UGtCQVRfdwp7XllgGSEgBZHcA^fwRXd2dLBHVaQUALdQtEUAZBe1F8X15gewV8iW3VRB1ZDcER8ZgRKdkdHdHlzBwZ4WlN3Q3929VnNVa3lhGXURiemtIR2NXdAJRVGNBaHt2XVl`aYZHVkBVpoZGBXcHYDUwV/ZQJgRnRwVnUdX1ZlYHdwdwIAeXlFSFMFRVRZHQdXRr2tgAnoCZGUBIGUBqZ^OQYDWkh7RkdqU2oAVmRjR2tDeGd8HdmUDXwdHe1h1WWR2S2dldgVddHlQYEh3VnMEakV3dWYAfnNdA3BheDQtkYGRLZHddfEVwQQVGGVYEBX5CYVUKYmR2Y`lcFRGUdalF7dGpeV3iR7AQVbc11?5YnwAfXVQBgFfdgtcEA1kFVXtBUFtrXHsKQ1Z3U1hiR1xjGUZGe1dcBEdiZkUEVFdYQVxHdGNxeUAASH18ZHpWQllAWlAZXFxERgcdY2sFeQcKV2ZzAFFAa3xfHVViVkZQB19HQEhqYEVWBWBTKC1hwYGJ6dmp3GWMFX7gUdfkt5eWIEWGZUWV1GSF1jVQZ/WXYKXFtiU1wdfxAeEHNIAwJXZ2RjUXcGDxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=YGIXISYJCVVkbQ==&uuid=76a259d2-1a5a-11f1-852f-5356484c7559&ft=388&seq=1&en=NTA&bi=fEYLSCl/Tmk6HGltZRQ1a31hGw9tTUZrcFQfBUYJRUN6Z0p0OAlOchITezN9ZgIRf3JDdlRASisVRA0HMi1dYmVVDmEwRDplPjIcEGJXEmxwUxhkQlMbRyo/GCRwGgA=&cs=5177babfd2caf55a9aedaa91af0b81dfe6bab0d955cbdf8c3c99f0b230ecf98e&pc=7220159496012980&sid=7743ee30-1a5a-11f1-aadf-5751dfba05d6%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B1%F3%A0%84%B1%F3%A0%84%B1%F3%A0%84%B6%F3%A0%84%B6%F3%A0%84%B7%F3%A0%84%B9%F3%A0%84%B8&vid=76a25ac6-1a5a-11f1-852f-1f7dc1d7962a&ci=8ea876e0-1a5a-11f1-b8c5-eb8649243f0c&pxhd=hTLxGL0BOE3Om3pfCe5Bs6PP3Wk7cgFpZbaag85xXQd7Buwyj6hp83d9NF5P8ANr9wtmFOjryh4HOhbQI8rrCw==:JXyp4IBfjp9hZP4Izflr6qFQs6w8np0PD6BDeSL9tNtP0JKORtncqU7B2BGsn5mRDFRmvZaz5jKKiqydBmqbc6box0NarIpoPZv/qqkDSJw=&cts=7743efda-1a5a-11f1-aadf-5751dfba05d6
+   BODY: <could not read>
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=76a259d2-1a5a-11f1-852f-5356484c7559&v=76a25ac6-1a5a-11f1-852f-1f7dc1d7962a&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"KHYodnYoOxg3P3Q7dHR3OyQkInQmJSF3cyQkd3V+cSVzdCQld3IjISEjcHNzdHNzcyN0dnZ2JCJzdXF0JHBwcHd/dSZwIn53fnR+cyRxJXB9NXY+PioyECR3IR8tC3MhMHV2KnF1JDMoIR0zMD0jBBIENXZsFwx0KAMsfwwyHQF3JiUTdjFwLhYyPXEydQtycjU+DzMCHiAqCBYuDxMBNTcSL3RwfjB6en12d3d3fTUUfiRyMwJ1dnYfbDMFd3IECCwRKDYVbHYEcD8QCS8iJWwIaC0uKQ4NEGwAcj8XAC0eJgwsITIyDHE2IAMzDT0MAzEXEHUJDCo/Iw0uPiQCNw0fdCgdHX8WBQEEdx52PRYXCnAwdSgCCxMUDAEqKnA1Nn52cT12BgkLMD90NSEwaA0kDDcrJWwzKRQWI3F0fws3FGgqBQgfE38tKSgrKywJfyQEFx8xHnQwH2wlAxNoDncRMRQKAnMUHgw
+[REQ] GET https://fst-ec.perimeterx.net/?id=76a25ac6-1a5a-11f1-852f-1f7dc1d7962a
+[*] Verify attempt 1: title='Access to this page has been denied' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[!] Challenge still present after re-navigation.
+Title : Access to this page has been denied
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[-] ❌ Failed to bypass target site.
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Example Domain' URL: https://example.com/ | webdriver=False
+[*] Starting challenge solving on https://example.com/
+[*] Starting interaction loop to solve CF/PX challenges...
+[+] Page loaded directly! Title: Example Domain
+Title : Example Domain
+URL   : https://example.com/
+[+] ✅ Bypass SUCCESSFUL — real page loaded!
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Amco Ranger - Overview, News & Similar companies | ZoomInfo.com' URL: https://www.zoominfo.com/c/amco-ranger/5000168 | webdriver=False
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[+] Page loaded directly! Title: Amco Ranger - Overview, News & Similar companies | ZoomInfo.com
+Title : Amco Ranger - Overview, News & Similar companies | ZoomInfo.com
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[+] ✅ Bypass SUCCESSFUL — real page loaded!
+[REQ] POST https://analytics.tiktok.com/api/v2/pixel
+[REQ] POST https://analytics.tiktok.com/api/v2/monitor
+[RES] 200 https://analytics.tiktok.com/api/v2/pixel
+[RES] 200 https://analytics.tiktok.com/api/v2/monitor
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Amco Ranger - Overview, News & Similar companies | ZoomInfo.com' URL: https://www.zoominfo.com/c/amco-ranger/5000168 | webdriver=False
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[+] Page loaded directly! Title: Amco Ranger - Overview, News & Similar companies | ZoomInfo.com
+Title : Amco Ranger - Overview, News & Similar companies | ZoomInfo.com
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[+] ✅ Bypass SUCCESSFUL — real page loaded!
+[REQ] POST https://analytics.tiktok.com/api/v2/pixel
+[REQ] POST https://analytics.tiktok.com/api/v2/monitor
+[RES] 200 https://analytics.tiktok.com/api/v2/pixel
+[RES] 200 https://analytics.tiktok.com/api/v2/monitor
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Access to this page has been denied' URL: https://www.zoominfo.com/c/amco-ranger/5000168 | webdriver=False
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[*] Selected 'aria_button': 253x50 at (834, 504) [2 candidates]
+[*] Found 'Press & Hold' challenge!
+[*] Running behavioral warmup (scroll + mouse movement)...
+[*] Bbox: x=834 y=504 w=253 h=50
+[*] Window: screenX=0 screenY=0 chromeH=87 outerH=1032 innerH=945 dpr=1
+[*] Target center: viewport (960, 530) → screen (960, 616) [dpr=1]
+[*] OS mouse → screen (960, 616)
+[*] OS mouseDown — holding until challenge completes (max 15s)...
+[*] Challenge completed detected at 9.7s!
+[*] OS mouseUp after 9.8s.
+[*] Settling 3.5s for PX clearance flow...
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WSBZWVlZbE9gaCNsIyMgbCJzKXMhInEidSRydicodHQjJHFzdHIhIiJzKSchIXEoIyggdCJ0KSF2dSUicSR1IyJ2InYpKXYlcicnc3IlJSQqaDtoXVlVZF14IztDe0Nqe3d9eCQgaidRXkNlWkJ9O39qYlt/In8kWkdzZiJRXyJHf3dqI2chaGFoaVR5dXZeJGVefUV2eUZ+QHF+VCUkSid4X1kpYUEtLSohICAgKlZ/JSZXSUomUVN3I3xGOyhjcWJWJ3djWGBaaCQlSWFAeGR1P0MjSSNlQX9eQkdUXX8hQVZnXyJjc3hWdV1kW15YWER8RFV4WmhZSF1af31Uc0VcX3chRGppInJlQmVGSSVyfCZhdHdAUVtmZClCZCRTOyN4X3R5ZF5oIkY7fDtFVVhSO3R1ViFjViJEY2dAKVglZmpkYHgnQl8ndlJ/fXtIZXt8UXpRRF9HZmQ/fkd4Jkpkez9jIWNXZUF
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WSBZWVlZbE9gaCNsIyMgbCV1c3N1dXFyJnInKCgoIiB0JSlzJSAnKCMiJXQodHUoKSEgdHJ1JiknJHMkdXUhdSFzdSRxcXYidiIiJSFycycqP3NHXmRxJ3tdPydfSEEjX0NZJH1mJXwoY14pR1pcf1tiZnJIVlNTQX9TIEYhQyN2IXRRfWZAfyhBfmRhWXxpYSB3aFl9XyR6SnlAJyl6VCZdVnEoclEtLSohICAgKkZBVXEmJlx0YGZSQ0pAX1tZWyBSIFZeaCd7el53J1phUT9ReWRZSVtXfmBRYn1aVEVEIkd2IGVTQT9BZllpcXh9VltpVUBWRkp4ckklZkhpInoiQERaVkNifVtjdHo/QlglYGVDXkYiRD9dVn97J1txfnpZQ0ldeXVFWERafl9bV3ZCYmUndFJcRlloXGVBfVRodFVpfWlHcUNFfiIhUiF+KGREaiBpc3hfZlhIVEkgQl1EZ2d8P3N5SWh
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/938bf122-ffe6-42d9-97e1-7c46fb316daf
+[REQ] GET blob:https://www.zoominfo.com/4cacca89-06ba-4d44-950a-61bf0a22ccd8
+[REQ] GET blob:https://www.zoominfo.com/8ce37d1a-80f1-4523-9263-ddc334c4b84d
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=388f22b7-1a63-11f1-8515-e9940a1fa222&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772914800000
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772914800000
+[RES] 200 blob:https://www.zoominfo.com/4cacca89-06ba-4d44-950a-61bf0a22ccd8
+[RES] 200 blob:https://www.zoominfo.com/8ce37d1a-80f1-4523-9263-ddc334c4b84d
+[+] PX challenge PASSED! Waiting for natural page transition...
+[*] Waiting up to 20s for natural page transition...
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772914800000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772914800000
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WSBZWVlZbE9gaCNsIyMgbCN2JCZ0diApKXEhInVxcyMmISMgdiB0KHJ2KSEjcigkI3JyJCN0KCQpcXJxIighICN0KHYmISIkJSYpInJ2digqemlodVN/XHthQj9+Z1JDKUV0SngkRCFKQXtUX1pnXnh0XidEVnZ0X1kpVUlyJVMnaXlSSX1IfmMndXpZV2VUVWFYJkRjYXtWcXZ8XCEkIT95IGokUlEtLSohICAgKlpce0pkVn9XKXUgXyByU2ZEVVFpRF5TJ3dmI1RjZkBdP1Z1XHMmaiZ+Wn1dVmFDZWhJfiVdSSBpYlx8KVZTfV1WQV4oRCh/RXN+UVpRIjtJSCgjP1ZWYiUgd0N6VGZRWkclSldjRV9mXCZyIFF0ZEVkfV5TdSF3Iz9FOydGQlwiaUMkZ2F0IkpeJ1x5XEB9eCh9W3xYKXNac3ZnckIoXCllZCdlQ2RCWWNnIyFTZFJKcSFle0p/IlhgQnl
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=388f22b7-1a63-11f1-8515-e9940a1fa222&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=388f23a2-1a63-11f1-8515-1a58383e8d86
+[RES] 200 https://fst-ec.perimeterx.net/?id=388f23a2-1a63-11f1-8515-1a58383e8d86
+[*] Title at 2.0s: 'Access to this page has been denied'
+[-] Natural page transition timed out.
+[*] PX cookies after challenge: []
+[*] Natural redirect timed out, trying page.reload()...
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 403 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/b/c/beacon
+[REQ] GET https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=388f22b7-1a63-11f1-8515-e9940a1fa222&v=388f23a2-1a63-11f1-8515-1a58383e8d86&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=388f22b7-1a63-11f1-8515-e9940a1fa222&v=388f23a2-1a63-11f1-8515-1a58383e8d86&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[RES] 200 https://www.zoominfo.com/ge-assets/images/ZI%20logo_light-601x163.png
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] GET https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://tzm.px-cloud.net/ns?c=388f22b7-1a63-11f1-8515-e9940a1fa222
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/8219d37a-158c-4c98-a774-332800a044ad
+[REQ] GET blob:https://www.zoominfo.com/39c70008-1254-437f-8799-27cba9e6960d
+[REQ] GET blob:https://www.zoominfo.com/712a9389-bbaf-4b54-b8fe-751e386f8c51
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=388f22b7-1a63-11f1-8515-e9940a1fa222&v=388f23a2-1a63-11f1-8515-1a58383e8d86&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] HEAD https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772914800000
+[RES] 200 blob:https://www.zoominfo.com/39c70008-1254-437f-8799-27cba9e6960d
+[RES] 200 blob:https://www.zoominfo.com/712a9389-bbaf-4b54-b8fe-751e386f8c51
+[RES] 200 https://client.px-cloud.net/PXosx7m0dx/main.min.js
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WSBZWVlZbE9gaCNsIyMgbCR1ISIlJHV0cyd1cSBxKShydScicnZyIXQpcSd0InIhJiF0IiQgcykoJSd1dXEndHJyJXYndCYhIHV2InNydiIqWWFxIERFSnxfWlMjQFtVIWlYZnRKKScoekJ3XmNhXClxc39zKEc/XX5yc2EjflF+VD9HKXFcd2NkKEhzYXJTXl4oQWJ9SWohdyd3dSFTIGJBVCUgW1EtLSohICAgKjtGZyN3U2h5fiZdc352JHJnWVZbSmZzV3VIIEV3JEd8c31yRCElYn51YEJhdjtUVX9xfWJhJnxZfEZZfidIQnRiQWFFW2RoU1QoV3xEWChKZ1ljISlXRVgpdChFSGFqZEhzIVJTeX5HP1ZUfn5qd11cVUNRUj9gXSVaYHQmUkFfSWlCfSRBIkFmdElJWURDSGVyKFtTcyh9SVEldCdHYiFhRCJzQnQgO1VjVEBjc2B1Q2h6aFJze3cgdGB
+[REQ] GET https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEGVbYEF7cEp1U2B7DxAeEFYQCEkQZGMKWHFKfFx4ZnMPEAhUU15BVx4QfVlgf3N6CkFmZmcPEAgQYmoDAwUGBxAeEGYBdwd8Y1lRYlUKDxAIEEJKWlEQHhBUS3R4aGZCeGZ0Cg8QCFRTXkFXHhBzSAMDV2doYFZ3VQ8QCBAGVwMABwZXVlEFV1MCUwsKUFcFAFBUUANWC1MFVgBQAwQDVgAGAlELCgcFV1dTBVZQUAdUBVYEAwJXVABRUFQACHtDUwJmZ2hefXhxAWJ5dwNLekRWaAsFClhgVXxBQ34LU1FdUQplHX9cUFFDAVxzXHYdZQtTflVBRgpqUUNQcXx8CmNAX2tIA1UFVVcDcQJAY3YHAnlzDw8IAwICAggZZEUBVXFKW1wEf1FcVAZQRXt0eWhEUXVXagJnVQZlXlFfUGYDB0BcV0JgQ1QZdnddU19AQwRee15ke1wFamBWQGNDZ3lGSnF2CnVeZnoKaEV7QQMLdWd6C1YKZ2pDSEGZqUQNwcVtcZR10dlx^cSFV/fndhc3AdQn8HeEJWBHBjfWtLYF8GYwBijRFZra3tmYWpHUAp5cVEKX2tzB1YFZUADQ2YAUWBWAhl39QXZiQVFCV2FKWEpwUVlVAlZCR1tgBnVkBH14G`aXAUCdmVXRXAGWUVEa1ZiBgEBX18AYn5eQgt9Xn4La1MCdgB3XkVYCnlCZFxZcXR9eEJCekrQFX1YKGWDdxaFR5R2AdQARCY11TY11EU1RZXNwRDZhlhQlVUVwVBfUFIemdoXABAQmJjeURma1xcSHhcaAJ8V3lmAmgDV2NFfgVTRHt6YmdGB0hQXGRKf0hgW0FhaFhiaQHBEWlBle0RHVFQCd1ZZHV8BAwZpGEB2p8Qnl7XV5BQWRBGWpKBGNrdgEEAEICWgtxemIdV3NwVAJjRh1TfFhlBAF6R1ZHCnxDSwNwYnELAEppUcVBFaH9WcFMDUXtLSkAHf19keX8FWkZHQn9KWSnlGcQVBSANEAh15QltdA2t1ZUpN5cQRbZEJ/QkpWWFpEDWEZqX1h[7zR2JmXQZXewRIdUQLQwV6aHdLBHoLXxAeEGdweF9kWmgdawB3DxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=X0EpAhkqNnZbTg==&uuid=388f22b7-1a63-11f1-8515-e9940a1fa222&ft=388&seq=1&en=NTA&bi=X0EpDwp4bS4ZG0oqRhMWLF5mOEhOSmUsU1M8QmUPZgRZYGoxGwpsMjEUWHReYSFWXHVgMXdHaWw2Q3hBESN6dxdSL3pKTxkiRGNsV0ACZX1TVW90bVJtDVFrbWMMHSM=&cs=c98e60256c82ced0bee409b2c196bc90f7dfd1f0e34f52b7a7cbd77ae528d16e&pc=9050531367729989&sid=391c8aab-1a63-11f1-8f47-80216eba1fdc%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B1%F3%A0%84%B4%F3%A0%84%B9%F3%A0%84%B3%F3%A0%84%B3%F3%A0%84%B0%F3%A0%84%B3%F3%A0%84%B9&vid=388f23a2-1a63-11f1-8515-1a58383e8d86&ci=53833bf0-1a63-11f1-889f-2958237e5709&pxhd=DdAlryrlnnDv65aMOE1Ngc7q9Hc-15Zs/Q8ogVKFeoRNg9Dq72bw43bDmTlw8A/fX17tNmLt5UZrIRIUBNGx4w==:PWnyTRVYzKwPsWQ-XZfFBFMJCpFogcrdENnZVkVT9QZCNkzG/b74WtYD9i6KB-wkM7R62daK72n599seSnQ4lThJckubNOWsEZfoe25q3xk=&cts=391c8c5f-1a63-11f1-8f47-80216eba1fdc
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772914800000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772914920000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772914920000
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=388f22b7-1a63-11f1-8515-e9940a1fa222&v=388f23a2-1a63-11f1-8515-1a58383e8d86&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[RES] 200 https://tzm.px-cloud.net/ns?c=388f22b7-1a63-11f1-8515-e9940a1fa222
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-client.net/b/g?payload=aUkQRhAIEGVbYEF7cEp1U2B7DxAeEFYQCEkQZGMKWHFKfFx4ZnMPEAhUU15BVx4QfVlgf3N6CkFmZmcPEAgQYmoDAwUGBxAeEGYBdwd8Y1lRYlUKDxAIEEJKWlEQHhBUS3R4aGZCeGZ0Cg8QCFRTXkFXHhBzSAMDV2doYFZ3VQ8QCBAGVwMABwZXVlEFV1MCUwsKUFcFAFBUUANWC1MFVgBQAwQDVgAGAlELCgcFV1dTBVZQUAdUBVYEAwJXVABRUFQACHtDUwJmZ2hefXhxAWJ5dwNLekRWaAsFClhgVXxBQ34LU1FdUQplHX9cUFFDAVxzXHYdZQtTflVBRgpqUUNQcXx8CmNAX2tIA1UFVVcDcQJAY3YHAnlzDw8IAwICAggZZEUBVXFKW1wEf1FcVAZQRXt0eWhEUXVXagJnVQZlXlFfUGYDB0BcV0JgQ1QZdnddU19AQwRee15ke1wFamBWQGNDZ3lGSnF2CnVeZnoKaEV7QQMLdWd6C1YKZ2pDSEGZqUQNwcVtcZR10dlx^cSFV/fndhc3AdQn8HeEJWBHBjfWtLYF8GYwBijRFZra3tmYWpHUAp5cVEKX2tzB1YFZUADQ2YAUWBWAhl39QXZiQVFCV2FKWEpwUVlVAlZCR1tgBnVkBH14G`aXAUCdmVXRXAGWUVEa1ZiBgEBX18AYn5eQgt9Xn4La1MCdgB3XkVYCnlCZFxZcXR9eEJCekrQFX1YKGWDdxaFR5R2AdQARCY11TY11EU1RZXNwRDZhlhQlVUVwVBfUFIemdoXABAQmJjeURma1xcSHhcaAJ8V3lmAmgDV2NFfgVTRHt6YmdGB0hQXGRKf0hgW0FhaFhiaQHBEWlBle0RHVFQCd1ZZHV8BAwZpGEB2p8Qnl7XV5BQWRBGWpKBGNrdgEEAEICWgtxemIdV3NwVAJjRh1TfFhlBAF6R1ZHCnxDSwNwYnELAEppUcVBFaH9WcFMDUXtLSkAHf19keX8FWkZHQn9KWSnlGcQVBSANEAh15QltdA2t1ZUpN5cQRbZEJ/QkpWWFpEDWEZqX1h[7zR2JmXQZXewRIdUQLQwV6aHdLBHoLXxAeEGdweF9kWmgdawB3DxAIEFpGRkJBCB0dRUVFHEhdXV9bXFRdHFFdXx1RHVNfUV0fQFN7cVVdAHQcCAgIDBAoQT09v&appId=PXosx7m0dx&tag=X0EpAhkqNnZbTg==&uuid=388f22b7-1a63-11f1-8515-e9940a1fa222&ft=388&seq=1&en=NTA&bi=X0EpDwp4bS4ZG0oqRhMWLF5mOEhOSmUsU1M8QmUPZgRZYGoxGwpsMjEUWHReYSFWXHVgMXdHaWw2Q3hBESN6dxdSL3pKTxkiRGNsV0ACZX1TVW90bVJtDVFrbWMMHSM=&cs=c98e60256c82ced0bee409b2c196bc90f7dfd1f0e34f52b7a7cbd77ae528d16e&pc=9050531367729989&sid=391c8aab-1a63-11f1-8f47-80216eba1fdc%F3%A0%84%B1%F3%A0%84%B7%F3%A0%84%B7%F3%A0%84%B2%F3%A0%84%B9%F3%A0%84%B1%F3%A0%84%B4%F3%A0%84%B9%F3%A0%84%B3%F3%A0%84%B3%F3%A0%84%B0%F3%A0%84%B3%F3%A0%84%B9&vid=388f23a2-1a63-11f1-8515-1a58383e8d86&ci=53833bf0-1a63-11f1-889f-2958237e5709&pxhd=DdAlryrlnnDv65aMOE1Ngc7q9Hc-15Zs/Q8ogVKFeoRNg9Dq72bw43bDmTlw8A/fX17tNmLt5UZrIRIUBNGx4w==:PWnyTRVYzKwPsWQ-XZfFBFMJCpFogcrdENnZVkVT9QZCNkzG/b74WtYD9i6KB-wkM7R62daK72n599seSnQ4lThJckubNOWsEZfoe25q3xk=&cts=391c8c5f-1a63-11f1-8f47-80216eba1fdc
+   BODY: <could not read>
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"WSBZWVlZbE9gaCNsIyMgbHYkJHQoIiYndSAgICUkc3QjdCggJCZxIiUgdSdxJiUjJXZzdiZydicldiNyKCl1JHFxIydxJyNzdiMmdHIhISgqakB3I3FzRyJFY3hId3JkeFhiVXJ5fyNTfmRaeVwiKFJlcUhlSn8/XyhBXl11anpyRFlGfkZKX2hHWGYoInVdYHFlU1dzWnNCe0EnRyZdZEZTJ1NeRXctLSohICAgKnMkXUJAP2E7fUVUdid8cmpWdVcmVCVDKD9EeUZpfXZnUkRRO0hHQEZ4JmgmUWg7dXJfKGRef3x9P3VYJCE/QkRxRmphZ1d/RCF7VyNkcSZjYVdVfFYkdVRlRER2J0NISVY/ViZ5O0ZBZmh9JVVneFNeJXsiY0FxWGFBQkNlfzs7IF55R1Z/WSdhZSZ6dHNxZ347fVEoIVV5VEREYHZyfkhjSFRbKXtYJiR5YFpmYWonXHxTQVd0IFF5WEc
+[REQ] GET https://fst-ec.perimeterx.net/?id=388f23a2-1a63-11f1-8515-1a58383e8d86
+[*] Verify attempt 1: title='Access to this page has been denied' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[!] Challenge still present after re-navigation.
+Title : Access to this page has been denied
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[-] ❌ Failed to bypass target site.
+[*] Using Chrome: C:\Users\Roy\AppData\Local\Google\Chrome\Application\chrome.exe
+[*] Launching Chrome with --remote-debugging-port=9222
+[*] Waiting for Chrome debug port...
+[*] Waiting 8s for initial page load + challenge processing...
+[*] Connecting Playwright via connect_over_cdp...
+[*] Connected! Title: 'Access to this page has been denied' URL: https://www.zoominfo.com/c/amco-ranger/5000168 | webdriver=False
+[*] Starting challenge solving on https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Starting interaction loop to solve CF/PX challenges...
+[*] Selected 'aria_button': 253x50 at (834, 504) [2 candidates]
+[*] Found 'Press & Hold' challenge!
+[*] Running behavioral warmup (scroll + mouse movement)...
+[*] Bbox: x=834 y=504 w=253 h=50
+[*] Window: screenX=0 screenY=0 chromeH=87 outerH=1032 innerH=945 dpr=1
+[*] Target center: viewport (960, 530) → screen (960, 616) [dpr=1]
+[*] OS mouse → screen (960, 616)
+[*] OS mouseDown — holding until challenge completes (max 15s)...
+[*] Challenge completed detected at 2.3s!
+[*] OS mouseUp after 2.3s.
+[*] Settling 3.5s for PX clearance flow...
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"R0ZGRkZGCygHD0QLRERHC0dHT05PQhROEkBEFEZCFhZDQEVHQ0FGRE8RFUFFFkMWEkJDERZOTkBEQhFDQEYRREBCQhZHFEMVR0YSQxRCRUVNFS0yJB0aXDVCRiUcOQEwQy84RiYuPzggJg04AgZHMz06Gzg7IUMSHkdcEDoNFC46PjYNTjk7IgUBO1g0P04tLQMYNjk0Gk8CHBAbMDk8RDwQJSAmRgBKSk1GR0dHTTU2JhsFGQIlPjNGFDscTxhcFCI+M1g5ECBGGEY7JUATTzACIEIxRjg/FRofRRoGARolTg4RITxEJyQyNTgmQzIzLk8EHTESGwMuHFwBHQcgJiM9HwM1JhpAH0BBAQ4HDkcmMRYODx5PPk5YHEI9OkcFJg9GBCQyQzBDHzQ0QxA9OUUBBwQtPwc7JAIUAAYAAjpAEAICHkZAREdDFgYmFBE9Fg0tPyA2J0A5ARkRFS47RDtELx41GC8YE0I
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"R0ZGRkZGCygHD0QLRERHCxMWQk9CRkNPFRMVEUFHT0BGRUVBR0BFQRNERRITQRNCRBNPRhNHRRIVQU5FRREVTkJDQEFOQUZFQRZDRU9OQhZNWBQgOQMWQBw6WEA4LyZEOCQ+QxoBQhtPBDlOID07GDwFARUvMTQ0Jhg0RyFGJEQRRhM2GgEnGE8mGQMGPhsOBkcQDz4aOEMdLR4nQE4dM0E6MRZPFTZKSk1GR0dHTThFBzggPzwSFh5cMQQ6ABA4QwI1Ig8jERVYHy8QQUcBWAEFRT8AEgJDHjI/Hz5EBTE+Ng4/NgARLjRHASEgAxIlHA0nAgNcGEY7TwEGRkUbEho6MEcnQSMnBFwUNCJPHw4cXEJOOhs9Dz8CXBUnIhEnPxsiJDQYPkA1RS89TwAkJA9DMAUkR1wlGBYSJBI6PE8aHBk2LU5AQjkDBx1PNB4gEyQGIEdOLyU4RhsWBz5EFUEdRgE2EDAgM0U
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[REQ] GET blob:https://www.zoominfo.com/479de238-89a3-4558-8379-4dafe7a1eade
+[REQ] GET blob:https://www.zoominfo.com/fffe0feb-061a-4444-98b8-7bc7c13f7313
+[REQ] GET blob:https://www.zoominfo.com/03d90db0-43f9-41bb-ad2e-1b26836720f6
+[REQ] GET https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap
+[REQ] GET https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[RES] 200 https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+[REQ] HEAD https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=163b8613-1a66-11f1-a136-964a15cefff3&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+[REQ] GET https://crcldu.com/bd/sync.html?v=1772916000000
+[+] PX challenge PASSED! Waiting for natural page transition...
+[*] Waiting up to 20s for natural page transition...
+[RES] 200 blob:https://www.zoominfo.com/fffe0feb-061a-4444-98b8-7bc7c13f7313
+[RES] 200 blob:https://www.zoominfo.com/03d90db0-43f9-41bb-ad2e-1b26836720f6
+[RES] 200 https://crcldu.com/bd/sync.html?v=1772916000000
+[REQ] GET https://crcldu.com/bd/auditor.js?v=1772916120000
+[RES] 200 https://crcldu.com/bd/auditor.js?v=1772916120000
+[RES] 200 https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+   BODY: {"do":null,"ob":"R0ZGRkZGCygHD0QLRERHC04SRhJHTxFORkRFRUVHFEAUTxJDFUVOTk8UQUAVQhYTQhYRRRETExFFFEESFUdHE0ATRBVAFRFDTxRGFkBPQBZNDSVYITUjP0A5WDMHHhEjExtBOUchGTIAEEITOg0fIA0gIAQzTiAxATZCGERBPFwaNR5GQDktRwUUNC40Hh0wMC4nAjEjBAZGQEItNkcSGxBEG05cABBKSk1GR0dHTUBPLhMtJycnFBohAxEDWDVFWFgcHBwRGRkRHT9DQDUYQi8UGEI+HUNBNjQcQU9HMz0RGDQ2MhojGk8yRA5CBgYuPicdFSYbBDgjBjwPOy9HDjMzBkYRITIzOBtEQTsHGQcdOQcBRC4mMhgcAxwEH0cyLSIaRBoARwJcOC8cMB0vGg8GOi4EOhA8BTZHQiJPHRAxDg4WAxtGASUnIAFPOSMzXDwFGAEHJE4tNQ0QI0NHNlwwEk4BOyERMB4
+[RES] 200 https://www.zoominfo.com/osx7m0dx/captcha/captcha.js?a=c&u=163b8613-1a66-11f1-a136-964a15cefff3&v=&m=0&b=aHR0cHM6Ly93d3cuem9vbWluZm8uY29tL2MvYW1jby1yYW5nZXIvNTAwMDE2OA==&h=R0VU
+   BODY: /** @license Copyright (C) 2014-2026 PerimeterX, Inc (www.perimeterx.com). Content of this file can not be copied and/or distributed. **/
+try{!function(){"use strict";var r=function(){try{if(atob&&"test"===atob("dGVzdA=="))return atob}catch(r){}function r(r){this.message=r}r.prototype=new Error,r.prototype.name="InvalidCharacterError";return function(n){var u=String(n).replace(/[=]+$/,"");if(u.length%4==1)throw new r("'atob' failed: The string to be decoded is not correctly encoded.");for(var t,
+[REQ] GET https://fst-ec.perimeterx.net/?id=163b86ec-1a66-11f1-a136-81402d5dfcbe
+[*] Title at 2.0s: 'Access to this page has been denied'
+[-] Natural page transition timed out.
+[*] PX cookies after challenge: []
+[*] Natural redirect timed out, trying page.reload()...
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] POST https://collector-pxosx7m0dx.px-cloud.net/assets/js/bundle
+[RES] 307 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[RES] 429 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] GET https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1?ray=9d8c6d7b28bc2b04
+[RES] 200 https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1?ray=9d8c6d7b28bc2b04
+[REQ] GET blob:https://www.zoominfo.com/cb4fe2ab-8949-4036-8bea-425df5a3a160
+[REQ] GET https://challenges.cloudflare.com/turnstile/v0/g/ea2d291c0fdc/api.js?onload=MNurp8&render=explicit
+[REQ] POST https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/420876878:1772911362:Wu1eDnIRZzh7BM_HVjFnN4HiO76DxXCXQiqPRQgUIQo/9d8c6d7b28bc2b04/_TA8RkRAj1d2c9DfXWRPxYvhLTZ2.PqIThoytxsG9mY-1772916156-1.2.1.1-o2tRChin70_yFoxBmSw3C1arJ9QJoZfBPKLcavgRDXvrAlTaQD11X.SMMs3vg0XH
+[RES] 200 https://challenges.cloudflare.com/turnstile/v0/g/ea2d291c0fdc/api.js?onload=MNurp8&render=explicit
+[REQ] GET blob:https://www.zoominfo.com/903a572c-f317-4555-a5c0-63c224abeebe
+[RES] 200 https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/420876878:1772911362:Wu1eDnIRZzh7BM_HVjFnN4HiO76DxXCXQiqPRQgUIQo/9d8c6d7b28bc2b04/_TA8RkRAj1d2c9DfXWRPxYvhLTZ2.PqIThoytxsG9mY-1772916156-1.2.1.1-o2tRChin70_yFoxBmSw3C1arJ9QJoZfBPKLcavgRDXvrAlTaQD11X.SMMs3vg0XH
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/ov2/av0/rch/vv1m9/0x4AAAAAAADnOjc0PNeA8qVm/light/fbE/new/normal?lang=auto
+[RES] 200 blob:https://www.zoominfo.com/903a572c-f317-4555-a5c0-63c224abeebe
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/ov2/av0/rch/vv1m9/0x4AAAAAAADnOjc0PNeA8qVm/light/fbE/new/normal?lang=auto
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/cmg/1
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/cmg/1
+[REQ] GET blob:https://challenges.cloudflare.com/dad6219a-900d-4d0d-9beb-789bcb6c0fa5
+[REQ] POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/518471534:1772915154:-IppIKyUC7Jv6_-j8fzL5Z5pQ-cLYRdYcQeuMLa2n1o/9d8c6d7e89ce5305/TfG4ezyn4TZ9XoGNfGwVl6HlO884ex8KnKceX.SCfEk-1772916157-1.2.1.1-PMAKlyjX6LXUtt93T5MS.skoolBFvn96CPKclgWqHCLr8twm9pFcrWHuG7023LhA
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/518471534:1772915154:-IppIKyUC7Jv6_-j8fzL5Z5pQ-cLYRdYcQeuMLa2n1o/9d8c6d7e89ce5305/TfG4ezyn4TZ9XoGNfGwVl6HlO884ex8KnKceX.SCfEk-1772916157-1.2.1.1-PMAKlyjX6LXUtt93T5MS.skoolBFvn96CPKclgWqHCLr8twm9pFcrWHuG7023LhA
+[REQ] GET blob:https://challenges.cloudflare.com/114d7b26-2881-48f0-841c-5c5ef8f5b21b
+[RES] 200 blob:https://challenges.cloudflare.com/114d7b26-2881-48f0-841c-5c5ef8f5b21b
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/d/9d8c6d7e89ce5305/1772916157629/7GvT7GolAKwBbZH
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/d/9d8c6d7e89ce5305/1772916157629/7GvT7GolAKwBbZH
+[REQ] GET blob:https://challenges.cloudflare.com/114d7b26-2881-48f0-841c-5c5ef8f5b21b
+[REQ] GET blob:https://challenges.cloudflare.com/114d7b26-2881-48f0-841c-5c5ef8f5b21b
+[REQ] GET blob:https://challenges.cloudflare.com/114d7b26-2881-48f0-841c-5c5ef8f5b21b
+[RES] 200 blob:https://challenges.cloudflare.com/114d7b26-2881-48f0-841c-5c5ef8f5b21b
+[REQ] GET blob:https://challenges.cloudflare.com/114d7b26-2881-48f0-841c-5c5ef8f5b21b
+[RES] 200 blob:https://challenges.cloudflare.com/114d7b26-2881-48f0-841c-5c5ef8f5b21b
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/pat/9d8c6d7e89ce5305/1772916157630/d3f08d28d6eabeca775445063541d4cdc605498a6156f0ae465b2d4a16453360/SeBIIl_1tAD2jNC
+[RES] 401 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/pat/9d8c6d7e89ce5305/1772916157630/d3f08d28d6eabeca775445063541d4cdc605498a6156f0ae465b2d4a16453360/SeBIIl_1tAD2jNC
+[REQ] POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/518471534:1772915154:-IppIKyUC7Jv6_-j8fzL5Z5pQ-cLYRdYcQeuMLa2n1o/9d8c6d7e89ce5305/TfG4ezyn4TZ9XoGNfGwVl6HlO884ex8KnKceX.SCfEk-1772916157-1.2.1.1-PMAKlyjX6LXUtt93T5MS.skoolBFvn96CPKclgWqHCLr8twm9pFcrWHuG7023LhA
+[*] Verify attempt 1: title='Just a moment...' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/518471534:1772915154:-IppIKyUC7Jv6_-j8fzL5Z5pQ-cLYRdYcQeuMLa2n1o/9d8c6d7e89ce5305/TfG4ezyn4TZ9XoGNfGwVl6HlO884ex8KnKceX.SCfEk-1772916157-1.2.1.1-PMAKlyjX6LXUtt93T5MS.skoolBFvn96CPKclgWqHCLr8twm9pFcrWHuG7023LhA
+[REQ] POST https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/420876878:1772911362:Wu1eDnIRZzh7BM_HVjFnN4HiO76DxXCXQiqPRQgUIQo/9d8c6d7b28bc2b04/_TA8RkRAj1d2c9DfXWRPxYvhLTZ2.PqIThoytxsG9mY-1772916156-1.2.1.1-o2tRChin70_yFoxBmSw3C1arJ9QJoZfBPKLcavgRDXvrAlTaQD11X.SMMs3vg0XH
+[*] Verify attempt 2: title='Just a moment...' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[*] Verify attempt 3: title='Just a moment...' url=https://www.zoominfo.com/c/amco-ranger/5000168
+[-] Could not verify real page content after retries.
+Title : Just a moment...
+URL   : https://www.zoominfo.com/c/amco-ranger/5000168
+[RES] 200 https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/420876878:1772911362:Wu1eDnIRZzh7BM_HVjFnN4HiO76DxXCXQiqPRQgUIQo/9d8c6d7b28bc2b04/_TA8RkRAj1d2c9DfXWRPxYvhLTZ2.PqIThoytxsG9mY-1772916156-1.2.1.1-o2tRChin70_yFoxBmSw3C1arJ9QJoZfBPKLcavgRDXvrAlTaQD11X.SMMs3vg0XH
+[-] ❌ Failed to bypass target site.
+[REQ] GET https://www.zoominfo.com/c/amco-ranger/5000168
+[RES] 429 https://www.zoominfo.com/c/amco-ranger/5000168
+[REQ] GET https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1?ray=9d8c6d9c3b0b2b04
+[RES] 200 https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1?ray=9d8c6d9c3b0b2b04
+[REQ] GET blob:https://www.zoominfo.com/86707b7a-2d62-49cd-b18c-5852de5a3ef7
+[REQ] GET https://challenges.cloudflare.com/turnstile/v0/g/ea2d291c0fdc/api.js?onload=MNurp8&render=explicit
+[RES] 200 https://challenges.cloudflare.com/turnstile/v0/g/ea2d291c0fdc/api.js?onload=MNurp8&render=explicit
+[REQ] POST https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/1149704737:1772915154:5NPOxOopML2SQXTyLFZoNOWqm_-5U8A_FMnZCRXCpDA/9d8c6d9c3b0b2b04/xIGqp5DOfqdsnW2QP3dogdXRzF6Z7jYQwf_5STdHuQo-1772916161-1.2.1.1-NSBIYo3kIiERPPFMJ2PGSiERZ0tMidRnfFy_m9gRNuAU9.pcPDvcTdU5VJ5D9afb
+[RES] 200 https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/1149704737:1772915154:5NPOxOopML2SQXTyLFZoNOWqm_-5U8A_FMnZCRXCpDA/9d8c6d9c3b0b2b04/xIGqp5DOfqdsnW2QP3dogdXRzF6Z7jYQwf_5STdHuQo-1772916161-1.2.1.1-NSBIYo3kIiERPPFMJ2PGSiERZ0tMidRnfFy_m9gRNuAU9.pcPDvcTdU5VJ5D9afb
+[REQ] GET blob:https://www.zoominfo.com/2492c88a-acc9-4b61-a788-49a9c7a45de2
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/ov2/av0/rch/km2bs/0x4AAAAAAADnOjc0PNeA8qVm/light/fbE/new/normal?lang=auto
+[RES] 200 blob:https://www.zoominfo.com/2492c88a-acc9-4b61-a788-49a9c7a45de2
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/ov2/av0/rch/km2bs/0x4AAAAAAADnOjc0PNeA8qVm/light/fbE/new/normal?lang=auto
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/cmg/1
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/cmg/1
+[REQ] GET blob:https://challenges.cloudflare.com/afdcf7dd-2485-4873-b22f-f57140b56737
+[REQ] POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/2068970807:1772911362:qjmrMYcXFf8P-CYyEQApokauZ6WLdgqyR4JDe5OuoDU/9d8c6d9efa21328e/m70XZjO0UuG0xqbn0wMjCtMvsYAGr_wJiSArxVZaf6A-1772916162-1.2.1.1-NRA.W32XgPl6JhXsCbQEex3JIndc_NDdjE4Ep7EpygMwoqXSdERCBdQamYZUznf7
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/2068970807:1772911362:qjmrMYcXFf8P-CYyEQApokauZ6WLdgqyR4JDe5OuoDU/9d8c6d9efa21328e/m70XZjO0UuG0xqbn0wMjCtMvsYAGr_wJiSArxVZaf6A-1772916162-1.2.1.1-NRA.W32XgPl6JhXsCbQEex3JIndc_NDdjE4Ep7EpygMwoqXSdERCBdQamYZUznf7
+[REQ] GET blob:https://challenges.cloudflare.com/e3e67e7a-6efa-4dcd-98e4-eb679683ee41
+[RES] 200 blob:https://challenges.cloudflare.com/e3e67e7a-6efa-4dcd-98e4-eb679683ee41
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/d/9d8c6d9efa21328e/1772916162880/ZyxJmAGkoGO6bUP
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/d/9d8c6d9efa21328e/1772916162880/ZyxJmAGkoGO6bUP
+[REQ] GET blob:https://challenges.cloudflare.com/e3e67e7a-6efa-4dcd-98e4-eb679683ee41
+[RES] 200 blob:https://challenges.cloudflare.com/e3e67e7a-6efa-4dcd-98e4-eb679683ee41
+[REQ] GET https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/pat/9d8c6d9efa21328e/1772916162881/4c4e3640a730cd1221be78a0834b849dd1f48b58016dee21534162650532e215/-0flzWTgbQvfwRG
+[RES] 401 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/pat/9d8c6d9efa21328e/1772916162881/4c4e3640a730cd1221be78a0834b849dd1f48b58016dee21534162650532e215/-0flzWTgbQvfwRG
+[REQ] POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/2068970807:1772911362:qjmrMYcXFf8P-CYyEQApokauZ6WLdgqyR4JDe5OuoDU/9d8c6d9efa21328e/m70XZjO0UuG0xqbn0wMjCtMvsYAGr_wJiSArxVZaf6A-1772916162-1.2.1.1-NRA.W32XgPl6JhXsCbQEex3JIndc_NDdjE4Ep7EpygMwoqXSdERCBdQamYZUznf7
+[RES] 200 https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/flow/ov1/2068970807:1772911362:qjmrMYcXFf8P-CYyEQApokauZ6WLdgqyR4JDe5OuoDU/9d8c6d9efa21328e/m70XZjO0UuG0xqbn0wMjCtMvsYAGr_wJiSArxVZaf6A-1772916162-1.2.1.1-NRA.W32XgPl6JhXsCbQEex3JIndc_NDdjE4Ep7EpygMwoqXSdERCBdQamYZUznf7
+[REQ] POST https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/1149704737:1772915154:5NPOxOopML2SQXTyLFZoNOWqm_-5U8A_FMnZCRXCpDA/9d8c6d9c3b0b2b04/xIGqp5DOfqdsnW2QP3dogdXRzF6Z7jYQwf_5STdHuQo-1772916161-1.2.1.1-NSBIYo3kIiERPPFMJ2PGSiERZ0tMidRnfFy_m9gRNuAU9.pcPDvcTdU5VJ5D9afb
+[RES] 200 https://www.zoominfo.com/cdn-cgi/challenge-platform/h/g/flow/ov1/1149704737:1772915154:5NPOxOopML2SQXTyLFZoNOWqm_-5U8A_FMnZCRXCpDA/9d8c6d9c3b0b2b04/xIGqp5DOfqdsnW2QP3dogdXRzF6Z7jYQwf_5STdHuQo-1772916161-1.2.1.1-NSBIYo3kIiERPPFMJ2PGSiERZ0tMidRnfFy_m9gRNuAU9.pcPDvcTdU5VJ5D9afb

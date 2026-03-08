@@ -112,6 +112,8 @@ class ScriptDiagnosticsRunner:
         require_2xx_status: bool = False,
         save_artifacts: bool = False,
         artifacts_dir: Optional[str] = None,
+        fixture_record_path: Optional[str] = None,
+        fixture_replay_path: Optional[str] = None,
         auto_commit_host_profile: bool = False,
         host_profiles_path: Optional[str] = None,
         read_only: bool = False,
@@ -128,6 +130,8 @@ class ScriptDiagnosticsRunner:
             require_2xx_status=require_2xx_status,
             save_artifacts=save_artifacts,
             artifacts_dir=artifacts_dir,
+            fixture_record_path=fixture_record_path,
+            fixture_replay_path=fixture_replay_path,
             auto_commit_host_profile=auto_commit_host_profile,
             host_profiles_path=host_profiles_path,
             read_only=read_only,
@@ -160,6 +164,8 @@ class ScriptDiagnosticsRunner:
         hold_method: str = "auto",
         hold_seconds: float = 12.0,
         skip_hold: bool = False,
+        fixture_record_path: Optional[str] = None,
+        fixture_replay_path: Optional[str] = None,
         extra_args: Optional[Sequence[str]] = None,
     ) -> Dict[str, Any]:
         command = build_challenge_matrix_command(
@@ -174,6 +180,8 @@ class ScriptDiagnosticsRunner:
             hold_method=hold_method,
             hold_seconds=hold_seconds,
             skip_hold=skip_hold,
+            fixture_record_path=fixture_record_path,
+            fixture_replay_path=fixture_replay_path,
             extra_args=extra_args,
         )
         run = self._run_subprocess(command)
@@ -296,6 +304,8 @@ def run_toolkit_route_diagnostic(
     require_2xx_status: bool = False,
     save_artifacts: bool = False,
     artifacts_dir: Optional[str] = None,
+    fixture_record_path: Optional[str] = None,
+    fixture_replay_path: Optional[str] = None,
     auto_commit_host_profile: bool = False,
     host_profiles_path: Optional[str] = None,
     read_only: bool = False,
@@ -311,6 +321,8 @@ def run_toolkit_route_diagnostic(
         require_2xx_status=require_2xx_status,
         save_artifacts=save_artifacts,
         artifacts_dir=artifacts_dir,
+        fixture_record_path=fixture_record_path,
+        fixture_replay_path=fixture_replay_path,
         auto_commit_host_profile=auto_commit_host_profile,
         host_profiles_path=host_profiles_path,
         read_only=read_only,
@@ -330,6 +342,8 @@ def run_challenge_matrix_diagnostic(
     hold_method: str = "auto",
     hold_seconds: float = 12.0,
     skip_hold: bool = False,
+    fixture_record_path: Optional[str] = None,
+    fixture_replay_path: Optional[str] = None,
     extra_args: Optional[Sequence[str]] = None,
 ) -> Dict[str, Any]:
     runner = ScriptDiagnosticsRunner()
@@ -343,6 +357,8 @@ def run_challenge_matrix_diagnostic(
         hold_method=hold_method,
         hold_seconds=hold_seconds,
         skip_hold=skip_hold,
+        fixture_record_path=fixture_record_path,
+        fixture_replay_path=fixture_replay_path,
         extra_args=extra_args,
     )
 

@@ -1,0 +1,79 @@
+{
+  "status": 200,
+  "final_url": "https://2captcha.com/demo/cloudflare-turnstile-challenge",
+  "content_length": 247391,
+  "evidence": {
+    "title": "Cloudflare Challenge demo: Sample page with Cloudflare Challenge Turnstile",
+    "block_reason": "google_unusual_traffic",
+    "content_length": 247391,
+    "visible_text_length": 5007,
+    "visible_word_count": 588,
+    "structure_signal_count": 8,
+    "marker_hits_total": 0,
+    "marker_density": 0.0,
+    "px_markers_found": false,
+    "cf_markers_found": false,
+    "title_challenge": false,
+    "deny_page_detected": false,
+    "challenge_detected": true,
+    "likely_real_page": true,
+    "marker_soft_signal_only": false,
+    "status_is_2xx": true,
+    "strict_status_gate_failed": false,
+    "progressed": false,
+    "rich_content_length": true,
+    "content_quality": "challenge",
+    "reason_codes": [
+      "positive_content_richness"
+    ]
+  },
+  "metadata": {
+    "attempt_profile": "baseline_headed_no_stealth",
+    "stealth_engine": "native_only",
+    "status": 200,
+    "final_url": "https://2captcha.com/demo/cloudflare-turnstile-challenge",
+    "blocked_reason": "google_unusual_traffic",
+    "elapsed_ms": 13122,
+    "ua_header": "",
+    "sec_ch_ua": "",
+    "attempt_name": "baseline_headed_no_stealth",
+    "content_length": 247391,
+    "likely_real_page": true,
+    "challenge_detected": true,
+    "blocked": true,
+    "selection_reason": "primary_preferred",
+    "host": "2captcha.com",
+    "context_mode": "incognito",
+    "had_persisted_state": false,
+    "promotion_eligible": true,
+    "run_id": "run_20260307T182653121908Z",
+    "active_host_profile_applied": false,
+    "host_profile_match_key": "",
+    "host_profile_match_scope": "none",
+    "host_profiles_enabled": true,
+    "host_profiles_read_only": false,
+    "host_learning_enabled": true,
+    "browser_launch_fallback_used": false,
+    "resolved_routing": {
+      "native_fallback_policy": "on_blocked",
+      "native_browser_channels": [
+        "chrome",
+        "msedge",
+        "chromium"
+      ],
+      "serp_strategy": "none",
+      "serp_retry_policy": "none",
+      "serp_retry_backoff_seconds": 12.0,
+      "allow_headed_retry": true
+    },
+    "host_profile_learning_key": "2captcha.com",
+    "host_profile_learning_scope": "exact"
+  },
+  "verification_probe": {
+    "attempted": false,
+    "status": null,
+    "final_url": "https://2captcha.com/demo/cloudflare-turnstile-challenge",
+    "content_length": 0
+  },
+  "excerpt": "<!DOCTYPE html><html lang=\"en\" dir=\"ltr\"><head>\n    <meta charset=\"UTF-8\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <meta name=\"yandex-verification\" content=\"301de5880a523d63\"><meta name=\"baidu-site-verification\" content=\"codeva-pQYHEf9HaN\"><title>Cloudflare Challenge demo: Sample page with Cloudflare Challenge Turnstile</title><link data-rh=\"true\" rel=\"alternate\" hreflang=\"en\" href=\"https://2captcha.com/demo/cloudflare-turnstile-challenge\"><link data-rh=\"true\" rel=\"alternate\" hreflang=\"de\" href=\"https://2captcha.com/de/demo/cloudflare-turnstile-challenge\"><link data-rh=\"true\" rel=\"alternate\" hreflang=\"es\" href=\"https://2captcha.com/es/demo/cloudflare-turnstile-challenge\"><link data-rh=\"true\" rel=\"alternate\" hreflang=\"fr\" href=\"https://2captcha.com/fr/demo/cloudflare-turnstile-challenge\"><link data-rh=\"true\" rel=\"alternate\" hreflang=\"it\" href=\"https://2captcha.com/it/demo/cloudflare-turnstile-"
+}

@@ -263,9 +263,15 @@ class InteractiveSession:
                 break
 
         # Auto-solve challenges
-        await self._auto_solve_challenges(page)
+        solved_any = await self._auto_solve_challenges(page)
 
-        return await self._page_state(response)
+        state = await self._page_state(None if solved_any else response)
+        if response is not None:
+            try:
+                state["initial_status"] = response.status
+            except Exception:
+                pass
+        return state
 
     async def click(self, selector: str) -> Dict[str, Any]:
         """Click an element by CSS selector."""
@@ -411,7 +417,9 @@ class InteractiveSession:
             else:
                 content = await page.inner_text("body")
 
-        state = await self._page_state()
+        state = await self._page_state(
+            content_length=len(content) if isinstance(content, str) else None
+        )
         state["content"] = content
         state["format"] = format
         return state
@@ -481,7 +489,66 @@ class InteractiveSession:
     # Private helpers
     # -----------------------------------------------------------------------
 
-    async def _page_state(self, response: Any = None) -> Dict[str, Any]:
+    async def _probe_current_status(self, page: Page) -> Optional[int]:
+        """Best-effort current-document status probe using credentialed fetch."""
+        try:
+            probed = await page.evaluate(
+                """
+                async () => {
+                    try {
+                        const response = await fetch(window.location.href, {
+                            method: "GET",
+                            credentials: "include",
+                            cache: "no-store"
+                        });
+                        return Number.isFinite(response.status) ? response.status : null;
+                    } catch (error) {
+                        return null;
+                    }
+                }
+                """
+            )
+            if isinstance(probed, int):
+                return probed
+        except Exception:
+            return None
+        return None
+
+    async def _resolve_page_status(
+        self,
+        *,
+        page: Page,
+        response: Any = None,
+    ) -> tuple[Optional[int], Optional[int], str]:
+        """Resolve truthful current status while preserving the initial navigation status."""
+        initial_status: Optional[int] = None
+        if response is not None:
+            try:
+                initial_status = response.status
+            except Exception:
+                initial_status = None
+
+        if response is not None:
+            try:
+                response_url = str(getattr(response, "url", "") or "")
+            except Exception:
+                response_url = ""
+            current_url = str(getattr(page, "url", "") or "")
+            if response_url and current_url and response_url == current_url:
+                return initial_status, initial_status, "navigation_response"
+
+        probed_status = await self._probe_current_status(page)
+        if isinstance(probed_status, int):
+            return probed_status, initial_status, "js_fetch_probe"
+
+        return None, initial_status, "unavailable"
+
+    async def _page_state(
+        self,
+        response: Any = None,
+        *,
+        content_length: Optional[int] = None,
+    ) -> Dict[str, Any]:
         """Capture current page state as a dict."""
         page = self._page
         if page is None:
@@ -496,12 +563,20 @@ class InteractiveSession:
         except Exception:
             url = ""
 
-        status = response.status if response else None
-        return {
+        status, initial_status, status_source = await self._resolve_page_status(
+            page=page,
+            response=response,
+        )
+        state = {
             "url": url,
             "title": title,
             "status": status,
+            "initial_status": initial_status,
+            "status_source": status_source,
         }
+        if content_length is not None:
+            state["content_length"] = max(0, int(content_length))
+        return state
 
     async def _auto_solve_challenges(self, page: Page) -> bool:
         """Run all available challenge solvers on the current page."""
@@ -532,7 +607,10 @@ class InteractiveSession:
                 logger.warning("InteractiveSession: CF solver error: %s", exc)
 
         # 2. PerimeterX Press & Hold
-        if any(marker in content_lower for marker in _PX_CHALLENGE_MARKERS):
+        if (
+            any(marker in content_lower for marker in _PX_CHALLENGE_MARKERS)
+            and len(content) < 50000
+        ):
             logger.info("InteractiveSession: PX challenge detected, solving...")
             try:
                 from ...browser.px_solver import PerimeterXSolver

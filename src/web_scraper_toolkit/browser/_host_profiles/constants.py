@@ -13,6 +13,8 @@ SAFE_SERP_STRATEGIES = {"none", "native_first", "baseline_first"}
 SAFE_SERP_RETRY_POLICIES = {"none", "balanced"}
 SAFE_NATIVE_FALLBACK_POLICIES = {"off", "on_blocked"}
 SAFE_NATIVE_CHANNELS = {"chrome", "msedge", "chromium"}
+SAFE_PROXY_POLICIES = {"direct_first", "proxy_first", "proxy_only", "direct_only"}
+SAFE_PROXY_TIERS = {"", "socks5", "socks4", "http", "https"}
 
 DEFAULT_FALLBACK_POLICY = "on_blocked"
 DEFAULT_SESSION_POLICY = "incognito"

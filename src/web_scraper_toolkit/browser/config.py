@@ -132,6 +132,8 @@ class BrowserConfig:
     host_learning_enabled: bool = True
     host_learning_apply_mode: HostLearningApplyMode = "safe_subset"
     host_learning_promotion_threshold: int = 2
+    proxy_aware_learning: bool = False
+    proxy_tier: str = ""
     # Note: No user_agent field - Playwright uses native UA for stealth
 
     @classmethod
@@ -231,6 +233,11 @@ class BrowserConfig:
                 1,
                 host_learning_threshold,
             ),
+            proxy_aware_learning=_as_bool(
+                data.get("proxy_aware_learning", False),
+                False,
+            ),
+            proxy_tier=str(data.get("proxy_tier", "") or "").strip().lower(),
         )
 
     def to_dict(self) -> dict:

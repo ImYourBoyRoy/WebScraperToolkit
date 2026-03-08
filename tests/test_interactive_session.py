@@ -1,4 +1,5 @@
 # ./tests/test_interactive_session.py
+# ./tests/test_interactive_session.py
 """
 Validate InteractiveSession LLM-control helpers for wait, keyboard, scroll, hover, and interaction maps.
 Run: `python -m pytest tests/test_interactive_session.py -q`.
@@ -74,11 +75,11 @@ class TestInteractiveSessionControls(unittest.IsolatedAsyncioTestCase):
 
     async def test_scroll_page_direction(self) -> None:
         session, page = self._build_session()
-        page.evaluate = AsyncMock(return_value={"scrollX": 0, "scrollY": 1250})
+        page.evaluate = AsyncMock(side_effect=[{"scrollX": 0, "scrollY": 1250}, 200])
 
         result = await session.scroll(direction="down", amount=1250, smooth=False)
 
-        page.evaluate.assert_awaited_once()
+        self.assertEqual(page.evaluate.await_count, 2)
         self.assertEqual(result["scroll"]["direction"], "down")
         self.assertEqual(result["scroll"]["amount"], 1250)
         self.assertEqual(result["scroll"]["position"]["scrollY"], 1250)
@@ -113,11 +114,11 @@ class TestInteractiveSessionControls(unittest.IsolatedAsyncioTestCase):
                 },
             ],
         }
-        page.evaluate = AsyncMock(return_value=interaction_map)
+        page.evaluate = AsyncMock(side_effect=[interaction_map, 200])
 
         result = await session.get_interaction_map(max_elements=2)
 
-        page.evaluate.assert_awaited_once()
+        self.assertEqual(page.evaluate.await_count, 2)
         self.assertEqual(result["interaction_map"]["count"], 2)
         self.assertEqual(len(result["interaction_map"]["elements"]), 2)
 
@@ -145,6 +146,27 @@ class TestInteractiveSessionControls(unittest.IsolatedAsyncioTestCase):
             result["accessibility_tree"]["tree"]["role"],
             "document",
         )
+
+    async def test_page_state_probes_current_status_when_response_missing(self) -> None:
+        session, page = self._build_session()
+        page.evaluate = AsyncMock(return_value=429)
+
+        state = await session._page_state()
+
+        self.assertEqual(state["status"], 429)
+        self.assertEqual(state["status_source"], "js_fetch_probe")
+        self.assertIsNone(state["initial_status"])
+
+    async def test_read_page_includes_content_length(self) -> None:
+        session, page = self._build_session()
+        page.inner_text = AsyncMock(return_value="hello world")
+        page.evaluate = AsyncMock(return_value=200)
+
+        state = await session.read_page(format="text")
+
+        self.assertEqual(state["content"], "hello world")
+        self.assertEqual(state["content_length"], len("hello world"))
+        self.assertEqual(state["status_source"], "js_fetch_probe")
 
 
 if __name__ == "__main__":

@@ -192,6 +192,11 @@ class PlaywrightNativeAttemptsMixin:
                 if cleanup_profile_dir and temp_profile_dir:
                     shutil.rmtree(temp_profile_dir, ignore_errors=True)
 
+        # Yield to the event loop so the ProactorEventLoop can fire close
+        # callbacks for the subprocess pipe transports before Python GC
+        # runs __del__ on them (Windows fix for "unclosed transport" warnings).
+        await asyncio.sleep(0)
+
         metadata: Dict[str, Any] = {
             "attempt_profile": f"native_channel_{channel}",
             "stealth_engine": "native_channel",

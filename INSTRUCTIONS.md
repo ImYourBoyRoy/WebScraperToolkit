@@ -159,6 +159,19 @@ Read-only diagnostics (apply existing profiles only, never write):
 web-scraper --run-diagnostic toolkit_route --diagnostic-url https://target-site.tld/resource --diagnostic-read-only
 ```
 
+Deterministic fixture replay / recording:
+
+```bash
+python scripts/diag_toolkit_route.py --fixture-replay ./tests/fixtures/challenge/cloudflare_blocked.json
+python scripts/diag_toolkit_route.py --url https://target-site.tld/resource --fixture-record ./tests/fixtures/challenge/latest_toolkit_fixture.json
+python scripts/diag_challenge_matrix.py --fixture-replay ./tests/fixtures/challenge/zoominfo_px_then_cf_loop.json
+```
+
+Truthfulness notes:
+- Progression is now judged from visible text + structure, not script/style-heavy raw HTML.
+- Empty `200` responses are treated as failed/blocked attempts, not successful fetches.
+- Fixture replay is browserless and networkless, making challenge regressions reproducible even when live targets drift.
+
 Bot-surface diagnostics:
 
 ```bash

@@ -18,6 +18,8 @@ from .constants import (
     MAX_SERP_BACKOFF_SECONDS,
     SAFE_NATIVE_CHANNELS,
     SAFE_NATIVE_FALLBACK_POLICIES,
+    SAFE_PROXY_POLICIES,
+    SAFE_PROXY_TIERS,
     SAFE_SERP_RETRY_POLICIES,
     SAFE_SERP_STRATEGIES,
 )
@@ -102,5 +104,13 @@ def sanitize_routing_profile(payload: Mapping[str, Any]) -> Dict[str, Any]:
         clean["serp_retry_backoff_seconds"] = max(
             0.0, min(MAX_SERP_BACKOFF_SECONDS, backoff)
         )
+
+    proxy_policy = str(payload.get("proxy_policy", "") or "").strip().lower()
+    if proxy_policy in SAFE_PROXY_POLICIES:
+        clean["proxy_policy"] = proxy_policy
+
+    proxy_tier = str(payload.get("proxy_tier", "") or "").strip().lower()
+    if proxy_tier in SAFE_PROXY_TIERS:
+        clean["proxy_tier"] = proxy_tier
 
     return clean

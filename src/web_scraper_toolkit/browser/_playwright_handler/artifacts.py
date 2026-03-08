@@ -17,6 +17,10 @@ from typing import TYPE_CHECKING, Any, Mapping, Optional, Tuple
 from playwright.async_api import Page
 
 from .constants import SerpProvider
+from ...diagnostics.fetch_outcome import (
+    normalize_fetch_attempt,
+    select_preferred_outcome,
+)
 from ..host_profiles import normalize_host
 
 logger = logging.getLogger("web_scraper_toolkit.browser.playwright_handler")
@@ -76,6 +80,18 @@ class PlaywrightSmartFetchArtifactsMixin:
                     ",".join(self._normalized_native_channels()),
                 )
                 result = await self._smart_fetch_native_fallback(url, **kwargs)
+                native_metadata = dict(self.get_last_fetch_metadata())
+                selected = normalize_fetch_attempt(
+                    content=result[0],
+                    final_url=result[1],
+                    status=result[2],
+                    metadata=native_metadata,
+                    attempt_name=str(
+                        native_metadata.get("attempt_profile", "native_fallback")
+                    ),
+                )
+                self._last_fetch_metadata = dict(selected.metadata)
+                self._last_fetch_metadata["selection_reason"] = "native_policy_always"
                 return result
 
             if self._should_use_serp_strategy(
@@ -103,6 +119,16 @@ class PlaywrightSmartFetchArtifactsMixin:
                     **kwargs,
                 )
 
+            primary_metadata = dict(self.get_last_fetch_metadata())
+            selected_outcome = normalize_fetch_attempt(
+                content=primary_content,
+                final_url=primary_url,
+                status=primary_status,
+                metadata=primary_metadata,
+                attempt_name=str(
+                    primary_metadata.get("attempt_profile", "primary_attempt")
+                ),
+            )
             result = (primary_content, primary_url, primary_status)
             if effective_allow_native_fallback and self._should_attempt_native_fallback(
                 status=primary_status,
@@ -122,27 +148,43 @@ class PlaywrightSmartFetchArtifactsMixin:
                     url,
                     **kwargs,
                 )
-                primary_blocked, _ = self._is_blocked_or_failed(
-                    status=primary_status,
-                    final_url=primary_url,
-                    content=primary_content,
-                )
-                native_blocked, _ = self._is_blocked_or_failed(
-                    status=native_status,
-                    final_url=native_url,
+                native_metadata = dict(self.get_last_fetch_metadata())
+                native_outcome = normalize_fetch_attempt(
                     content=native_content,
+                    final_url=native_url,
+                    status=native_status,
+                    metadata=native_metadata,
+                    attempt_name=str(
+                        native_metadata.get("attempt_profile", "native_fallback")
+                    ),
                 )
-                if (
-                    (not native_blocked and primary_blocked)
-                    or (native_status == 200 and primary_status != 200)
-                    or (bool(native_content) and not bool(primary_content))
-                ):
+                selected_outcome = select_preferred_outcome(
+                    selected_outcome,
+                    native_outcome,
+                )
+                if selected_outcome is native_outcome:
                     logger.info(
                         "SmartFetch: native fallback selected (native_status=%s primary_status=%s).",
                         native_status,
                         primary_status,
                     )
-                    result = (native_content, native_url, native_status)
+                result = (
+                    selected_outcome.content,
+                    selected_outcome.final_url,
+                    selected_outcome.status,
+                )
+
+            self._last_fetch_metadata = dict(selected_outcome.metadata)
+            self._last_fetch_metadata["selection_reason"] = (
+                "primary_preferred"
+                if result
+                == (
+                    primary_content,
+                    primary_url,
+                    primary_status,
+                )
+                else "native_preferred"
+            )
 
             return result
         finally:
@@ -187,6 +229,21 @@ class PlaywrightSmartFetchArtifactsMixin:
                     content=content,
                 )
                 try:
+                    _proxy_was_used = bool(
+                        getattr(self, "proxy_manager", None) is not None
+                    )
+                    _proxy_tier = (
+                        str(
+                            getattr(
+                                getattr(self, "config", None),
+                                "proxy_tier",
+                                "",
+                            )
+                            or ""
+                        )
+                        .strip()
+                        .lower()
+                    )
                     self._host_profile_store.record_attempt(
                         host=learning_target_key or host,
                         scope=learning_target_scope,
@@ -204,6 +261,8 @@ class PlaywrightSmartFetchArtifactsMixin:
                         final_url=final_url,
                         status=status,
                         used_active_profile=active_profile_applied,
+                        proxy_used=_proxy_was_used,
+                        proxy_tier=_proxy_tier,
                     )
                 except Exception as exc:
                     logger.warning(

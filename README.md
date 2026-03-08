@@ -138,6 +138,14 @@ web-scraper \
   --diagnostic-artifacts-dir ./scripts/out/artifacts
 ```
 
+Deterministic fixture replay / recording for regression analysis:
+
+```bash
+python scripts/diag_toolkit_route.py --fixture-replay ./tests/fixtures/challenge/cloudflare_blocked.json
+python scripts/diag_toolkit_route.py --url https://target-site.tld/resource --fixture-record ./tests/fixtures/challenge/latest_toolkit_fixture.json
+python scripts/challenge_diagnostic_matrix.py --fixture-replay ./tests/fixtures/challenge/zoominfo_px_then_cf_loop.json
+```
+
 ## 2) MCP (agentic mode)
 
 Local stdio:
@@ -220,6 +228,11 @@ For exhaustive setup, deployment, troubleshooting, CLI/MCP option coverage, and 
 - **`docs/release_checklist.md`** (ship checklist)
 
 Canonical script diagnostics now use `scripts/diag_*.py` names.
+
+Truthfulness note:
+- challenge diagnostics now classify pages from **visible text + structure**, not raw HTML noise
+- fixture replay is browserless and safe for deterministic regression checks
+- live smoke results may still fail when a target changes, but the toolkit now reports those failures more accurately
 
 ---
 

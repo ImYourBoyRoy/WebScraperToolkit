@@ -11,6 +11,7 @@ Operational notes: start logic may be overridden by facade for patch compatibili
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any, Dict, cast
 
@@ -105,6 +106,10 @@ class PlaywrightLifecycleMixin:
         if self._playwright:
             try:
                 await self._playwright.stop()
+                # Yield to the event loop so the ProactorEventLoop can
+                # fire close callbacks for the subprocess pipe transports
+                # before Python GC runs __del__ on them (Windows fix).
+                await asyncio.sleep(0)
                 logger.info("Playwright stopped.")
             except Exception as e:
                 logger.error("Error stopping Playwright: %s", e, exc_info=True)

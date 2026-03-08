@@ -37,6 +37,43 @@ logger = logging.getLogger("web_scraper_toolkit.browser.playwright_handler")
 
 
 class PlaywrightPageOpsMixin:
+    async def _read_page_document_html(self, page: Page) -> str:
+        """
+        Read the current document HTML with a small retry path for empty 200 responses.
+
+        Some challenge transitions temporarily expose a navigation status without a
+        stable DOM snapshot. This helper retries the DOM read and falls back to
+        `document.documentElement.outerHTML` before giving up.
+        """
+        content = ""
+        try:
+            content = await page.content()
+        except Exception:
+            content = ""
+
+        if content and content.strip():
+            return content
+
+        await page.wait_for_timeout(350)
+        try:
+            content = await page.content()
+        except Exception:
+            content = ""
+
+        if content and content.strip():
+            return content
+
+        try:
+            outer_html = await page.evaluate(
+                "() => document.documentElement ? document.documentElement.outerHTML : ''"
+            )
+            if isinstance(outer_html, str) and outer_html.strip():
+                return outer_html
+        except Exception:
+            pass
+
+        return content
+
     async def get_new_page(
         self, context_options: Optional[Dict[str, Any]] = None
     ) -> Tuple[Optional[Page], Optional[BrowserContext]]:
@@ -250,7 +287,7 @@ class PlaywrightPageOpsMixin:
                         "⚠️ SERVER ERROR %s: The target site is down (Gateway/Service Unavailable).",
                         status_code_val,
                     )
-                    content = await page.content()
+                    content = await self._read_page_document_html(page)
                     return content, final_url_val, status_code_val
 
                 if wait_for_selector:
@@ -276,7 +313,7 @@ class PlaywrightPageOpsMixin:
                     )
                     await page.wait_for_timeout(1000)
 
-                content = await page.content()
+                content = await self._read_page_document_html(page)
                 content_lower = content.lower() if content else ""
 
                 try:
@@ -302,7 +339,7 @@ class PlaywrightPageOpsMixin:
                         )
                         await page.wait_for_timeout(3000)
 
-                        content = await page.content()
+                        content = await self._read_page_document_html(page)
                         final_url_val = page.url
 
                         try:
@@ -317,8 +354,12 @@ class PlaywrightPageOpsMixin:
 
                 # --- PerimeterX Press & Hold / PX-Captcha ---
                 content_lower_recheck = content.lower() if content else ""
-                if any(
-                    marker in content_lower_recheck for marker in _PX_CHALLENGE_MARKERS
+                if (
+                    any(
+                        marker in content_lower_recheck
+                        for marker in _PX_CHALLENGE_MARKERS
+                    )
+                    and len(content) < 50000
                 ):
                     logger.info(
                         "Playwright: PerimeterX challenge detected at %s. Engaging PX Solver...",
@@ -333,7 +374,7 @@ class PlaywrightPageOpsMixin:
                         )
                         await page.wait_for_timeout(3000)
 
-                        content = await page.content()
+                        content = await self._read_page_document_html(page)
                         final_url_val = page.url
 
                         try:
@@ -393,7 +434,7 @@ class PlaywrightPageOpsMixin:
         Coordinate-based spatial solver for Cloudflare.
         Delegates to specialized solver module.
         """
-        from .solver import CloudflareSolver
+        from ..solver import CloudflareSolver
 
         return await CloudflareSolver.solve_spatial(page)
 
@@ -403,7 +444,7 @@ class PlaywrightPageOpsMixin:
         Delegates to specialized px_solver module.
         Uses pyautogui (optional dep) for real Win32 mouse events.
         """
-        from .px_solver import PerimeterXSolver
+        from ..px_solver import PerimeterXSolver
 
         if self.headless:
             logger.warning(

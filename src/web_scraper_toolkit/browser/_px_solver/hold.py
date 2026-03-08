@@ -26,6 +26,7 @@ async def perform_os_hold(
     logger: Any,
     random_module: Any,
     asyncio_module: Any,
+    do_warmup: bool = False,
 ) -> bool:
     """
     Execute the OS-level press-and-hold on the PX challenge element.
@@ -81,6 +82,26 @@ async def perform_os_hold(
         logger.warning("PX Solver: pyautogui handle missing during hold.")
         return False
 
+    if do_warmup:
+        logger.info("PX Solver: Running behavioral warmup prior to hold...")
+        try:
+            os_mouse_move(
+                target_sx + random_module.randint(-200, 200),
+                target_sy + random_module.randint(-150, 50),
+                duration=random_module.uniform(0.6, 1.2),
+            )
+            await asyncio_module.sleep(random_module.uniform(0.5, 1.5))
+            pyautogui.scroll(random_module.randint(-150, -50))
+            await asyncio_module.sleep(random_module.uniform(0.3, 0.8))
+            os_mouse_move(
+                target_sx + random_module.randint(-100, 100),
+                target_sy + random_module.randint(-50, 50),
+                duration=random_module.uniform(0.6, 1.2),
+            )
+            await asyncio_module.sleep(random_module.uniform(0.4, 1.0))
+        except Exception as e:
+            logger.warning("PX Solver: Warmup encountered transient error: %s", e)
+
     start_sx = target_sx + random_module.randint(-200, -50)
     start_sy = target_sy + random_module.randint(-100, 100)
     pyautogui.moveTo(int(start_sx), int(start_sy), duration=0.1)
@@ -106,7 +127,7 @@ async def perform_os_hold(
 
     try:
         while True:
-            await asyncio_module.sleep(0.3)
+            await asyncio_module.sleep(random_module.uniform(0.2, 0.5))
             elapsed = asyncio_module.get_event_loop().time() - hold_start
 
             try:

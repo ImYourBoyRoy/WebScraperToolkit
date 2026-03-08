@@ -4,7 +4,7 @@ ZoomInfo anti-bot diagnostics harness with multi-variant testing and smoking-gun
 Run: python ./scripts/zoominfo_diagnostic_matrix.py [--variants baseline,minimal_stealth] [--runs-per-variant 2]
 Inputs: CLI flags (URL, variant list, run counts, hold method, timeouts), optional pyautogui for OS hold.
 Outputs: JSON + Markdown summaries and screenshots under ./scripts/out/zoominfo_diagnostic_matrix/run_<timestamp>/.
-Side effects: Launches headed Chrome; with --hold-method os it will move/click the real cursor.
+Side effects: Launches the installed Chrome/Edge browser via CDP with a fresh temp profile; with --hold-method os it will move/click the real cursor.
 Exit codes: 0 if any run reaches non-challenge progression, 1 if all runs remain blocked, 2 for config errors.
 Operational notes: Testing-only instrumentation; does not bypass policy controls or mutate target-side behavior.
 Progression classification uses deterministic content/title/structure evidence, not strict URL-only checks.
@@ -21,6 +21,7 @@ import random
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from dataclasses import asdict, dataclass, field
@@ -34,6 +35,24 @@ from playwright.async_api import (
     Page,
     async_playwright,
 )
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = PROJECT_ROOT / "src"
+if SRC_DIR.exists() and str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+try:
+    from web_scraper_toolkit.diagnostics import (
+        evaluate_page_evidence,
+        load_fixture,
+        record_sanitized_fixture,
+    )
+except ModuleNotFoundError:
+    from web_scraper_toolkit.diagnostics import (
+        evaluate_page_evidence,
+        load_fixture,
+        record_sanitized_fixture,
+    )
 
 try:
     ctypes.windll.shcore.SetProcessDpiAwareness(2)
@@ -250,6 +269,112 @@ class SuiteSummary:
     variant_matrix: List[Dict[str, Any]]
     recurring_signals: List[Dict[str, Any]]
     strongest_conclusion: str
+
+
+def build_fixture_variant_result(fixture_path: str) -> VariantRunResult:
+    """Convert a sanitized fixture into a deterministic matrix replay result."""
+    fixture = load_fixture(fixture_path)
+    evidence = evaluate_page_evidence(
+        status=fixture.status,
+        final_url=fixture.url,
+        content=fixture.html,
+        title_hint=fixture.title,
+    )
+    state = {
+        "title": evidence.title,
+        "url": fixture.url,
+        "frame_count": 1,
+        "access_denied_title": "access to this page has been denied"
+        in evidence.title.lower(),
+        "just_a_moment_title": "just a moment" in evidence.title.lower(),
+        "title_challenge": evidence.title_challenge,
+        "has_cf_chl_param": "__cf_chl" in fixture.url.lower(),
+        "press_hold_visible": False,
+        "press_hold_count": 0,
+        "completed_marker_visible": False,
+        "completed_marker_count": 0,
+        "content_has_px_markers": evidence.px_markers_found,
+        "content_has_cf_markers": evidence.cf_markers_found,
+        "content_length": evidence.content_length,
+        "visible_text_length": evidence.visible_text_length,
+        "word_count_estimate": evidence.visible_word_count,
+        "structure_signal_count": evidence.structure_signal_count,
+        "rich_content_length": evidence.rich_content_length,
+        "marker_hits_total": evidence.marker_hits_total,
+        "marker_density": evidence.marker_density,
+        "likely_real_page": evidence.likely_real_page,
+        "marker_soft_signal_only": evidence.marker_soft_signal_only,
+        "effective_challenge_detected": evidence.challenge_detected,
+        "deny_page_detected": evidence.deny_page_detected,
+        "content_quality": evidence.content_quality,
+        "reason_codes": evidence.reason_codes,
+        "html_excerpt": fixture.html[:4000],
+    }
+    preliminary = VariantRunResult(
+        variant="fixture_replay",
+        run_index=1,
+        started_utc=utc_now_iso(),
+        config={
+            "name": "fixture_replay",
+            "source": str(Path(fixture_path).resolve()),
+            "runtime_channel": "fixture_replay",
+            "context_mode": "sanitized_fixture",
+        },
+        initial_nav={
+            "stage": "initial",
+            "status": fixture.status,
+            "url": fixture.url,
+            "title": fixture.title,
+            "error": None,
+            "request_headers": {},
+            "response_headers": fixture.headers,
+            "request_cookie_names": [],
+            "document_cookie_names": [
+                c.get("name", "") for c in fixture.cookie_summary
+            ],
+            "response_server": fixture.headers.get("server"),
+            "response_cf_ray": fixture.headers.get("cf-ray"),
+        },
+        initial_state=dict(state),
+        fingerprint_before={},
+        hold=HoldAttempt(
+            attempted=False,
+            method="fixture_replay",
+            hold_seconds=0.0,
+            locator_strategy=None,
+            box=None,
+            completed_marker_seen=False,
+            error=None,
+        ),
+        post_hold_state=dict(state),
+        post_hold_fetch_status=fixture.status,
+        revisit_nav={
+            "stage": "revisit",
+            "status": fixture.status,
+            "url": fixture.url,
+            "title": fixture.title,
+            "error": None,
+            "request_headers": {},
+            "response_headers": fixture.headers,
+            "request_cookie_names": [],
+            "document_cookie_names": [
+                c.get("name", "") for c in fixture.cookie_summary
+            ],
+            "response_server": fixture.headers.get("server"),
+            "response_cf_ray": fixture.headers.get("cf-ray"),
+        },
+        observe_titles=[fixture.title],
+        final_state=dict(state),
+        fingerprint_after={},
+        cookies_initial=list(fixture.cookie_summary),
+        cookies_post_hold=list(fixture.cookie_summary),
+        cookies_final=list(fixture.cookie_summary),
+        event_log=list(fixture.event_summary),
+        screenshot_path="",
+        diagnosis=VariantDiagnosis(0.0, "", []),
+    )
+    preliminary.diagnosis = diagnose_run(preliminary)
+    return preliminary
 
 
 def log(message: str) -> None:
@@ -496,7 +621,12 @@ async def collect_fingerprint(page: Page) -> Dict[str, Any]:
 async def detect_challenge_state(page: Page) -> Dict[str, Any]:
     title = await safe_title(page)
     raw_content = await safe_content(page)
-    content = raw_content.lower()
+    evidence = evaluate_page_evidence(
+        status=None,
+        final_url=page.url,
+        content=raw_content,
+        title_hint=title,
+    )
 
     press_hold_visible = False
     completed_visible = False
@@ -522,68 +652,35 @@ async def detect_challenge_state(page: Page) -> Dict[str, Any]:
         except Exception:
             pass
 
-    lower_title = title.lower()
-    title_challenge = any(marker in lower_title for marker in TITLE_CHALLENGE_MARKERS)
-    has_cf_chl_param = "__cf_chl" in page.url.lower()
-
-    px_marker_hits = count_marker_hits(content, PX_CONTENT_MARKERS)
-    cf_marker_hits = count_marker_hits(content, CF_CONTENT_MARKERS)
-    marker_hits_total = px_marker_hits + cf_marker_hits
-    marker_density = marker_hits_total / max(1, len(raw_content))
-
-    word_count_estimate = estimate_text_word_count(raw_content)
-    structure_signal_count = count_structure_signals(raw_content)
-    rich_content_length = len(raw_content) >= 120_000
-    likely_real_page = bool(
-        raw_content.strip()
-        and not title_challenge
-        and (
-            rich_content_length
-            or word_count_estimate >= 450
-            or structure_signal_count >= 6
-        )
-    )
-    marker_soft_signal_only = bool(
-        likely_real_page
-        and marker_hits_total > 0
-        and marker_density < 0.00025
-        and not has_cf_chl_param
-    )
-    effective_challenge_detected = bool(
-        title_challenge
-        or (has_cf_chl_param and not marker_soft_signal_only and not likely_real_page)
-        or (press_hold_visible and not marker_soft_signal_only)
-        or (
-            marker_hits_total > 0
-            and not marker_soft_signal_only
-            and marker_density >= 0.00025
-            and not likely_real_page
-        )
-    )
-
     return {
-        "title": title,
+        "title": evidence.title,
         "url": page.url,
         "frame_count": len(page.frames),
-        "access_denied_title": "access to this page has been denied" in lower_title,
-        "just_a_moment_title": "just a moment" in lower_title,
-        "title_challenge": title_challenge,
-        "has_cf_chl_param": has_cf_chl_param,
+        "access_denied_title": "access to this page has been denied"
+        in evidence.title.lower(),
+        "just_a_moment_title": "just a moment" in evidence.title.lower(),
+        "title_challenge": evidence.title_challenge,
+        "has_cf_chl_param": "__cf_chl" in page.url.lower(),
         "press_hold_visible": press_hold_visible,
         "press_hold_count": press_hold_count,
         "completed_marker_visible": completed_visible,
         "completed_marker_count": completed_count,
-        "content_has_px_markers": px_marker_hits > 0,
-        "content_has_cf_markers": cf_marker_hits > 0,
-        "content_length": len(raw_content),
-        "word_count_estimate": word_count_estimate,
-        "structure_signal_count": structure_signal_count,
-        "rich_content_length": rich_content_length,
-        "marker_hits_total": marker_hits_total,
-        "marker_density": marker_density,
-        "likely_real_page": likely_real_page,
-        "marker_soft_signal_only": marker_soft_signal_only,
-        "effective_challenge_detected": effective_challenge_detected,
+        "content_has_px_markers": evidence.px_markers_found,
+        "content_has_cf_markers": evidence.cf_markers_found,
+        "content_length": evidence.content_length,
+        "visible_text_length": evidence.visible_text_length,
+        "word_count_estimate": evidence.visible_word_count,
+        "structure_signal_count": evidence.structure_signal_count,
+        "rich_content_length": evidence.rich_content_length,
+        "marker_hits_total": evidence.marker_hits_total,
+        "marker_density": evidence.marker_density,
+        "likely_real_page": evidence.likely_real_page,
+        "marker_soft_signal_only": evidence.marker_soft_signal_only,
+        "effective_challenge_detected": evidence.challenge_detected,
+        "deny_page_detected": evidence.deny_page_detected,
+        "content_quality": evidence.content_quality,
+        "reason_codes": evidence.reason_codes,
+        "html_excerpt": raw_content[:4000],
     }
 
 
@@ -859,6 +956,11 @@ async def capture_main_nav(
         nav_error = f"{type(exc).__name__}: {exc}"
 
     cookie_names = parse_cookie_names_from_header(request_headers.get("cookie", ""))
+    try:
+        raw_document_cookie = await page.evaluate("() => document.cookie || ''")
+    except Exception:
+        raw_document_cookie = ""
+    document_cookie_names = parse_cookie_names_from_header(raw_document_cookie)
     return {
         "stage": stage,
         "status": status,
@@ -868,6 +970,7 @@ async def capture_main_nav(
         "request_headers": request_headers,
         "response_headers": response_headers,
         "request_cookie_names": cookie_names,
+        "document_cookie_names": document_cookie_names,
         "response_server": response_headers.get("server"),
         "response_cf_ray": response_headers.get("cf-ray"),
     }
@@ -1012,6 +1115,7 @@ def diagnose_run(result: VariantRunResult) -> VariantDiagnosis:
         (
             final.get("access_denied_title")
             or final.get("just_a_moment_title")
+            or final.get("deny_page_detected")
             or final_effective_challenge
             or revisit_status in BLOCKED_STATUSES
         )
@@ -1039,6 +1143,35 @@ def diagnose_run(result: VariantRunResult) -> VariantDiagnosis:
             {
                 "revisit_status": revisit_status,
                 "final_title": final.get("title"),
+                "hold_method": result.hold.method,
+            },
+        )
+        _add_signal(
+            signals,
+            "challenge_completion_without_document_acceptance",
+            "critical",
+            0.97,
+            "Challenge completion marker appeared, but the protected document still was not accepted.",
+            {
+                "post_hold_fetch_status": result.post_hold_fetch_status,
+                "revisit_status": revisit_status,
+                "final_title": final.get("title"),
+            },
+        )
+
+    if (
+        result.hold.attempted
+        and result.hold.completed_marker_seen
+        and result.post_hold_fetch_status in BLOCKED_STATUSES
+    ):
+        _add_signal(
+            signals,
+            "post_hold_main_doc_denied",
+            "high",
+            0.93,
+            "A credentialed document fetch remained denied immediately after challenge completion.",
+            {
+                "post_hold_fetch_status": result.post_hold_fetch_status,
                 "hold_method": result.hold.method,
             },
         )
@@ -1174,22 +1307,38 @@ def diagnose_run(result: VariantRunResult) -> VariantDiagnosis:
         )
 
     revisit_cookie_names = set(revisit_nav.get("request_cookie_names") or [])
+    revisit_document_cookie_names = set(revisit_nav.get("document_cookie_names") or [])
     if (
         blocked_revisit
         and has_px_clearance
         and not revisit_cookie_names.intersection(PX_COOKIE_NAMES)
     ):
-        _add_signal(
-            signals,
-            "px_cookies_not_sent_on_revisit",
-            "high",
-            0.82,
-            "Revisit navigation did not include PX cookie names in request header capture.",
-            {
-                "revisit_cookie_names": sorted(revisit_cookie_names),
-                "available_cookie_names": sorted(combined_cookie_names),
-            },
-        )
+        if not revisit_document_cookie_names.intersection(PX_COOKIE_NAMES):
+            _add_signal(
+                signals,
+                "cookie_attachment_absent",
+                "medium",
+                0.7,
+                "Available PX cookies could not be corroborated on the blocked revisit request/document surface.",
+                {
+                    "request_cookie_names": sorted(revisit_cookie_names),
+                    "document_cookie_names": sorted(revisit_document_cookie_names),
+                    "available_cookie_names": sorted(combined_cookie_names),
+                },
+            )
+        else:
+            _add_signal(
+                signals,
+                "cookie_attachment_unconfirmed",
+                "low",
+                0.45,
+                "Request-header capture did not confirm PX cookie attachment on revisit.",
+                {
+                    "request_cookie_names": sorted(revisit_cookie_names),
+                    "document_cookie_names": sorted(revisit_document_cookie_names),
+                    "available_cookie_names": sorted(combined_cookie_names),
+                },
+            )
 
     if (revisit_status == 429 and not final_likely_real) or final.get(
         "just_a_moment_title"
@@ -1204,6 +1353,49 @@ def diagnose_run(result: VariantRunResult) -> VariantDiagnosis:
                 "revisit_status": revisit_status,
                 "final_title": final.get("title"),
                 "final_url": final.get("url"),
+            },
+        )
+
+    event_urls = " ".join(
+        str(entry.get("url", "")) for entry in result.event_log
+    ).lower()
+    if "perimeterx" in event_urls and "cloudflare" in event_urls:
+        _add_signal(
+            signals,
+            "dual_challenge_sequence_detected",
+            "high",
+            0.9,
+            "Both PX and Cloudflare challenge infrastructure appeared in the same run sequence.",
+            {
+                "event_categories": sorted(
+                    {
+                        str(entry.get("category", ""))
+                        for entry in result.event_log
+                        if entry.get("category")
+                    }
+                )
+            },
+        )
+
+    pat_401 = next(
+        (
+            entry
+            for entry in result.event_log
+            if str(entry.get("url", "")).lower().find("private-token") >= 0
+            and int(entry.get("status", 0) or 0) == 401
+        ),
+        None,
+    )
+    if result.hold.completed_marker_seen and pat_401 is not None:
+        _add_signal(
+            signals,
+            "cf_pat_401_after_px_success",
+            "high",
+            0.9,
+            "Cloudflare private access token exchange failed after PX success markers appeared.",
+            {
+                "pat_event_url": pat_401.get("url"),
+                "pat_status": pat_401.get("status"),
             },
         )
 
@@ -1326,8 +1518,15 @@ def build_suite_summary(url: str, results: List[VariantRunResult]) -> SuiteSumma
     )
     recurring_ids = {item["signal_id"] for item in recurring_signals[:5]}
 
-    if "ui_solved_but_backend_denied" in recurring_ids:
+    if (
+        "challenge_completion_without_document_acceptance" in recurring_ids
+        or "ui_solved_but_backend_denied" in recurring_ids
+    ):
         conclusion = "Primary smoking gun: challenge UI completion does not grant backend acceptance (server-side trust rejection)."
+    elif "dual_challenge_sequence_detected" in recurring_ids:
+        conclusion = "Primary smoking gun: a dual PX-to-Cloudflare challenge sequence is blocking final document acceptance."
+    elif "cf_pat_401_after_px_success" in recurring_ids:
+        conclusion = "Primary smoking gun: Cloudflare token exchange fails after PX success, preventing backend trust."
     elif "webdriver_exposed" in recurring_ids:
         conclusion = "Primary smoking gun: webdriver exposure is consistently detected."
     elif "headless_ua_token" in recurring_ids:
@@ -1446,6 +1645,10 @@ async def run_variant_once(
 
     browser_path = os.environ.get("BROWSER_PATH") or _find_browser(browser_name)
     log(f"    [*] Launching genuine {browser_name.title()}: {browser_path}")
+    log(
+        "    [*] Runtime channel: system_browser_cdp "
+        "(fresh temp profile / incognito-equivalent)."
+    )
 
     launch_args = [
         browser_path,
@@ -1573,6 +1776,7 @@ async def run_variant_once(
                     "request_headers": {},
                     "response_headers": {},
                     "request_cookie_names": [],
+                    "document_cookie_names": [],
                     "response_server": None,
                     "response_cf_ray": None,
                 }
@@ -1591,7 +1795,14 @@ async def run_variant_once(
                 variant=variant.name,
                 run_index=run_index,
                 started_utc=started_utc,
-                config=asdict(variant),
+                config={
+                    **asdict(variant),
+                    "runtime_channel": "system_browser_cdp",
+                    "browser_name": browser_name,
+                    "browser_path": browser_path,
+                    "context_mode": "temp_profile_incognito",
+                    "headless": headless,
+                },
                 initial_nav=initial_nav,
                 initial_state=initial_state,
                 fingerprint_before=fingerprint_before,
@@ -1703,6 +1914,16 @@ def parse_args() -> argparse.Namespace:
         default="chrome",
         help="Browser channel to use.",
     )
+    parser.add_argument(
+        "--fixture-record",
+        default="",
+        help="Optional sanitized fixture output path for recording one representative final state.",
+    )
+    parser.add_argument(
+        "--fixture-replay",
+        default="",
+        help="Replay a sanitized fixture instead of launching live browser jobs.",
+    )
     return parser.parse_args()
 
 
@@ -1731,6 +1952,53 @@ async def async_main() -> int:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     run_dir = out_dir / f"run_{stamp}"
     ensure_dir(run_dir)
+
+    if args.fixture_replay:
+        log(f"[*] Fixture replay mode: {Path(args.fixture_replay).resolve()}")
+        replay_result = build_fixture_variant_result(args.fixture_replay)
+        top_signal = (
+            replay_result.diagnosis.signals[0].signal_id
+            if replay_result.diagnosis.signals
+            else "none"
+        )
+        status_flag = "PASS" if is_successful_progression(replay_result) else "BLOCKED"
+        log(
+            f"    [{status_flag}] initial={replay_result.initial_nav.get('status')} "
+            f"revisit={replay_result.revisit_nav.get('status')} "
+            f"score={replay_result.diagnosis.score}"
+        )
+        log(f"    Verdict: {replay_result.diagnosis.verdict}")
+        log(f"    Top signal: {top_signal}")
+        log(
+            "    Evidence: "
+            f"likely_real={replay_result.final_state.get('likely_real_page')} "
+            f"marker_soft={replay_result.final_state.get('marker_soft_signal_only')} "
+            f"words={replay_result.final_state.get('word_count_estimate')} "
+            f"structure={replay_result.final_state.get('structure_signal_count')} "
+            f"len={replay_result.final_state.get('content_length')}"
+        )
+        summary = build_suite_summary(
+            replay_result.final_state.get("url", args.url), [replay_result]
+        )
+        payload = {
+            "meta": {
+                "generated_utc": utc_now_iso(),
+                "tool": "zoominfo_diagnostic_matrix.py",
+                "fixture_replay": str(Path(args.fixture_replay).resolve()),
+                "args": vars(args),
+            },
+            "summary": asdict(summary),
+            "results": [asdict(replay_result)],
+        }
+        json_path = run_dir / "zoominfo_diagnostic_matrix_results.json"
+        json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        md_path = run_dir / "zoominfo_diagnostic_matrix_summary.md"
+        write_markdown_summary(md_path, summary, [replay_result])
+        log("\n[+] Outputs:")
+        log(f"    JSON: {json_path}")
+        log(f"    MD  : {md_path}")
+        log(f"\n[+] Strongest conclusion: {summary.strongest_conclusion}")
+        return 0 if summary.successful_runs > 0 else 1
 
     results: List[VariantRunResult] = []
     total_jobs = len(selected_names) * args.runs_per_variant
@@ -1793,6 +2061,33 @@ async def async_main() -> int:
         "summary": asdict(summary),
         "results": [asdict(result) for result in results],
     }
+
+    if args.fixture_record:
+        chosen_result = next(
+            (item for item in results if is_successful_progression(item)), None
+        )
+        if chosen_result is None and results:
+            chosen_result = results[-1]
+        if chosen_result is not None:
+            fixture_path = record_sanitized_fixture(
+                path=args.fixture_record,
+                fixture_name=f"{chosen_result.variant}_run{chosen_result.run_index}_{stamp}",
+                tool_source="zoominfo_diagnostic_matrix.py",
+                status=chosen_result.revisit_nav.get("status"),
+                url=str(chosen_result.final_state.get("url", args.url)),
+                title=str(chosen_result.final_state.get("title", "")),
+                html=str(chosen_result.final_state.get("html_excerpt", "")),
+                headers=chosen_result.revisit_nav.get("response_headers", {}),
+                cookies=chosen_result.cookies_final,
+                events=chosen_result.event_log,
+                expected_evidence=chosen_result.final_state,
+            )
+            payload["fixture"] = {
+                "fixture_recorded": True,
+                "fixture_record_path": str(fixture_path.resolve()),
+                "fixture_record_source_variant": chosen_result.variant,
+                "fixture_record_truncated_html": True,
+            }
 
     json_path = run_dir / "zoominfo_diagnostic_matrix_results.json"
     json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")

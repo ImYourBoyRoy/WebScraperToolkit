@@ -23,6 +23,7 @@ import random
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 
 # Force per-monitor DPI awareness BEFORE importing pyautogui.
@@ -56,7 +57,14 @@ _TRACKER_DOMAINS = [
 
 def log_msg(msg: str) -> None:
     """Print and append to debug_px.txt."""
-    print(msg)
+    try:
+        print(msg)
+    except UnicodeEncodeError:
+        encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+        safe_msg = msg.encode(encoding, errors="replace").decode(
+            encoding, errors="replace"
+        )
+        print(safe_msg)
     with open("debug_px.txt", "a", encoding="utf-8") as f:
         f.write(msg + "\n")
 
@@ -457,18 +465,20 @@ async def solve_challenges(page, url: str) -> bool:
                         "[*] Running behavioral warmup (scroll + mouse movement)..."
                     )
                     try:
-                        await page.mouse.move(
+                        # Use OS-level mouse only: Playwright page.mouse leaks CDP bot signals
+                        _os_mouse_move(
                             random.randint(200, 600),
                             random.randint(200, 400),
-                            steps=random.randint(12, 20),
+                            duration=random.uniform(0.6, 1.2),
                         )
                         await asyncio.sleep(random.uniform(0.5, 1.5))
-                        await page.mouse.wheel(0, random.randint(50, 150))
+                        # Scroll slightly down (negative int in PyAutoGUI Windows)
+                        pyautogui.scroll(random.randint(-150, -50))
                         await asyncio.sleep(random.uniform(0.3, 0.8))
-                        await page.mouse.move(
+                        _os_mouse_move(
                             random.randint(100, 500),
                             random.randint(150, 350),
-                            steps=random.randint(10, 18),
+                            duration=random.uniform(0.6, 1.2),
                         )
                         await asyncio.sleep(random.uniform(0.4, 1.0))
                     except Exception:
@@ -517,17 +527,16 @@ async def solve_challenges(page, url: str) -> bool:
             page_url = page.url
             if (
                 page_url.startswith("http")
-                and "Just a moment" not in title
-                and "Access Denied" not in title
+                and "just a moment" not in title.lower()
+                and "access denied" not in title.lower()
             ):
                 content = await page.content()
                 if (
                     "px-captcha" not in content.lower()
                     and "press & hold" not in content.lower()
                 ):
-                    if "company-name" in content:
-                        log_msg(f"[+] Page loaded directly! Title: {title}")
-                        return True
+                    log_msg(f"[+] Page loaded directly! Title: {title}")
+                    return True
         except Exception:
             pass
 
@@ -693,6 +702,7 @@ async def test_search(
         browser_path,
         f"--remote-debugging-port={debug_port}",
         f"--user-data-dir={temp_profile}",
+        "--incognito",
         "--start-maximized",
         "--no-first-run",
         "--no-default-browser-check",
@@ -743,13 +753,38 @@ async def test_search(
             if not contexts:
                 log_msg("[-] No browser contexts found.")
                 return
+
+            # Apply stealth JS before any further navigations/redirects expose webdriver=true
+            STEALTH_JS = """
+            (() => {
+                try { delete Object.getPrototypeOf(navigator).webdriver; } catch(e) {}
+                try { Object.defineProperty(navigator, 'webdriver', {get: () => undefined}); } catch(e) {}
+                try { Object.defineProperty(navigator, 'languages', {get: () => Object.freeze(['en-US', 'en'])}); } catch(e) {}
+                try { Object.defineProperty(navigator, 'maxTouchPoints', {get: () => 0}); } catch(e) {}
+                try {
+                    const origQuery = navigator.permissions.query.bind(navigator.permissions);
+                    Object.defineProperty(navigator.permissions, 'query', {
+                        value: (desc) => {
+                            if (desc && desc.name === 'notifications') return Promise.resolve({ state: Notification.permission || 'default' });
+                            return origQuery(desc);
+                        }
+                    });
+                } catch(e) {}
+            })();
+            """
+            for ctx in contexts:
+                await ctx.add_init_script(STEALTH_JS)
+
             pages = contexts[0].pages
             page = pages[0] if pages else await contexts[0].new_page()
 
             # Log current state
             title = await page.title()
             current_url = page.url
-            log_msg(f"[*] Connected! Title: '{title}' URL: {current_url}")
+            webdriver_state = await page.evaluate("navigator.webdriver")
+            log_msg(
+                f"[*] Connected! Title: '{title}' URL: {current_url} | webdriver={webdriver_state}"
+            )
 
             # Move browser window to (0, 0) for deterministic coordinate mapping
             try:

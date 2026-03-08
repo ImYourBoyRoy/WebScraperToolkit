@@ -1,12 +1,12 @@
 # ./scripts/diag_toolkit_zoominfo.py
 """
 Toolkit-native challenge diagnostic runner with stage-by-stage culprit detection.
-Run: python ./scripts/diag_toolkit_zoominfo.py [--url <target_url>] [--skip-interactive] [--include-headless-stage] [--require-2xx] [--save-artifacts]
-Inputs: CLI flags, toolkit BrowserConfig defaults, optional pyautogui for interactive PX solving.
+Run: python ./scripts/diag_toolkit_zoominfo.py [--url <target_url>] [--skip-interactive] [--skip-standalone-reference] [--include-headless-stage] [--require-2xx] [--save-artifacts]
+Inputs: CLI flags, toolkit BrowserConfig defaults, optional pyautogui for interactive PX solving, and optional standalone system-browser reference execution.
 Outputs: Console log, ./scripts/diag_zi_result.log, and JSON report under ./scripts/out/.
 Side effects: Opens real browser windows (Chromium/Chrome/Edge), may move the mouse during PX solve,
-can write host profile evidence when auto-commit mode is enabled, and can write artifact bundles.
-Exit codes: 0 when any stage reaches non-challenge progression, 1 when all stages remain blocked.
+can invoke the standalone installed-Chrome/CDP reference stage, can write host profile evidence when auto-commit mode is enabled, and can write artifact bundles.
+Exit codes: 0 when at least one toolkit-native stage progresses, 1 when toolkit-native stages remain blocked.
 Operational notes: Testing-only diagnostics; default behavior is report-only with no profile writes.
 Deterministic progression uses content/title/structure evidence, with optional strict --require-2xx gating.
 """
@@ -27,6 +27,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = PROJECT_ROOT / "src"
+if SRC_DIR.exists() and str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+# Enable Python logging so toolkit internal messages (PX solver, interactive session)
+# appear on the console alongside the diagnostic script's own output.
+logging.basicConfig(
+    level=logging.INFO,
+    format="    [%(name)s] %(message)s",
+    stream=sys.stdout,
+)
+
 try:
     from web_scraper_toolkit.browser.config import BrowserConfig
     from web_scraper_toolkit.browser.host_profiles import (
@@ -34,31 +47,33 @@ try:
         normalize_host,
     )
     from web_scraper_toolkit.browser.playwright_handler import (
-        _CF_CHALLENGE_MARKERS,
         _PX_CHALLENGE_MARKERS,
         PlaywrightManager,
-        classify_bot_block,
     )
     from web_scraper_toolkit.browser.px_solver import PerimeterXSolver
+    from web_scraper_toolkit.diagnostics import (
+        evaluate_page_evidence,
+        load_fixture,
+        record_sanitized_fixture,
+    )
     from web_scraper_toolkit.server.handlers.config import update_browser_config
     from web_scraper_toolkit.server.handlers.interactive import InteractiveSession
 except ModuleNotFoundError:
-    project_root = Path(__file__).resolve().parents[1]
-    src_dir = project_root / "src"
-    if src_dir.exists() and str(src_dir) not in sys.path:
-        sys.path.insert(0, str(src_dir))
     from web_scraper_toolkit.browser.config import BrowserConfig
     from web_scraper_toolkit.browser.host_profiles import (
         HostProfileStore,
         normalize_host,
     )
     from web_scraper_toolkit.browser.playwright_handler import (
-        _CF_CHALLENGE_MARKERS,
         _PX_CHALLENGE_MARKERS,
         PlaywrightManager,
-        classify_bot_block,
     )
     from web_scraper_toolkit.browser.px_solver import PerimeterXSolver
+    from web_scraper_toolkit.diagnostics import (
+        evaluate_page_evidence,
+        load_fixture,
+        record_sanitized_fixture,
+    )
     from web_scraper_toolkit.server.handlers.config import update_browser_config
     from web_scraper_toolkit.server.handlers.interactive import InteractiveSession
 
@@ -75,6 +90,7 @@ class StagePlan:
     allow_headed_retry: Optional[bool]
     allow_native_fallback: Optional[bool]
     interactive: bool = False
+    standalone_reference: bool = False
 
 
 @dataclass
@@ -99,6 +115,51 @@ class StageResult:
     success_evidence: Dict[str, Any]
     metadata: Dict[str, Any]
     error: Optional[str] = None
+
+
+def build_fixture_stage_result(
+    *,
+    fixture_path: str,
+    stage_name: str = "fixture_replay",
+) -> StageResult:
+    """Convert a sanitized fixture into a StageResult for deterministic replay."""
+    fixture = load_fixture(fixture_path)
+    started = datetime.now(timezone.utc)
+    eval_data = evaluate_outcome(
+        status=fixture.status,
+        final_url=fixture.url,
+        content=fixture.html,
+        title_hint=fixture.title,
+    )
+    ended = datetime.now(timezone.utc)
+    return StageResult(
+        stage_index=1,
+        name=stage_name,
+        description=f"Deterministic replay from fixture: {Path(fixture_path).name}",
+        started_utc=started.isoformat(),
+        ended_utc=ended.isoformat(),
+        elapsed_ms=int((ended - started).total_seconds() * 1000),
+        status=fixture.status,
+        final_url=fixture.url,
+        title=eval_data["title"],
+        block_reason=eval_data["block_reason"],
+        http_blocked=eval_data["http_blocked"],
+        challenge_detected=eval_data["challenge_detected"],
+        progressed=eval_data["progressed"],
+        px_markers_found=eval_data["px_markers_found"],
+        cf_markers_found=eval_data["cf_markers_found"],
+        content_length=eval_data["content_length"],
+        content_excerpt=fixture.html[:4000],
+        success_evidence=eval_data["success_evidence"],
+        metadata={
+            "fixture_replay_path": str(Path(fixture_path).resolve()),
+            "fixture_name": fixture.fixture_name,
+            "tool_source": fixture.tool_source,
+            "status_source": "fixture_replay",
+            "expected_evidence": fixture.expected_evidence,
+        },
+        error=None,
+    )
 
 
 def log(level: str, message: str) -> None:
@@ -247,104 +308,59 @@ def evaluate_outcome(
     title_hint: str = "",
     require_2xx_status: bool = False,
 ) -> Dict[str, Any]:
-    title = title_hint or extract_title_from_html(content)
-    title_lower = title.lower()
-    title_challenge = any(
-        marker in title_lower
-        for marker in (
-            "just a moment",
-            "attention required",
-            "access denied",
-            "verify you are human",
-        )
-    )
-    block_reason = classify_bot_block(
+    evidence = evaluate_page_evidence(
         status=status,
         final_url=final_url,
-        content_html=content,
-    )
-    px_marker_hits = count_marker_hits(content, _PX_CHALLENGE_MARKERS)
-    cf_marker_hits = count_marker_hits(content, _CF_CHALLENGE_MARKERS)
-    px_markers = px_marker_hits > 0
-    cf_markers = cf_marker_hits > 0
-    marker_hits_total = px_marker_hits + cf_marker_hits
-    marker_density = marker_hits_total / max(1, len(content))
-
-    word_count_estimate = estimate_text_word_count(content)
-    structure_signal_count = count_structure_signals(content)
-    rich_content_length = len(content) >= 120_000
-    likely_real_page = bool(
-        content.strip()
-        and not title_challenge
-        and (
-            rich_content_length
-            or word_count_estimate >= 450
-            or structure_signal_count >= 6
-        )
-    )
-
-    marker_soft_signal_only = bool(
-        likely_real_page
-        and marker_hits_total > 0
-        and marker_density < 0.00025
-        and not url_has_challenge_pattern(final_url)
-    )
-
-    if block_reason in {"px_challenge", "cf_challenge"} and marker_soft_signal_only:
-        block_reason = "none"
-
-    http_blocked = bool(status in HTTP_BLOCK_STATUSES and not likely_real_page)
-    challenge_detected = bool(
-        title_challenge
-        or (
-            url_has_challenge_pattern(final_url)
-            and not marker_soft_signal_only
-            and not likely_real_page
-        )
-        or (block_reason != "none" and not marker_soft_signal_only)
-        or (
-            marker_hits_total > 0
-            and not marker_soft_signal_only
-            and marker_density >= 0.00025
-            and not likely_real_page
-        )
-    )
-    status_is_2xx = bool(status is not None and 200 <= int(status) < 300)
-    strict_status_gate_failed = bool(require_2xx_status and not status_is_2xx)
-    progressed = bool(
-        likely_real_page
-        and not challenge_detected
-        and not http_blocked
-        and not strict_status_gate_failed
+        content=content,
+        title_hint=title_hint,
+        require_2xx_status=require_2xx_status,
     )
 
     success_evidence = {
-        "likely_real_page": likely_real_page,
-        "title_challenge": title_challenge,
-        "word_count_estimate": word_count_estimate,
-        "structure_signal_count": structure_signal_count,
-        "rich_content_length": rich_content_length,
-        "marker_hits_total": marker_hits_total,
-        "marker_density": marker_density,
-        "marker_soft_signal_only": marker_soft_signal_only,
+        "likely_real_page": evidence.likely_real_page,
+        "title_challenge": evidence.title_challenge,
+        "deny_page_detected": evidence.deny_page_detected,
+        "visible_text_length": evidence.visible_text_length,
+        "word_count_estimate": evidence.visible_word_count,
+        "structure_signal_count": evidence.structure_signal_count,
+        "rich_content_length": evidence.rich_content_length,
+        "marker_hits_total": evidence.marker_hits_total,
+        "marker_density": evidence.marker_density,
+        "marker_soft_signal_only": evidence.marker_soft_signal_only,
         "require_2xx_status": require_2xx_status,
-        "status_is_2xx": status_is_2xx,
-        "strict_status_gate_failed": strict_status_gate_failed,
+        "status_is_2xx": evidence.status_is_2xx,
+        "strict_status_gate_failed": evidence.strict_status_gate_failed,
+        "content_quality": evidence.content_quality,
+        "reason_codes": evidence.reason_codes,
         "stale_http_status_ignored": bool(
-            status in HTTP_BLOCK_STATUSES and likely_real_page
+            status in HTTP_BLOCK_STATUSES and evidence.likely_real_page
         ),
     }
     return {
-        "title": title,
-        "block_reason": block_reason,
-        "http_blocked": http_blocked,
-        "challenge_detected": challenge_detected,
-        "progressed": progressed,
-        "px_markers_found": px_markers,
-        "cf_markers_found": cf_markers,
-        "content_length": len(content),
+        "title": evidence.title,
+        "block_reason": evidence.block_reason,
+        "http_blocked": bool(
+            status in HTTP_BLOCK_STATUSES and not evidence.likely_real_page
+        ),
+        "challenge_detected": evidence.challenge_detected,
+        "progressed": evidence.progressed,
+        "px_markers_found": evidence.px_markers_found,
+        "cf_markers_found": evidence.cf_markers_found,
+        "content_length": evidence.content_length,
         "success_evidence": success_evidence,
     }
+
+
+def is_reference_stage_name(name: str) -> bool:
+    """Identify non-toolkit reference stages that validate external runtime behavior."""
+    return name.startswith("standalone_system_")
+
+
+def is_reference_stage_result(result: StageResult) -> bool:
+    """Return True when the stage is a standalone reference rather than toolkit flow."""
+    if bool(result.metadata.get("reference_only", False)):
+        return True
+    return is_reference_stage_name(result.name)
 
 
 async def run_playwright_stage(
@@ -410,6 +426,147 @@ async def run_playwright_stage(
         content_length=eval_data["content_length"],
         content_excerpt=content[:4000],
         success_evidence=eval_data["success_evidence"],
+        metadata=metadata,
+        error=error,
+    )
+
+
+async def run_standalone_reference_stage(
+    stage_index: int,
+    plan: StagePlan,
+    url: str,
+    timeout_ms: int,
+    require_2xx_status: bool,
+) -> StageResult:
+    """Run the standalone system-browser CDP diagnostic as a reference stage."""
+    started = datetime.now(timezone.utc)
+    command = [
+        sys.executable,
+        str(PROJECT_ROOT / "scripts" / "diag_zoominfo_bypass.py"),
+        "--browser",
+        "chrome",
+        "--url",
+        url,
+    ]
+    stdout_text = ""
+    stderr_text = ""
+    error: Optional[str] = None
+    return_code: Optional[int] = None
+
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *command,
+            cwd=str(PROJECT_ROOT),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        timeout_seconds = max(90, int(timeout_ms / 1000) + 60)
+        try:
+            stdout_bytes, stderr_bytes = await asyncio.wait_for(
+                proc.communicate(),
+                timeout=timeout_seconds,
+            )
+        except asyncio.TimeoutError:
+            proc.kill()
+            stdout_bytes, stderr_bytes = await proc.communicate()
+            error = f"Standalone reference timed out after {timeout_seconds}s."
+        return_code = proc.returncode
+        stdout_text = stdout_bytes.decode("utf-8", errors="replace")
+        stderr_text = stderr_bytes.decode("utf-8", errors="replace")
+    except Exception as exc:
+        error = str(exc)
+
+    combined_output = "\n".join(
+        chunk for chunk in [stdout_text.strip(), stderr_text.strip()] if chunk
+    ).strip()
+    title_match = re.search(r"^Title\s*:\s*(.+)$", combined_output, flags=re.MULTILINE)
+    url_match = re.search(r"^URL\s*:\s*(.+)$", combined_output, flags=re.MULTILINE)
+    title = title_match.group(1).strip() if title_match else ""
+    final_url = url_match.group(1).strip() if url_match else url
+
+    lowered_output = combined_output.lower()
+    success_marker = (
+        "bypass successful" in lowered_output or "real page loaded" in lowered_output
+    )
+    title_lower = title.lower()
+    challenge_detected = bool(
+        not success_marker
+        and (
+            "failed to bypass target site" in lowered_output
+            or "challenge solving loop timed out" in lowered_output
+            or "just a moment" in title_lower
+            or "access denied" in title_lower
+            or "press & hold" in lowered_output
+        )
+    )
+    deny_page_detected = bool(
+        "access to this page has been denied" in title_lower
+        or "access denied" in title_lower
+    )
+    status = 200 if success_marker else None
+    if deny_page_detected:
+        status = 403
+
+    strict_status_gate_failed = bool(require_2xx_status and status != 200)
+    progressed = bool(success_marker and not strict_status_gate_failed)
+    success_evidence = {
+        "likely_real_page": progressed,
+        "title_challenge": bool(
+            "just a moment" in title_lower or "access denied" in title_lower
+        ),
+        "deny_page_detected": deny_page_detected,
+        "visible_text_length": 0,
+        "word_count_estimate": 0,
+        "structure_signal_count": 0,
+        "rich_content_length": False,
+        "marker_hits_total": 0,
+        "marker_density": 0.0,
+        "marker_soft_signal_only": False,
+        "require_2xx_status": require_2xx_status,
+        "status_is_2xx": status == 200,
+        "strict_status_gate_failed": strict_status_gate_failed,
+        "content_quality": "reference_success" if progressed else "reference_failed",
+        "reason_codes": (
+            ["standalone_success_signal"]
+            if progressed
+            else ["standalone_reference_failed"]
+        ),
+        "stale_http_status_ignored": False,
+        "runtime_channel": "system_browser_cdp",
+    }
+    ended = datetime.now(timezone.utc)
+    metadata = {
+        "status_source": "standalone_reference_stdout",
+        "strict_status_required": bool(require_2xx_status),
+        "attempt_profile": "standalone_system_chrome_reference",
+        "reference_only": True,
+        "runtime_channel": "system_browser_cdp",
+        "browser_channel": "chrome",
+        "context_mode": "temp_profile_incognito",
+        "subprocess_return_code": return_code,
+        "command": command,
+        "stdout_excerpt": stdout_text[:2000],
+        "stderr_excerpt": stderr_text[:1000],
+    }
+    return StageResult(
+        stage_index=stage_index,
+        name=plan.name,
+        description=plan.description,
+        started_utc=started.isoformat(),
+        ended_utc=ended.isoformat(),
+        elapsed_ms=int((ended - started).total_seconds() * 1000),
+        status=status,
+        final_url=final_url,
+        title=title,
+        block_reason="none" if progressed else "standalone_reference_failed",
+        http_blocked=bool(status in HTTP_BLOCK_STATUSES),
+        challenge_detected=challenge_detected,
+        progressed=progressed,
+        px_markers_found=False,
+        cf_markers_found=False,
+        content_length=0,
+        content_excerpt=combined_output[:4000],
+        success_evidence=success_evidence,
         metadata=metadata,
         error=error,
     )
@@ -640,6 +797,7 @@ async def run_interactive_stage(
     content = ""
     error: Optional[str] = None
     status_source = "unavailable"
+    initial_status: Optional[int] = None
 
     try:
         update_browser_config(
@@ -651,19 +809,28 @@ async def run_interactive_stage(
 
         state = await session.navigate(url)
         status = state.get("status")
+        initial_status = state.get("initial_status")
         final_url = str(state.get("url", url))
         if isinstance(status, int):
-            status_source = "interactive_navigate_response"
+            status_source = str(
+                state.get("status_source", "interactive_navigate_state")
+            )
 
         html_state = await session.read_page(format="html")
         content = str(html_state.get("content", ""))
+        read_state_status = html_state.get("status")
+        if isinstance(read_state_status, int):
+            status = read_state_status
+            status_source = str(
+                html_state.get("status_source", "interactive_read_page_state")
+            )
         if status is None:
             probed_status = await probe_page_status(session)
             if isinstance(probed_status, int):
                 status = probed_status
                 status_source = "interactive_js_fetch_probe"
 
-        if has_markers(content, _PX_CHALLENGE_MARKERS):
+        if has_markers(content, _PX_CHALLENGE_MARKERS) and len(content) < 50000:
             if PerimeterXSolver.is_available():
                 log(
                     "*",
@@ -676,7 +843,12 @@ async def run_interactive_stage(
                 post_solve_status = state_after.get("status")
                 if isinstance(post_solve_status, int):
                     status = post_solve_status
-                    status_source = "interactive_post_solve_read_page"
+                    status_source = str(
+                        state_after.get(
+                            "status_source",
+                            "interactive_post_solve_read_page",
+                        )
+                    )
                 elif status is None:
                     probed_status = await probe_page_status(session)
                     if isinstance(probed_status, int):
@@ -709,7 +881,7 @@ async def run_interactive_stage(
         "context_mode": "incognito",
         "interactive_channel": "chrome",
         "px_solver_available": PerimeterXSolver.is_available(),
-        "initial_status": status,
+        "initial_status": initial_status,
     }
     return StageResult(
         stage_index=stage_index,
@@ -738,6 +910,7 @@ async def run_interactive_stage(
 def build_stage_plans(
     skip_interactive: bool,
     include_headless_stage: bool,
+    skip_standalone_reference: bool,
 ) -> List[StagePlan]:
     baseline_common = {
         "browser_type": "chrome",
@@ -817,6 +990,20 @@ def build_stage_plans(
                 interactive=True,
             )
         )
+    if not skip_standalone_reference:
+        plans.append(
+            StagePlan(
+                name="standalone_system_chrome_reference",
+                description=(
+                    "Reference run using installed Chrome + CDP with a fresh temp profile "
+                    "(mirrors standalone diagnostic path)."
+                ),
+                config={},
+                allow_headed_retry=None,
+                allow_native_fallback=None,
+                standalone_reference=True,
+            )
+        )
     return plans
 
 
@@ -826,6 +1013,9 @@ def determine_smoking_gun(results: List[StageResult]) -> Dict[str, Any]:
     baseline_headed = by_name.get("baseline_chrome_headed_only")
     native_default = by_name.get("toolkit_native_chrome_default")
     interactive = by_name.get("interactive_session_chrome")
+    standalone_reference = by_name.get("standalone_system_chrome_reference")
+    toolkit_results = [item for item in results if not is_reference_stage_result(item)]
+    toolkit_progressed = any(item.progressed for item in toolkit_results)
     findings: List[str] = []
     culprit = "No single dominant culprit detected."
 
@@ -871,8 +1061,24 @@ def determine_smoking_gun(results: List[StageResult]) -> Dict[str, Any]:
                 "Install/repair local Chrome and verify Playwright channel launch access."
             )
 
+    if (
+        standalone_reference
+        and standalone_reference.progressed
+        and not toolkit_progressed
+    ):
+        culprit = (
+            "Installed Chrome/CDP reference succeeded, but the toolkit integration "
+            "path did not reproduce that runtime."
+        )
+        findings.append(
+            "The standalone installed-browser reference confirms the host can progress with a fresh native Chrome profile."
+        )
+        findings.append(
+            "Toolkit-native stages should be aligned against the same Chrome-first, incognito, system-browser runtime assumptions."
+        )
+
     if not findings:
-        all_blocked = all(not item.progressed for item in results)
+        all_blocked = all(not item.progressed for item in toolkit_results or results)
         if all_blocked:
             culprit = "All toolkit stages remained blocked."
             findings.append(
@@ -894,6 +1100,14 @@ def determine_smoking_gun(results: List[StageResult]) -> Dict[str, Any]:
         recommendations.append(
             "Install desktop extras: pip install web-scraper-toolkit[desktop]."
         )
+    if (
+        standalone_reference
+        and standalone_reference.progressed
+        and not toolkit_progressed
+    ):
+        recommendations.append(
+            "Keep the installed-Chrome/CDP reference stage enabled while validating toolkit-native Chrome integration."
+        )
 
     return {
         "culprit": culprit,
@@ -908,21 +1122,73 @@ async def run_suite(
     timeout_ms: int,
     skip_interactive: bool,
     include_headless_stage: bool,
+    skip_standalone_reference: bool,
     auto_commit_host_profile: bool,
     host_profiles_path: str,
     read_only: bool,
     require_2xx_status: bool,
     save_artifacts: bool,
     artifacts_dir: str,
+    fixture_record_path: str,
+    fixture_replay_path: str,
 ) -> Dict[str, Any]:
     run_id = (
         datetime.now(timezone.utc).strftime("diag_%Y%m%dT%H%M%S_")
         + uuid.uuid4().hex[:8]
     )
     artifacts_root = Path(artifacts_dir).resolve()
+    if fixture_replay_path:
+        fixture_stage = build_fixture_stage_result(fixture_path=fixture_replay_path)
+        log(
+            "+" if fixture_stage.progressed else "-",
+            (
+                f"{fixture_stage.name}: progressed={fixture_stage.progressed} "
+                f"status={fixture_stage.status} block_reason={fixture_stage.block_reason} "
+                f"url={fixture_stage.final_url}"
+            ),
+        )
+        log(
+            "*",
+            (
+                f"{fixture_stage.name} evidence: likely_real_page="
+                f"{fixture_stage.success_evidence.get('likely_real_page')} "
+                f"marker_soft_signal_only="
+                f"{fixture_stage.success_evidence.get('marker_soft_signal_only')} "
+                f"words={fixture_stage.success_evidence.get('word_count_estimate')} "
+                f"structure={fixture_stage.success_evidence.get('structure_signal_count')} "
+                f"len={fixture_stage.content_length}"
+            ),
+        )
+        analysis = determine_smoking_gun([fixture_stage])
+        return {
+            "run_id": run_id,
+            "generated_utc": utc_now_iso(),
+            "url": fixture_stage.final_url,
+            "stages": [asdict(fixture_stage)],
+            "summary": {
+                "total_stages": 1,
+                "progressed_stages": 1 if fixture_stage.progressed else 0,
+                "blocked_stages": 0 if fixture_stage.progressed else 1,
+                "toolkit_progressed_stages": 1 if fixture_stage.progressed else 0,
+                "reference_progressed_stages": 0,
+                "require_2xx_status": require_2xx_status,
+                "artifacts_saved": False,
+                "fixture_replay": True,
+            },
+            "analysis": analysis,
+            "autocommit": {
+                "autocommit_attempted": False,
+                "autocommit_verified": False,
+                "autocommit_written": False,
+                "autocommit_reason": "fixture_replay_mode",
+            },
+            "artifacts": [],
+        }
+
     plans = build_stage_plans(
         skip_interactive=skip_interactive,
         include_headless_stage=include_headless_stage,
+        skip_standalone_reference=skip_standalone_reference,
     )
     stage_results: List[StageResult] = []
     artifact_manifest: List[Dict[str, str]] = []
@@ -934,6 +1200,14 @@ async def run_suite(
                 stage_index=stage_index,
                 plan=plan,
                 url=url,
+                require_2xx_status=require_2xx_status,
+            )
+        elif plan.standalone_reference:
+            result = await run_standalone_reference_stage(
+                stage_index=stage_index,
+                plan=plan,
+                url=url,
+                timeout_ms=timeout_ms,
                 require_2xx_status=require_2xx_status,
             )
         else:
@@ -993,6 +1267,41 @@ async def run_suite(
     )
     progressed_count = sum(1 for item in stage_results if item.progressed)
     blocked_count = len(stage_results) - progressed_count
+    toolkit_progressed_count = sum(
+        1
+        for item in stage_results
+        if item.progressed and not is_reference_stage_result(item)
+    )
+    reference_progressed_count = sum(
+        1
+        for item in stage_results
+        if item.progressed and is_reference_stage_result(item)
+    )
+    fixture_manifest: Dict[str, Any] = {}
+    if fixture_record_path:
+        record_target = next((item for item in stage_results if item.progressed), None)
+        if record_target is None and stage_results:
+            record_target = stage_results[-1]
+        if record_target is not None:
+            saved_fixture = record_sanitized_fixture(
+                path=fixture_record_path,
+                fixture_name=f"{slugify_name(record_target.name)}_{run_id}",
+                tool_source="diag_toolkit_zoominfo.py",
+                status=record_target.status,
+                url=record_target.final_url,
+                title=record_target.title,
+                html=record_target.content_excerpt,
+                headers={},
+                cookies=[],
+                events=[],
+                expected_evidence=record_target.success_evidence,
+            )
+            fixture_manifest = {
+                "fixture_recorded": True,
+                "fixture_record_path": str(saved_fixture.resolve()),
+                "fixture_record_source_stage": record_target.name,
+                "fixture_record_truncated_html": True,
+            }
     return {
         "run_id": run_id,
         "generated_utc": utc_now_iso(),
@@ -1002,12 +1311,16 @@ async def run_suite(
             "total_stages": len(stage_results),
             "progressed_stages": progressed_count,
             "blocked_stages": blocked_count,
+            "toolkit_progressed_stages": toolkit_progressed_count,
+            "reference_progressed_stages": reference_progressed_count,
             "require_2xx_status": require_2xx_status,
             "artifacts_saved": bool(save_artifacts),
+            "fixture_replay": False,
         },
         "analysis": analysis,
         "autocommit": autocommit,
         "artifacts": artifact_manifest,
+        "fixture": fixture_manifest,
     }
 
 
@@ -1026,6 +1339,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--skip-interactive",
         action="store_true",
         help="Skip the InteractiveSession stage.",
+    )
+    parser.add_argument(
+        "--skip-standalone-reference",
+        action="store_true",
+        help=(
+            "Skip the standalone installed-Chrome/CDP reference stage that validates "
+            "the native system-browser runtime."
+        ),
     )
     parser.add_argument(
         "--include-headless-stage",
@@ -1079,6 +1400,16 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default="./scripts/out/artifacts",
         help="Directory root used when --save-artifacts is enabled.",
     )
+    parser.add_argument(
+        "--fixture-record",
+        default="",
+        help="Optional sanitized fixture output path for recording one representative stage.",
+    )
+    parser.add_argument(
+        "--fixture-replay",
+        default="",
+        help="Replay a sanitized fixture instead of launching live browser stages.",
+    )
     return parser
 
 
@@ -1110,12 +1441,20 @@ def main() -> None:
         "Default diagnostics run headed Chrome flows first (no headless OS interaction).",
     )
     log("*", "Toolkit route preference includes chrome-first native fallback.")
+    if args.skip_standalone_reference:
+        log("*", "Standalone installed-Chrome/CDP reference stage is disabled.")
+    else:
+        log("*", "Standalone installed-Chrome/CDP reference stage is enabled.")
     if args.read_only:
         log("*", "Read-only mode enabled: host profile updates are disabled.")
     if args.require_2xx:
         log("*", "Strict progression mode enabled: only 2xx statuses count as success.")
     if args.save_artifacts:
         log("*", f"Artifact capture enabled at: {Path(args.artifacts_dir).resolve()}")
+    if args.fixture_replay:
+        log("*", f"Fixture replay mode: {Path(args.fixture_replay).resolve()}")
+    if args.fixture_record:
+        log("*", f"Fixture recording enabled at: {Path(args.fixture_record).resolve()}")
 
     report: Dict[str, Any] = {}
     exit_code = 1
@@ -1126,12 +1465,15 @@ def main() -> None:
                 timeout_ms=max(5000, int(args.timeout_ms)),
                 skip_interactive=bool(args.skip_interactive),
                 include_headless_stage=bool(args.include_headless_stage),
+                skip_standalone_reference=bool(args.skip_standalone_reference),
                 auto_commit_host_profile=bool(args.auto_commit_host_profile),
                 host_profiles_path=str(args.host_profiles_path),
                 read_only=bool(args.read_only),
                 require_2xx_status=bool(args.require_2xx),
                 save_artifacts=bool(args.save_artifacts),
                 artifacts_dir=str(args.artifacts_dir),
+                fixture_record_path=str(args.fixture_record or ""),
+                fixture_replay_path=str(args.fixture_replay or ""),
             )
         )
         out_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -1160,7 +1502,12 @@ def main() -> None:
                 )
         log("*", f"JSON report saved: {out_path}")
 
-        progressed = int(report.get("summary", {}).get("progressed_stages", 0))
+        progressed = int(
+            report.get("summary", {}).get(
+                "toolkit_progressed_stages",
+                report.get("summary", {}).get("progressed_stages", 0),
+            )
+        )
         exit_code = 0 if progressed > 0 else 1
     except Exception as exc:
         log("-", f"Fatal error: {exc}")

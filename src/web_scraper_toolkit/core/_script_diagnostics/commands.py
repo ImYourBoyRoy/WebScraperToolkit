@@ -32,6 +32,8 @@ def build_toolkit_route_command(
     require_2xx_status: bool,
     save_artifacts: bool,
     artifacts_dir: Optional[str],
+    fixture_record_path: Optional[str],
+    fixture_replay_path: Optional[str],
     auto_commit_host_profile: bool,
     host_profiles_path: Optional[str],
     read_only: bool,
@@ -58,6 +60,10 @@ def build_toolkit_route_command(
         command.append("--save-artifacts")
     if artifacts_dir:
         command.extend(["--artifacts-dir", artifacts_dir])
+    if fixture_record_path:
+        command.extend(["--fixture-record", fixture_record_path])
+    if fixture_replay_path:
+        command.extend(["--fixture-replay", fixture_replay_path])
     if auto_commit_host_profile:
         command.append("--auto-commit-host-profile")
     if host_profiles_path:
@@ -81,6 +87,8 @@ def build_challenge_matrix_command(
     hold_method: str,
     hold_seconds: float,
     skip_hold: bool,
+    fixture_record_path: Optional[str],
+    fixture_replay_path: Optional[str],
     extra_args: Optional[Sequence[str]],
 ) -> list[str]:
     command: list[str] = [
@@ -105,6 +113,10 @@ def build_challenge_matrix_command(
         command.append("--headless")
     if skip_hold:
         command.append("--skip-hold")
+    if fixture_record_path:
+        command.extend(["--fixture-record", fixture_record_path])
+    if fixture_replay_path:
+        command.extend(["--fixture-replay", fixture_replay_path])
     _extend_extra(command, extra_args)
     return command
 

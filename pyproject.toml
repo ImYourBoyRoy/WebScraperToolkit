@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "web-scraper-toolkit"
-version = "0.3.1"
+version = "0.3.2"
 description = "A powerful, standalone web scraping toolkit using Playwright and various parsers."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,7 +21,8 @@ dependencies = [
     "phonenumbers",
     "aiohttp",
     "aiohttp-socks",
-    "tldextract>=5.1.2"
+    "tldextract>=5.1.2",
+    "pyautogui>=0.9.54"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -38,9 +39,6 @@ authors = [
 license = "MIT"
 
 [project.optional-dependencies]
-desktop = [
-    "pyautogui>=0.9.54",
-]
 test = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",

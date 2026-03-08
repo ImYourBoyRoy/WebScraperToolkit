@@ -1,0 +1,53 @@
+{
+  "fixture_name": "zoominfo_px_then_cf_loop",
+  "captured_utc": "2026-03-07T09:41:02.836082+00:00",
+  "tool_source": "tests",
+  "status": 429,
+  "url": "https://www.example.com/company/123?__cf_chl_rt_tk=%3Credacted%3E",
+  "title": "Just a moment...",
+  "html": "<html>\n  <head><title>Just a moment...</title></head>\n  <body>\n    <div id='px-captcha'>perimeterx press &amp; hold human challenge</div>\n    <div class='cf-challenge'>cloudflare challenge platform verification required</div>\n  </body>\n</html>",
+  "headers": {
+    "server": "cloudflare",
+    "content-type": "text/html",
+    "cf-ray": "loop123"
+  },
+  "cookie_summary": [
+    {
+      "name": "_px3",
+      "domain": ".example.com",
+      "path": "/",
+      "sameSite": "None",
+      "secure": true,
+      "value_length": 3
+    },
+    {
+      "name": "cf_clearance",
+      "domain": ".example.com",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": true,
+      "value_length": 3
+    }
+  ],
+  "event_summary": [
+    {
+      "kind": "response",
+      "category": "perimeterx",
+      "url": "https://collector.perimeterx.net/api/v2/collector",
+      "status": 200
+    },
+    {
+      "kind": "response",
+      "category": "cloudflare",
+      "url": "https://example.com/cdn-cgi/challenge-platform/private-token",
+      "status": 401
+    }
+  ],
+  "expected_evidence": {
+    "likely_real_page": false,
+    "challenge_detected": true,
+    "deny_page_detected": true,
+    "marker_soft_signal_only": false,
+    "content_quality": "deny"
+  }
+}

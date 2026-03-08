@@ -310,6 +310,10 @@ class HostProfileStore:
                 "clean_incognito_failures": 0,
                 "persistent_successes": 0,
                 "persistent_failures": 0,
+                "proxy_successes": 0,
+                "proxy_failures": 0,
+                "direct_successes": 0,
+                "direct_failures": 0,
                 "last_seen_utc": now_iso,
                 "sample_runs": [],
             },
@@ -330,6 +334,8 @@ class HostProfileStore:
         final_url: str,
         status: Optional[int],
         used_active_profile: bool,
+        proxy_used: bool = False,
+        proxy_tier: str = "",
     ) -> Dict[str, Any]:
         """
         Record one fetch run and update candidate/active host profile state.
@@ -360,6 +366,8 @@ class HostProfileStore:
                     "had_persisted_state": bool(had_persisted_state),
                     "promotion_eligible": bool(promotion_eligible),
                     "used_active_profile": bool(used_active_profile),
+                    "proxy_used": bool(proxy_used),
+                    "proxy_tier": str(proxy_tier).strip().lower(),
                     "status": status,
                     "final_url": final_url,
                     "scope": scope,
@@ -437,6 +445,10 @@ class HostProfileStore:
                 evidence.setdefault("clean_incognito_failures", 0)
                 evidence.setdefault("persistent_successes", 0)
                 evidence.setdefault("persistent_failures", 0)
+                evidence.setdefault("proxy_successes", 0)
+                evidence.setdefault("proxy_failures", 0)
+                evidence.setdefault("direct_successes", 0)
+                evidence.setdefault("direct_failures", 0)
                 evidence.setdefault("sample_runs", [])
 
                 if promotion_eligible:
@@ -458,6 +470,24 @@ class HostProfileStore:
                             int(evidence["persistent_failures"]) + 1
                         )
 
+                # Track proxy vs direct outcomes
+                if proxy_used:
+                    if success:
+                        evidence["proxy_successes"] = (
+                            int(evidence["proxy_successes"]) + 1
+                        )
+                    else:
+                        evidence["proxy_failures"] = int(evidence["proxy_failures"]) + 1
+                else:
+                    if success:
+                        evidence["direct_successes"] = (
+                            int(evidence["direct_successes"]) + 1
+                        )
+                    else:
+                        evidence["direct_failures"] = (
+                            int(evidence["direct_failures"]) + 1
+                        )
+
                 sample_runs = [
                     str(item) for item in evidence.get("sample_runs", []) if str(item)
                 ]
@@ -470,8 +500,26 @@ class HostProfileStore:
                     int(evidence["clean_incognito_successes"])
                     >= self.promotion_threshold
                 ):
+                    # Determine proxy_policy from evidence
+                    p_succ = int(evidence.get("proxy_successes", 0))
+                    p_fail = int(evidence.get("proxy_failures", 0))
+                    d_succ = int(evidence.get("direct_successes", 0))
+                    d_fail = int(evidence.get("direct_failures", 0))
+                    learned_proxy_policy = "direct_first"
+                    if p_succ > 0 and d_succ == 0 and d_fail > 0:
+                        learned_proxy_policy = "proxy_only"
+                    elif p_succ > 0 and d_fail > d_succ:
+                        learned_proxy_policy = "proxy_first"
+                    elif p_fail > 0 and p_succ == 0 and d_succ > 0:
+                        learned_proxy_policy = "direct_only"
+
+                    promoted_routing = dict(routing_clean)
+                    promoted_routing["proxy_policy"] = learned_proxy_policy
+                    if proxy_tier:
+                        promoted_routing["proxy_tier"] = str(proxy_tier).strip().lower()
+
                     record["active"] = {
-                        "routing": routing_clean,
+                        "routing": promoted_routing,
                         "learned_from": {
                             "success_count": int(evidence["clean_incognito_successes"]),
                             "window_days": self.window_days,

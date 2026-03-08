@@ -1,4 +1,5 @@
 # ./tests/test_playwright_manager.py
+# ./tests/test_playwright_manager.py
 """
 Unit tests for PlaywrightManager anti-bot behavior and profile gating.
 Run with `python -m pytest -q tests/test_playwright_manager.py`.
@@ -521,6 +522,51 @@ class TestPlaywrightManager(unittest.TestCase):
         self.assertIn("ok", content or "")
         pm._smart_fetch_standard.assert_awaited_once()
         pm._smart_fetch_native_fallback.assert_awaited_once()
+
+    def test_smart_fetch_keeps_primary_metadata_when_native_fallback_loses(
+        self,
+    ) -> None:
+        pm = PlaywrightManager(BrowserConfig(native_fallback_policy="on_blocked"))
+
+        async def _primary(*args, **kwargs):
+            pm._last_fetch_metadata = {
+                "attempt_profile": "baseline_headless",
+                "status": 200,
+                "final_url": "https://example.com/article",
+                "blocked_reason": "none",
+            }
+            return (
+                "<html><main><article>real content "
+                + ("word " * 400)
+                + "</article></main></html>",
+                "https://example.com/article",
+                200,
+            )
+
+        async def _native(*args, **kwargs):
+            pm._last_fetch_metadata = {
+                "attempt_profile": "native_channel_chrome",
+                "status": 403,
+                "final_url": "https://example.com/challenge",
+                "blocked_reason": "cf_challenge",
+            }
+            return "Just a moment", "https://example.com/challenge", 403
+
+        pm._smart_fetch_standard = AsyncMock(side_effect=_primary)  # type: ignore[method-assign]
+        pm._smart_fetch_native_fallback = AsyncMock(side_effect=_native)  # type: ignore[method-assign]
+        pm._should_attempt_native_fallback = MagicMock(return_value=True)  # type: ignore[method-assign]
+
+        content, final_url, status = self.loop.run_until_complete(
+            pm.smart_fetch("https://example.com/article")
+        )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(final_url, "https://example.com/article")
+        self.assertIn("real content", content or "")
+        metadata = pm.get_last_fetch_metadata()
+        self.assertEqual(metadata.get("attempt_profile"), "baseline_headless")
+        self.assertEqual(metadata.get("status"), 200)
+        self.assertEqual(metadata.get("selection_reason"), "primary_preferred")
 
     def test_native_fallback_disabled_policy_off(self) -> None:
         pm = PlaywrightManager(

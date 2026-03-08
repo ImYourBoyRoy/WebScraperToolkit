@@ -284,6 +284,7 @@ class PerimeterXSolver:
         # The PX challenge can require multiple rounds. After one successful
         # hold, the button may re-appear. We loop up to 8 rounds.
         solved_any_round = False
+        warmup_done = False
 
         for round_num in range(1, 9):
             # Poll up to 15s for the button to appear in any frame.
@@ -349,10 +350,19 @@ class PerimeterXSolver:
                 "PX Solver: Round %d -- found PX challenge element. Engaging OS mouse.",
                 round_num,
             )
-            result = await _perform_os_hold(page, hold_element)
+            result = await _perform_os_hold(
+                page, hold_element, do_warmup=not warmup_done
+            )
+            warmup_done = True
+
             if result:
                 solved_any_round = True
-                logger.info("PX Solver: Round %d passed! Reloading page...", round_num)
+                logger.info("PX Solver: Round %d passed!", round_num)
+
+                # Settle 3.5s to allow PX telemetry POST and cookie setting
+                # before we interrupt the target's JS execution with a reload.
+                logger.info("PX Solver: Settling 3.5s for clearance telemetry...")
+                await asyncio.sleep(3.5)
 
                 # Reload the page after a successful hold. PX sets a clearance
                 # cookie on success, and reloading should serve the real page
@@ -434,7 +444,9 @@ class PerimeterXSolver:
 # ---------------------------------------------------------------------------
 
 
-async def _perform_os_hold(page: Page, hold_element: Any) -> bool:
+async def _perform_os_hold(
+    page: Page, hold_element: Any, *, do_warmup: bool = False
+) -> bool:
     """
     Execute the OS-level press-and-hold on the PX challenge element.
 
@@ -453,4 +465,5 @@ async def _perform_os_hold(page: Page, hold_element: Any) -> bool:
         logger=logger,
         random_module=random,
         asyncio_module=asyncio,
+        do_warmup=do_warmup,
     )

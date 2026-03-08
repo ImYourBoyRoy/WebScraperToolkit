@@ -128,7 +128,10 @@ def classify_bot_block(
     ):
         return "cf_challenge"
 
-    if any(marker in lowered for marker in _PX_CHALLENGE_MARKERS):
+    if (
+        any(marker in lowered for marker in _PX_CHALLENGE_MARKERS)
+        and len(content) < 50000
+    ):
         return "px_challenge"
 
     return "none"

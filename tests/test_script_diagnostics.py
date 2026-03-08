@@ -1,4 +1,5 @@
 # ./tests/test_script_diagnostics.py
+# ./tests/test_script_diagnostics.py
 """
 Validate script diagnostics wrappers that expose standalone scripts as toolkit APIs.
 Run: pytest tests/test_script_diagnostics.py
@@ -162,3 +163,36 @@ def test_toolkit_route_passes_artifact_flags(tmp_path: Path, monkeypatch) -> Non
     assert "--save-artifacts" in argv
     assert "--artifacts-dir" in argv
     assert "./scripts/out/artifacts" in argv
+
+
+def test_toolkit_route_passes_fixture_flags(tmp_path: Path, monkeypatch) -> None:
+    out_dir = tmp_path / "scripts" / "out"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    report_path = out_dir / "diag_toolkit_zoominfo_20260305_050505.json"
+    report_path.write_text("{}", encoding="utf-8")
+
+    captured_command = {}
+
+    def _fake_run(command, **kwargs):
+        captured_command["argv"] = command
+        return SimpleNamespace(
+            returncode=0,
+            stdout=f"[*] JSON report saved: {report_path}\n",
+            stderr="",
+        )
+
+    monkeypatch.setattr(script_diagnostics.subprocess, "run", _fake_run)
+    runner = script_diagnostics.ScriptDiagnosticsRunner(
+        project_root=tmp_path,
+        python_executable="python",
+    )
+    runner.run_toolkit_route(
+        url="https://example.com",
+        fixture_record_path="./tests/fixtures/challenge/out.json",
+        fixture_replay_path="./tests/fixtures/challenge/in.json",
+    )
+    argv = captured_command["argv"]
+    assert "--fixture-record" in argv
+    assert "./tests/fixtures/challenge/out.json" in argv
+    assert "--fixture-replay" in argv
+    assert "./tests/fixtures/challenge/in.json" in argv
