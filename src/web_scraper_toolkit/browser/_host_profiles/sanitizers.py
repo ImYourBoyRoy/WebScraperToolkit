@@ -16,6 +16,7 @@ from typing import Any, Dict, Mapping, Optional
 
 from .constants import (
     MAX_SERP_BACKOFF_SECONDS,
+    SAFE_CONTEXT_MODES,
     SAFE_NATIVE_CHANNELS,
     SAFE_NATIVE_FALLBACK_POLICIES,
     SAFE_PROXY_POLICIES,
@@ -65,6 +66,12 @@ def sanitize_routing_profile(payload: Mapping[str, Any]) -> Dict[str, Any]:
     """
     clean: Dict[str, Any] = {}
 
+    if "headless" in payload:
+        clean["headless"] = bool(payload.get("headless"))
+
+    if "stealth_mode" in payload:
+        clean["stealth_mode"] = bool(payload.get("stealth_mode"))
+
     fallback_policy = (
         str(payload.get("native_fallback_policy", "") or "").strip().lower()
     )
@@ -84,6 +91,15 @@ def sanitize_routing_profile(payload: Mapping[str, Any]) -> Dict[str, Any]:
             channels.append(normalized)
     if channels:
         clean["native_browser_channels"] = channels
+
+    if "native_browser_headless" in payload:
+        clean["native_browser_headless"] = bool(payload.get("native_browser_headless"))
+
+    native_context_mode = (
+        str(payload.get("native_context_mode", "") or "").strip().lower()
+    )
+    if native_context_mode in SAFE_CONTEXT_MODES:
+        clean["native_context_mode"] = native_context_mode
 
     if "allow_headed_retry" in payload:
         clean["allow_headed_retry"] = bool(payload.get("allow_headed_retry"))

@@ -167,7 +167,7 @@ def evaluate_page_evidence(
     )
     hard_negative = bool(
         (deny_page_detected and not positive_richness)
-        or challenge_url
+        or (challenge_url and not positive_richness)
         or visible_word_count < 80
     )
 

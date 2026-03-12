@@ -15,7 +15,7 @@ import asyncio
 import json
 import logging
 from time import perf_counter
-from typing import Any, Dict, Literal, Optional, Tuple, cast
+from typing import Any, Awaitable, Dict, Literal, Optional, Set, Tuple, cast
 
 from playwright.async_api import async_playwright
 
@@ -32,6 +32,28 @@ from .constants import (
 )
 
 logger = logging.getLogger("web_scraper_toolkit.browser.playwright_handler")
+
+
+def _track_background_task(
+    *,
+    tasks: Set[asyncio.Task[None]],
+    coro: Awaitable[None],
+) -> asyncio.Task[None]:
+    """Track a fire-and-forget task and always consume its terminal result."""
+    task = asyncio.create_task(coro)
+    tasks.add(task)
+
+    def _finalize(completed: asyncio.Task[None]) -> None:
+        tasks.discard(completed)
+        try:
+            completed.result()
+        except asyncio.CancelledError:
+            return
+        except Exception as exc:
+            logger.debug("SERP background task ignored exception: %s", exc)
+
+    task.add_done_callback(_finalize)
+    return task
 
 
 class PlaywrightSerpAttemptsMixin:
@@ -55,6 +77,7 @@ class PlaywrightSerpAttemptsMixin:
         status: Optional[int] = None
         content: Optional[str] = None
         block_reason: BotBlockReason = "none"
+        request_tasks: Set[asyncio.Task[None]] = set()
 
         async with async_playwright() as playwright:
             browser = await playwright.chromium.launch(
@@ -119,13 +142,18 @@ class PlaywrightSerpAttemptsMixin:
 
                         try:
                             headers = await request.all_headers()
+                        except asyncio.CancelledError:
+                            raise
                         except Exception:
                             headers = request.headers
                         document_headers = dict(sorted(dict(headers).items()))
 
                     page.on(
                         "request",
-                        lambda req: asyncio.create_task(_capture_document_headers(req)),
+                        lambda req: _track_background_task(
+                            tasks=request_tasks,
+                            coro=_capture_document_headers(req),
+                        ),
                     )
 
                     try:
@@ -144,6 +172,12 @@ class PlaywrightSerpAttemptsMixin:
                                 page
                             )
                     finally:
+                        pending_tasks = list(request_tasks)
+                        for task in pending_tasks:
+                            if not task.done():
+                                task.cancel()
+                        if pending_tasks:
+                            await asyncio.gather(*pending_tasks, return_exceptions=True)
                         await page.close()
                 finally:
                     await context.close()

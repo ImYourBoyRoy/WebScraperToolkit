@@ -78,8 +78,11 @@ class TestHostProfileStore(unittest.TestCase):
             "example.com",
             {
                 "routing": {
+                    "headless": False,
+                    "stealth_mode": False,
                     "native_fallback_policy": "on_blocked",
                     "native_browser_channels": ["chrome", "msedge"],
+                    "native_context_mode": "persistent",
                     "allow_headed_retry": True,
                     "serp_strategy": "none",
                     "serp_retry_policy": "none",
@@ -88,6 +91,9 @@ class TestHostProfileStore(unittest.TestCase):
             },
         )
         self.assertEqual(active["routing"]["native_fallback_policy"], "on_blocked")
+        self.assertFalse(active["routing"]["headless"])
+        self.assertFalse(active["routing"]["stealth_mode"])
+        self.assertEqual(active["routing"]["native_context_mode"], "persistent")
 
         reloaded = HostProfileStore(path=self.store_path, promotion_threshold=2)
         host_data = reloaded.export_profiles(host="example.com")["hosts"]["example.com"]
@@ -95,6 +101,12 @@ class TestHostProfileStore(unittest.TestCase):
         self.assertEqual(
             host_data["active"]["routing"]["native_browser_channels"],
             ["chrome", "msedge"],
+        )
+        self.assertFalse(host_data["active"]["routing"]["headless"])
+        self.assertFalse(host_data["active"]["routing"]["stealth_mode"])
+        self.assertEqual(
+            host_data["active"]["routing"]["native_context_mode"],
+            "persistent",
         )
 
     def test_candidate_promotes_after_two_clean_incognito_successes(self) -> None:
@@ -143,6 +155,35 @@ class TestHostProfileStore(unittest.TestCase):
         second = self.store.export_profiles(host="example.com")["hosts"]["example.com"]
         self.assertIn("active", second)
         self.assertNotIn("candidate", second)
+
+    def test_candidate_promotion_keeps_headed_no_stealth_winning_path(self) -> None:
+        routing = {
+            "headless": False,
+            "stealth_mode": False,
+            "native_fallback_policy": "on_blocked",
+            "native_browser_channels": ["chrome"],
+            "native_context_mode": "incognito",
+        }
+        for run_id in ("run_headed_1", "run_headed_2"):
+            self.store.record_attempt(
+                host="example.com",
+                routing=routing,
+                success=True,
+                blocked_reason="none",
+                context_mode="incognito",
+                had_persisted_state=False,
+                promotion_eligible=True,
+                run_id=run_id,
+                final_url="https://example.com/company",
+                status=200,
+                used_active_profile=False,
+            )
+
+        data = self.store.export_profiles(host="example.com")["hosts"]["example.com"]
+        active_routing = data["active"]["routing"]
+        self.assertFalse(active_routing["headless"])
+        self.assertFalse(active_routing["stealth_mode"])
+        self.assertEqual(active_routing["native_context_mode"], "incognito")
 
     def test_persistent_success_is_not_promotion_eligible(self) -> None:
         routing = {
@@ -261,6 +302,23 @@ class TestHostProfileStore(unittest.TestCase):
         )
         self.assertEqual(learning_key, "example.co.uk")
         self.assertEqual(learning_scope, "domain")
+
+    def test_store_detects_external_file_mutation(self) -> None:
+        self.store.set_host_profile(
+            "example.com",
+            {
+                "routing": {
+                    "native_fallback_policy": "on_blocked",
+                    "native_browser_channels": ["chrome"],
+                }
+            },
+        )
+        external_store = HostProfileStore(path=self.store_path, promotion_threshold=2)
+        external_store.demote_active("example.com")
+
+        inspection = self.store.inspect_host("example.com")
+        self.assertFalse(inspection["has_active_profile"])
+        self.assertTrue(bool(inspection["candidate"]))
 
 
 if __name__ == "__main__":

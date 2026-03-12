@@ -59,6 +59,7 @@ Default behavior is tuned for safety + resilience:
 - If host profile persistence cannot initialize, toolkit continues with clear diagnostic metadata.
 - OS-level anti-bot interaction is blocked in headless mode.
 - Before OS mouse takeover, toolkit warns the operator and verifies active foreground window.
+- Cloudflare Turnstile challenges are handled autonomously by dynamically disabling detection-vulnerable stealth scripts to allow native auto-validation.
 
 ---
 
@@ -143,7 +144,13 @@ Deterministic fixture replay / recording for regression analysis:
 ```bash
 python scripts/diag_toolkit_route.py --fixture-replay ./tests/fixtures/challenge/cloudflare_blocked.json
 python scripts/diag_toolkit_route.py --url https://target-site.tld/resource --fixture-record ./tests/fixtures/challenge/latest_toolkit_fixture.json
-python scripts/challenge_diagnostic_matrix.py --fixture-replay ./tests/fixtures/challenge/zoominfo_px_then_cf_loop.json
+python scripts/diag_challenge_matrix.py --fixture-replay ./tests/fixtures/challenge/zoominfo_px_then_cf_loop.json
+```
+
+Cloudflare stealth-strategy matrix testing:
+
+```bash
+python scripts/diag_cloudflare_matrix.py --url https://target-site.tld/challenge
 ```
 
 ## 2) MCP (agentic mode)
@@ -332,3 +339,28 @@ Details and limitations: `docs/support_matrix.md`.
 Created by: **Roy Dawson IV**  
 GitHub: <https://github.com/imyourboyroy>  
 PyPi: <https://pypi.org/user/ImYourBoyRoy/>
+
+---
+
+## Host Profile Operator CLI
+
+Host-learning now has an explicit operator CLI so you can inspect, diff, and manage learned routing without digging through JSON manually.
+
+```bash
+web-scraper-hosts --path ./host_profiles.json summary
+web-scraper-hosts --path ./host_profiles.json inspect zoominfo.com
+web-scraper-hosts --path ./host_profiles.json diff zoominfo.com
+web-scraper-hosts --path ./host_profiles.json promote zoominfo.com
+web-scraper-hosts --path ./host_profiles.json demote zoominfo.com
+web-scraper-hosts --path ./host_profiles.json reset zoominfo.com
+```
+
+JSON output is available for automation:
+
+```bash
+web-scraper-hosts --path ./host_profiles.json --json inspect zoominfo.com
+```
+
+This keeps host-learning mutations explicit:
+- `inspect` / `diff` / `summary` are read-only
+- `promote` / `demote` / `reset` mutate the store intentionally

@@ -75,7 +75,10 @@ class PlaywrightPageOpsMixin:
         return content
 
     async def get_new_page(
-        self, context_options: Optional[Dict[str, Any]] = None
+        self,
+        context_options: Optional[Dict[str, Any]] = None,
+        *,
+        skip_stealth_scripts: bool = False,
     ) -> Tuple[Optional[Page], Optional[BrowserContext]]:
         """Creates a new page/context."""
         if not self._browser or not self._browser.is_connected():
@@ -127,10 +130,31 @@ class PlaywrightPageOpsMixin:
         try:
             context = await self._browser.new_context(**cast(Any, base_context_options))
 
-            # Stealth: Scrub navigator.webdriver (Critical for Cloudflare)
+            # Stealth: Scrub navigator.webdriver (Critical — always applied)
             await context.add_init_script(
                 "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
             )
+
+            if not skip_stealth_scripts and self.stealth_mode:
+                # Shadow DOM capture: Intercept attachShadow to retain a reference to
+                # closed shadow roots.  This runs in ALL frames (including cross-origin
+                # Turnstile iframes) before any page scripts, letting the solver check
+                # widget readiness inside the otherwise-inaccessible closed shadow root.
+                #
+                # NOTE: This monkey-patch is detected by Cloudflare Turnstile.
+                # When stealth_mode is set to False (e.g., by _smart_fetch_standard
+                # retry logic after a CF challenge block), this init script is
+                # automatically skipped, allowing native CF auto-validation.
+                await context.add_init_script("""
+                    (function() {
+                        const _origAttachShadow = Element.prototype.attachShadow;
+                        Element.prototype.attachShadow = function(opts) {
+                            const root = _origAttachShadow.call(this, opts);
+                            this.__capturedShadow = root;
+                            return root;
+                        };
+                    })();
+                """)
 
             if self._experimental_serp:
                 await context.add_init_script(
@@ -175,16 +199,17 @@ class PlaywrightPageOpsMixin:
             await context.route("**/*", _route_handler)
 
             page = await context.new_page()
-            if self.stealth_mode and self._stealth is not None:
-                await self._stealth.apply_stealth_async(page)
-            elif self.stealth_mode and callable(_legacy_stealth_async):
-                await _legacy_stealth_async(page)
-            elif self.stealth_mode and not self._stealth_missing_warned:
-                logger.warning(
-                    "stealth_mode is enabled but playwright_stealth is unavailable; "
-                    "falling back to basic webdriver scrubbing only."
-                )
-                self._stealth_missing_warned = True
+            if not skip_stealth_scripts:
+                if self.stealth_mode and self._stealth is not None:
+                    await self._stealth.apply_stealth_async(page)
+                elif self.stealth_mode and callable(_legacy_stealth_async):
+                    await _legacy_stealth_async(page)
+                elif self.stealth_mode and not self._stealth_missing_warned:
+                    logger.warning(
+                        "stealth_mode is enabled but playwright_stealth is unavailable; "
+                        "falling back to basic webdriver scrubbing only."
+                    )
+                    self._stealth_missing_warned = True
             return page, context
         except Exception as e:
             logger.error("Error creating new page and context: %s", e, exc_info=True)
@@ -321,11 +346,23 @@ class PlaywrightPageOpsMixin:
                 except Exception:
                     current_title = "Redirecting..."
 
-                if (
-                    "just a moment" in current_title.lower()
-                    or "attention required" in current_title.lower()
-                    or ("cloudflare" in content_lower and "challenge" in content_lower)
-                ):
+                # Cloudflare challenge detection:
+                # - Title check is definitive (challenge interstitials use "Just a moment")
+                # - Content marker check only on SMALL pages (<50k chars) since real
+                #   challenge pages are tiny stubs.  Large pages mentioning "cloudflare"
+                #   and "challenge" (e.g. 2captcha demo, security blogs) are NOT challenges.
+                title_lower = current_title.lower()
+                content_is_small = len(content or "") < 50_000
+                cf_title_match = (
+                    "just a moment" in title_lower
+                    or "attention required" in title_lower
+                )
+                cf_content_match = (
+                    content_is_small
+                    and "cloudflare" in content_lower
+                    and "challenge" in content_lower
+                )
+                if cf_title_match or cf_content_match:
                     logger.info(
                         "Playwright: Cloudflare challenge detected at %s. Engaging Spatial Solver...",
                         final_url_val,
@@ -337,7 +374,7 @@ class PlaywrightPageOpsMixin:
                         logger.info(
                             "Playwright: Spatial Solver reports success. Re-fetching content."
                         )
-                        await page.wait_for_timeout(3000)
+                        await page.wait_for_timeout(5000)
 
                         content = await self._read_page_document_html(page)
                         final_url_val = page.url

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "web-scraper-toolkit"
-version = "0.3.3"
+version = "0.3.4"
 description = "A powerful, standalone web scraping toolkit using Playwright and various parsers."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -51,6 +51,7 @@ test = [
 [project.scripts]
 web-scraper = "web_scraper_toolkit.cli:main"
 web-scraper-server = "web_scraper_toolkit.server.mcp_server:main"
+web-scraper-hosts = "web_scraper_toolkit.browser.host_profiles_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

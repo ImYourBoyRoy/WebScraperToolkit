@@ -461,3 +461,6 @@ class PlaywrightNativeAttemptsMixin:
                     await context.close()
                 except Exception:
                     pass
+            # Yield once so Playwright/Windows subprocess close callbacks settle
+            # before outer timeout/cancellation handlers finish unwinding.
+            await asyncio.sleep(0)

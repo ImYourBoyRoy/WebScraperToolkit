@@ -31,6 +31,22 @@ from .constants import (
 from .sanitizers import _parse_iso, _utc_now_iso, sanitize_routing_profile
 
 
+def _routing_diff(
+    baseline: Mapping[str, Any],
+    target: Mapping[str, Any],
+) -> Dict[str, Dict[str, Any]]:
+    """Return a stable diff map for routing keys."""
+    diff: Dict[str, Dict[str, Any]] = {}
+    keys = sorted({*baseline.keys(), *target.keys()})
+    for key in keys:
+        baseline_value = baseline.get(key)
+        target_value = target.get(key)
+        if baseline_value == target_value:
+            continue
+        diff[key] = {"baseline": baseline_value, "target": target_value}
+    return diff
+
+
 class HostProfileStore:
     """
     JSON-backed host profile store with safe-subset learning and audit history.
@@ -57,6 +73,7 @@ class HostProfileStore:
         )
         self._lock = RLock()
         self._cache: Optional[Dict[str, Any]] = None
+        self._cache_mtime_ns: int | None = None
         if auto_create:
             self.ensure_store_file()
 
@@ -71,11 +88,18 @@ class HostProfileStore:
         }
 
     def _load_locked(self) -> Dict[str, Any]:
-        if self._cache is not None:
+        current_mtime_ns: int | None = None
+        if self.path.exists():
+            try:
+                current_mtime_ns = self.path.stat().st_mtime_ns
+            except OSError:
+                current_mtime_ns = None
+        if self._cache is not None and current_mtime_ns == self._cache_mtime_ns:
             return self._cache
 
         if not self.path.exists():
             self._cache = self._default_store()
+            self._cache_mtime_ns = None
             return self._cache
 
         try:
@@ -98,6 +122,7 @@ class HostProfileStore:
         if not isinstance(raw["hosts"], dict):
             raw["hosts"] = {}
         self._cache = raw
+        self._cache_mtime_ns = current_mtime_ns
         return self._cache
 
     def _save_locked(self) -> None:
@@ -108,6 +133,10 @@ class HostProfileStore:
         with tmp_path.open("w", encoding="utf-8") as handle:
             json.dump(self._cache, handle, indent=2, sort_keys=True)
         tmp_path.replace(self.path)
+        try:
+            self._cache_mtime_ns = self.path.stat().st_mtime_ns
+        except OSError:
+            self._cache_mtime_ns = None
 
     def ensure_store_file(self) -> None:
         """
@@ -224,6 +253,124 @@ class HostProfileStore:
                 return True
         return False
 
+    def inspect_host(self, host: str) -> Dict[str, Any]:
+        """Return a compact operator-facing inspection payload for one host."""
+        host_key = normalize_host(host)
+        if not host_key:
+            return {}
+        routing, has_active_profile, match = self.resolve_strategy_with_match(host_key)
+        with self._lock:
+            record = copy.deepcopy(
+                self._load_locked().get("hosts", {}).get(host_key, {})
+            )
+            defaults = copy.deepcopy(self._load_locked().get("defaults", {}))
+        audit_rows = record.get("audit", [])
+        audit_tail = audit_rows[-8:] if isinstance(audit_rows, list) else []
+        candidate = (
+            copy.deepcopy(record.get("candidate", {}))
+            if isinstance(record.get("candidate"), dict)
+            else {}
+        )
+        active = (
+            copy.deepcopy(record.get("active", {}))
+            if isinstance(record.get("active"), dict)
+            else {}
+        )
+        return {
+            "host": host_key,
+            "path": str(self.path),
+            "has_active_profile": has_active_profile,
+            "match": match,
+            "resolved_routing": routing,
+            "defaults": defaults,
+            "active": active,
+            "candidate": candidate,
+            "audit_count": len(audit_rows) if isinstance(audit_rows, list) else 0,
+            "audit_tail": audit_tail,
+        }
+
+    def diff_host(self, host: str) -> Dict[str, Any]:
+        """Return routing diffs for defaults vs active/candidate host strategies."""
+        inspection = self.inspect_host(host)
+        defaults = (
+            dict(inspection.get("defaults", {}))
+            if isinstance(inspection.get("defaults", {}), Mapping)
+            else {}
+        )
+        active = (
+            dict(inspection.get("active", {}).get("routing", {}))
+            if isinstance(inspection.get("active", {}), Mapping)
+            and isinstance(inspection.get("active", {}).get("routing", {}), Mapping)
+            else {}
+        )
+        candidate = (
+            dict(inspection.get("candidate", {}).get("routing", {}))
+            if isinstance(inspection.get("candidate", {}), Mapping)
+            and isinstance(
+                inspection.get("candidate", {}).get("routing", {}),
+                Mapping,
+            )
+            else {}
+        )
+        return {
+            **inspection,
+            "diff": {
+                "defaults_vs_active": _routing_diff(defaults, active),
+                "defaults_vs_candidate": _routing_diff(defaults, candidate),
+                "candidate_vs_active": _routing_diff(candidate, active),
+            },
+        }
+
+    def summarize_hosts(self, *, limit: int = 20) -> Dict[str, Any]:
+        """Return a compact summary across learned hosts for operator tooling."""
+        with self._lock:
+            store = copy.deepcopy(self._load_locked())
+        hosts = store.get("hosts", {})
+        if not isinstance(hosts, dict):
+            hosts = {}
+        rows: list[Dict[str, Any]] = []
+        for host_key, record in hosts.items():
+            if not isinstance(host_key, str) or not isinstance(record, dict):
+                continue
+            active = record.get("active", {})
+            candidate = record.get("candidate", {})
+            audit = record.get("audit", [])
+            rows.append(
+                {
+                    "host": host_key,
+                    "has_active_profile": isinstance(active, dict) and bool(active),
+                    "has_candidate": isinstance(candidate, dict) and bool(candidate),
+                    "updated_utc": (
+                        str(active.get("updated_utc", "") or "")
+                        if isinstance(active, dict)
+                        else ""
+                    ),
+                    "audit_count": len(audit) if isinstance(audit, list) else 0,
+                    "routing_mode": (
+                        str(
+                            active.get("routing", {}).get("native_fallback_policy", "")
+                            or ""
+                        )
+                        if isinstance(active, dict)
+                        and isinstance(active.get("routing", {}), Mapping)
+                        else ""
+                    ),
+                }
+            )
+        rows.sort(
+            key=lambda row: (
+                bool(row.get("has_active_profile")),
+                str(row.get("updated_utc", "")),
+                str(row.get("host", "")),
+            ),
+            reverse=True,
+        )
+        return {
+            "path": str(self.path),
+            "host_count": len(rows),
+            "hosts": rows[: max(1, int(limit))],
+        }
+
     def set_host_profile(
         self, host: str, profile_payload: Mapping[str, Any]
     ) -> Dict[str, Any]:
@@ -260,6 +407,134 @@ class HostProfileStore:
             record.pop("candidate", None)
             self._save_locked()
         return copy.deepcopy(active)
+
+    def promote_candidate(self, host: str) -> Dict[str, Any]:
+        """Manually promote a learned candidate routing to the active profile."""
+        host_key = normalize_host(host)
+        if not host_key:
+            raise ValueError("host is required")
+        now = _utc_now_iso()
+        with self._lock:
+            record = self._host_record_locked(host_key)
+            candidate = record.get("candidate")
+            if not isinstance(candidate, dict):
+                raise ValueError(f"No candidate profile available for {host_key}.")
+            routing = sanitize_routing_profile(candidate.get("routing", {}))
+            if not routing:
+                raise ValueError(
+                    f"Candidate profile for {host_key} has no safe routing."
+                )
+            evidence = candidate.get("evidence", {})
+            success_count = (
+                int(evidence.get("clean_incognito_successes", 0))
+                if isinstance(evidence, dict)
+                else 0
+            )
+            record["active"] = {
+                "routing": routing,
+                "learned_from": {
+                    "success_count": max(success_count, self.promotion_threshold),
+                    "window_days": self.window_days,
+                    "source": "manual_promote",
+                },
+                "updated_utc": now,
+                "health": {
+                    "clean_incognito_failures": 0,
+                    "window_days": self.window_days,
+                    "failure_timestamps": [],
+                },
+            }
+            record.pop("candidate", None)
+            self._append_audit_event(
+                record=record,
+                event={
+                    "seen_utc": now,
+                    "event": "manual_promote",
+                    "host": host_key,
+                    "routing": routing,
+                },
+            )
+            self._save_locked()
+            return copy.deepcopy(record["active"])
+
+    def demote_active(self, host: str) -> Dict[str, Any]:
+        """Manually demote an active profile back into candidate state."""
+        host_key = normalize_host(host)
+        if not host_key:
+            raise ValueError("host is required")
+        now = _utc_now_iso()
+        with self._lock:
+            record = self._host_record_locked(host_key)
+            active = record.get("active")
+            if not isinstance(active, dict):
+                raise ValueError(f"No active profile available for {host_key}.")
+            routing = sanitize_routing_profile(active.get("routing", {}))
+            if not routing:
+                raise ValueError(f"Active profile for {host_key} has no safe routing.")
+            health = (
+                dict(active.get("health", {}))
+                if isinstance(active.get("health"), dict)
+                else {}
+            )
+            record["candidate"] = {
+                "routing": routing,
+                "evidence": {
+                    "clean_incognito_successes": 0,
+                    "clean_incognito_failures": int(
+                        health.get("clean_incognito_failures", 0) or 0
+                    ),
+                    "persistent_successes": 0,
+                    "persistent_failures": 0,
+                    "proxy_successes": 0,
+                    "proxy_failures": 0,
+                    "direct_successes": 0,
+                    "direct_failures": 0,
+                    "last_seen_utc": now,
+                    "sample_runs": [],
+                },
+            }
+            record.pop("active", None)
+            self._append_audit_event(
+                record=record,
+                event={
+                    "seen_utc": now,
+                    "event": "manual_demote",
+                    "host": host_key,
+                    "routing": routing,
+                },
+            )
+            self._save_locked()
+            return copy.deepcopy(record["candidate"])
+
+    def reset_host(self, host: str, *, keep_audit: bool = True) -> Dict[str, Any]:
+        """Reset host routing state while optionally preserving audit history."""
+        host_key = normalize_host(host)
+        if not host_key:
+            raise ValueError("host is required")
+        now = _utc_now_iso()
+        with self._lock:
+            store = self._load_locked()
+            hosts = store.setdefault("hosts", {})
+            record = hosts.get(host_key)
+            if not isinstance(record, dict):
+                return {}
+            audit = record.get("audit", []) if keep_audit else []
+            if keep_audit and not isinstance(audit, list):
+                audit = []
+            new_record: Dict[str, Any] = {}
+            if keep_audit:
+                new_record["audit"] = list(audit)
+                self._append_audit_event(
+                    record=new_record,
+                    event={
+                        "seen_utc": now,
+                        "event": "manual_reset",
+                        "host": host_key,
+                    },
+                )
+            hosts[host_key] = new_record
+            self._save_locked()
+            return copy.deepcopy(new_record)
 
     def _append_audit_event(
         self,
@@ -355,25 +630,37 @@ class HostProfileStore:
                 else {}
             )
 
-            self._append_audit_event(
-                record=record,
-                event={
-                    "run_id": run_id,
-                    "seen_utc": now,
-                    "success": bool(success),
-                    "blocked_reason": blocked_reason,
-                    "context_mode": str(context_mode),
-                    "had_persisted_state": bool(had_persisted_state),
-                    "promotion_eligible": bool(promotion_eligible),
-                    "used_active_profile": bool(used_active_profile),
-                    "proxy_used": bool(proxy_used),
-                    "proxy_tier": str(proxy_tier).strip().lower(),
-                    "status": status,
-                    "final_url": final_url,
-                    "scope": scope,
-                    "routing": routing_clean,
-                },
+            # Build compact audit event — omit run_id/final_url to reduce
+            # file size (they don't contribute to learning decisions).
+            audit_event: Dict[str, Any] = {
+                "seen_utc": now,
+                "success": bool(success),
+                "blocked_reason": blocked_reason,
+                "context_mode": str(context_mode),
+                "had_persisted_state": bool(had_persisted_state),
+                "promotion_eligible": bool(promotion_eligible),
+                "used_active_profile": bool(used_active_profile),
+                "status": status,
+                "scope": scope,
+            }
+            # Only store routing if it differs from active/candidate routing
+            # to avoid repeating the same block on every entry.
+            active_r = sanitize_routing_profile(
+                (record.get("active") or {}).get("routing", {})
             )
+            candidate_r = sanitize_routing_profile(
+                (record.get("candidate") or {}).get("routing", {})
+            )
+            if routing_clean != active_r and routing_clean != candidate_r:
+                audit_event["routing"] = routing_clean
+            else:
+                audit_event["routing"] = "inherited"
+
+            if bool(proxy_used):
+                audit_event["proxy_used"] = True
+                audit_event["proxy_tier"] = str(proxy_tier).strip().lower()
+
+            self._append_audit_event(record=record, event=audit_event)
 
             if (
                 isinstance(active, dict)
@@ -535,3 +822,73 @@ class HostProfileStore:
 
             self._save_locked()
             return copy.deepcopy(record)
+
+    def compact_audit(self) -> Dict[str, Any]:
+        """
+        Compact all host audit trails: trim to MAX_AUDIT_EVENTS, strip bloat
+        fields (run_id, final_url), and dedup routing blocks.  Call once to
+        migrate existing host profile files to the compact format.
+
+        Returns a summary of what changed.
+        """
+        _bloat_keys = {"run_id", "final_url"}
+        stats: Dict[str, Any] = {
+            "hosts_processed": 0,
+            "events_removed": 0,
+            "fields_stripped": 0,
+            "routing_deduped": 0,
+        }
+
+        with self._lock:
+            store = self._load_locked()
+            hosts = store.get("hosts", {})
+            if not isinstance(hosts, dict):
+                return stats
+
+            for host_key, record in hosts.items():
+                if not isinstance(record, dict):
+                    continue
+                audit = record.get("audit")
+                if not isinstance(audit, list) or not audit:
+                    continue
+
+                stats["hosts_processed"] += 1
+
+                # Determine current routing for dedup
+                active_r = sanitize_routing_profile(
+                    (record.get("active") or {}).get("routing", {})
+                )
+                candidate_r = sanitize_routing_profile(
+                    (record.get("candidate") or {}).get("routing", {})
+                )
+
+                # Strip bloat fields and dedup routing
+                for event in audit:
+                    if not isinstance(event, dict):
+                        continue
+                    for key in _bloat_keys:
+                        if key in event:
+                            del event[key]
+                            stats["fields_stripped"] += 1
+                    routing = event.get("routing")
+                    if (
+                        isinstance(routing, dict)
+                        and routing != "inherited"
+                        and (
+                            routing == active_r
+                            or routing == candidate_r
+                            or sanitize_routing_profile(routing) == active_r
+                            or sanitize_routing_profile(routing) == candidate_r
+                        )
+                    ):
+                        event["routing"] = "inherited"
+                        stats["routing_deduped"] += 1
+
+                # Trim to max
+                if len(audit) > MAX_AUDIT_EVENTS:
+                    removed = len(audit) - MAX_AUDIT_EVENTS
+                    record["audit"] = audit[-MAX_AUDIT_EVENTS:]
+                    stats["events_removed"] += removed
+
+            self._save_locked()
+        return stats

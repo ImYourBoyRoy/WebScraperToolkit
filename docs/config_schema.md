@@ -62,3 +62,9 @@ Current file-level schema:
 - Runtime loads must support prior versions with in-memory normalization.
 - Migration writes must be atomic (temp file + replace).
 
+## 4) Audit compaction logic
+- `host_profiles.json` entries are resolved by `base_url` to prevent unbounded growth from unique subpaths/queries.
+- Audit events per host are capped at `10` (`MAX_AUDIT_EVENTS`).
+- Per-audit metadata strips non-essential high-cardinality flags (like `run_id` and `final_url`).
+- Redundant routing blocks in audit arrays are collapsed to `"inherited"` if they match the active routing strategy, reducing JSON boilerplate.
+

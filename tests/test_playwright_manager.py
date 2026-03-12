@@ -639,6 +639,54 @@ class TestPlaywrightManager(unittest.TestCase):
             self.assertEqual(status, 200)
             pm._smart_fetch_native_fallback.assert_awaited_once()
 
+    def test_host_profile_can_start_headed_without_stealth(self) -> None:
+        from web_scraper_toolkit.browser.host_profiles import HostProfileStore
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            store_path = os.path.join(tmp_dir, "host_profiles.json")
+            HostProfileStore(path=store_path).set_host_profile(
+                "example.com",
+                {
+                    "headless": False,
+                    "stealth_mode": False,
+                    "native_fallback_policy": "off",
+                },
+            )
+
+            pm = PlaywrightManager(
+                BrowserConfig(
+                    headless=True,
+                    stealth_mode=True,
+                    native_fallback_policy="off",
+                    host_profiles_path=store_path,
+                )
+            )
+            observed: dict[str, bool] = {}
+
+            async def _fake_standard(*args, **kwargs):
+                observed["headless"] = pm.headless
+                observed["stealth_mode"] = pm.stealth_mode
+                pm._last_fetch_metadata = {
+                    "attempt_profile": "baseline_headed_no_stealth",
+                    "stealth_engine": "native_only",
+                    "status": 200,
+                    "final_url": "https://example.com",
+                    "blocked_reason": "none",
+                }
+                return "ok", "https://example.com", 200
+
+            pm._smart_fetch_standard = AsyncMock(side_effect=_fake_standard)  # type: ignore[method-assign]
+
+            _, _, status = self.loop.run_until_complete(
+                pm.smart_fetch("https://example.com")
+            )
+
+            self.assertEqual(status, 200)
+            self.assertFalse(observed["headless"])
+            self.assertFalse(observed["stealth_mode"])
+            self.assertTrue(pm.headless)
+            self.assertTrue(pm.stealth_mode)
+
     def test_explicit_strategy_override_beats_host_profile(self) -> None:
         from web_scraper_toolkit.browser.host_profiles import HostProfileStore
 
@@ -691,6 +739,31 @@ class TestPlaywrightManager(unittest.TestCase):
         self.assertEqual(metadata["context_mode"], "incognito")
         self.assertFalse(metadata["had_persisted_state"])
         self.assertTrue(metadata["promotion_eligible"])
+
+    def test_learning_routing_promotes_native_channel_and_headed_baseline_hints(
+        self,
+    ) -> None:
+        pm = PlaywrightManager(BrowserConfig(native_fallback_policy="on_blocked"))
+
+        pm._last_fetch_metadata = {
+            "attempt_profile": "native_channel_msedge",
+            "stealth_engine": "native_channel",
+            "native_headless": False,
+            "native_context_mode": "persistent",
+        }
+        native_routing = pm._build_learning_routing()
+        self.assertEqual(native_routing["native_fallback_policy"], "always")
+        self.assertEqual(native_routing["native_browser_channels"][0], "msedge")
+        self.assertFalse(native_routing["native_browser_headless"])
+        self.assertEqual(native_routing["native_context_mode"], "persistent")
+
+        pm._last_fetch_metadata = {
+            "attempt_profile": "baseline_headed_no_stealth",
+            "stealth_engine": "native_only",
+        }
+        baseline_routing = pm._build_learning_routing()
+        self.assertFalse(baseline_routing["headless"])
+        self.assertFalse(baseline_routing["stealth_mode"])
 
     def test_host_profiles_read_only_forces_apply_without_learning(self) -> None:
         pm = PlaywrightManager(
