@@ -8,7 +8,7 @@ Side effects: imports submodules to bind public exports, which may initialize mo
 Operational notes: this is the canonical API surface; keep exports intentional and synchronized with docs/tests.
 """
 
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 
 # Configs (Modular)
 from .browser.config import BrowserConfig
