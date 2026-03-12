@@ -80,11 +80,27 @@ class PlaywrightSerpAttemptsMixin:
         request_tasks: Set[asyncio.Task[None]] = set()
 
         async with async_playwright() as playwright:
-            browser = await playwright.chromium.launch(
-                headless=headless,
-                args=SERP_NATIVE_LAUNCH_ARGS,
-                ignore_default_args=["--enable-automation"],
+            launch_kwargs: Dict[str, Any] = {
+                "headless": headless,
+                "args": SERP_NATIVE_LAUNCH_ARGS,
+                "ignore_default_args": ["--enable-automation"],
+            }
+            # Try to use a native channel for SERP requests to get a real TLS fingerprint
+            preferred_channel = (
+                "chrome" if "chrome" in self._normalized_native_channels() else "msedge"
             )
+            launch_kwargs["channel"] = preferred_channel
+
+            try:
+                browser = await playwright.chromium.launch(**launch_kwargs)
+            except Exception as e:
+                logger.warning(
+                    "SERP native: preferred channel '%s' failed, falling back to chromium. (%s)",
+                    preferred_channel,
+                    e,
+                )
+                del launch_kwargs["channel"]
+                browser = await playwright.chromium.launch(**launch_kwargs)
             try:
                 dummy_context = await browser.new_context()
                 try:
@@ -124,6 +140,13 @@ class PlaywrightSerpAttemptsMixin:
                 try:
                     await context.add_init_script(
                         "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+                    )
+                    await context.add_init_script(
+                        """
+                        Object.defineProperty(navigator, 'hardwareConcurrency', {get: () => 8});
+                        Object.defineProperty(navigator, 'deviceMemory', {get: () => 8});
+                        Object.defineProperty(navigator, 'maxTouchPoints', {get: () => 0});
+                        """
                     )
                     page = await context.new_page()
 

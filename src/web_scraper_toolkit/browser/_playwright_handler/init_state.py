@@ -189,6 +189,41 @@ class PlaywrightInitStateMixin:
         self.native_profile_dir = str(
             getattr(self.config, "native_profile_dir", "") or ""
         ).strip()
+        raw_document_download_policy = (
+            str(
+                getattr(self.config, "document_download_policy", "disallow")
+                or "disallow"
+            )
+            .strip()
+            .lower()
+        )
+        if raw_document_download_policy not in {"disallow", "allowlist", "allow_all"}:
+            logger.warning(
+                "Invalid document_download_policy '%s'; defaulting to 'disallow'.",
+                raw_document_download_policy,
+            )
+            raw_document_download_policy = "disallow"
+        self.document_download_policy: Literal["disallow", "allowlist", "allow_all"] = (
+            cast(
+                Literal["disallow", "allowlist", "allow_all"],
+                raw_document_download_policy,
+            )
+        )
+        self.document_download_allowed_domains = tuple(
+            str(item).strip().lower()
+            for item in getattr(self.config, "document_download_allowed_domains", ())
+            if str(item).strip()
+        )
+        self.document_download_blocked_domains = tuple(
+            str(item).strip().lower()
+            for item in getattr(self.config, "document_download_blocked_domains", ())
+            if str(item).strip()
+        )
+        self.document_download_extensions = tuple(
+            str(item).strip().lower()
+            for item in getattr(self.config, "document_download_extensions", ())
+            if str(item).strip()
+        )
         self.host_profiles_enabled = bool(
             getattr(self.config, "host_profiles_enabled", True)
         )
@@ -295,7 +330,7 @@ class PlaywrightInitStateMixin:
         logger.info(
             "PlaywrightManager initialized: Browser=%s, Headless=%s, "
             "StealthProfile=%s, SerpStrategy=%s, NativeFallback=%s, "
-            "NativeChannels=%s, NativeContextMode=%s, HostProfiles=%s, "
+            "NativeChannels=%s, NativeContextMode=%s, DocumentDownloads=%s, HostProfiles=%s, "
             "HostProfilesReadOnly=%s, HostLearning=%s(%s/%s), Default Timeout=%sms",
             self.browser_type_name,
             self.headless,
@@ -304,6 +339,7 @@ class PlaywrightInitStateMixin:
             self.native_fallback_policy,
             ",".join(self.native_browser_channels),
             self.native_context_mode,
+            self.document_download_policy,
             self.host_profiles_enabled,
             self.host_profiles_read_only,
             self.host_learning_enabled,

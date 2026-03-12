@@ -35,8 +35,128 @@ except ImportError:  # pragma: no cover
 
 logger = logging.getLogger("web_scraper_toolkit.browser.playwright_handler")
 
+_DOWNLOADABLE_DOCUMENT_EXTENSIONS = (
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".xlsm",
+    ".ppt",
+    ".pptx",
+    ".pptm",
+    ".csv",
+    ".rtf",
+    ".odt",
+    ".ods",
+    ".odp",
+    ".zip",
+    ".7z",
+    ".rar",
+)
+_DOWNLOAD_START_MARKERS = ("download is starting",)
+
+
+class DocumentDownloadTriggeredError(RuntimeError):
+    """Raised when navigation resolves to a downloadable document, not an HTML page."""
+
+    def __init__(
+        self,
+        url: str,
+        *,
+        reason: str,
+        policy_allows_download: bool = False,
+    ) -> None:
+        self.url = str(url or "").strip()
+        self.reason = str(reason or "").strip() or "document_download"
+        self.policy_allows_download = bool(policy_allows_download)
+        super().__init__(f"Document download triggered for {self.url} ({self.reason})")
+
+
+def is_probable_document_download_url(
+    url: str,
+    *,
+    extensions: Optional[Tuple[str, ...]] = None,
+) -> bool:
+    """Return True when the URL path looks like a direct downloadable document."""
+    parsed = urlparse(url or "")
+    path = (parsed.path or "").strip().lower()
+    if not path:
+        return False
+    effective_extensions = (
+        tuple(ext.strip().lower() for ext in (extensions or ()) if str(ext).strip())
+        or _DOWNLOADABLE_DOCUMENT_EXTENSIONS
+    )
+    return any(path.endswith(ext) for ext in effective_extensions)
+
+
+def is_download_start_exception(exc: BaseException) -> bool:
+    """Detect Playwright navigation errors that indicate a download started."""
+    message = str(exc or "").strip().lower()
+    return any(marker in message for marker in _DOWNLOAD_START_MARKERS)
+
 
 class PlaywrightPageOpsMixin:
+    def _document_download_extensions(self) -> Tuple[str, ...]:
+        configured = getattr(self, "document_download_extensions", ())
+        normalized = tuple(
+            str(item).strip().lower() for item in configured if str(item).strip()
+        )
+        return normalized or _DOWNLOADABLE_DOCUMENT_EXTENSIONS
+
+    def _document_download_domains(self, attr_name: str) -> Tuple[str, ...]:
+        configured = getattr(self, attr_name, ())
+        domains = tuple(
+            str(item).strip().lower().removeprefix("www.")
+            for item in configured
+            if str(item).strip()
+        )
+        return tuple(domain for domain in domains if domain)
+
+    def _document_download_policy_for_url(self, url: str) -> Tuple[bool, str]:
+        """
+        Return tuple: (should_short_circuit, reason).
+
+        Reasons:
+          - not_document_url
+          - document_url_disallowed
+          - document_url_allowed
+          - document_url_allowlist_miss
+          - document_url_domain_blocked
+        """
+        extensions = self._document_download_extensions()
+        if not is_probable_document_download_url(url, extensions=extensions):
+            return False, "not_document_url"
+
+        parsed = urlparse(url or "")
+        host = (parsed.netloc or "").strip().lower().removeprefix("www.")
+        policy = (
+            str(getattr(self, "document_download_policy", "disallow") or "disallow")
+            .strip()
+            .lower()
+        )
+        allowed_domains = self._document_download_domains(
+            "document_download_allowed_domains"
+        )
+        blocked_domains = self._document_download_domains(
+            "document_download_blocked_domains"
+        )
+
+        if any(
+            host == blocked or host.endswith(f".{blocked}")
+            for blocked in blocked_domains
+        ):
+            return True, "document_url_domain_blocked"
+        if policy == "allow_all":
+            return False, "document_url_allowed"
+        if policy == "allowlist":
+            if any(
+                host == allowed or host.endswith(f".{allowed}")
+                for allowed in allowed_domains
+            ):
+                return False, "document_url_allowed"
+            return True, "document_url_allowlist_miss"
+        return True, "document_url_disallowed"
+
     async def _read_page_document_html(self, page: Page) -> str:
         """
         Read the current document HTML with a small retry path for empty 200 responses.
@@ -272,6 +392,20 @@ class PlaywrightPageOpsMixin:
         final_url_val = url
         status_code_val: Optional[int] = None
 
+        should_short_circuit, document_reason = self._document_download_policy_for_url(
+            current_url_val
+        )
+        if should_short_circuit:
+            logger.warning(
+                "Playwright: Skipping page navigation for document download URL %s (%s).",
+                current_url_val,
+                document_reason,
+            )
+            raise DocumentDownloadTriggeredError(
+                current_url_val,
+                reason=document_reason,
+            )
+
         effective_retries = (
             retries if retries is not None else self.default_action_retries
         )
@@ -453,6 +587,25 @@ class PlaywrightPageOpsMixin:
                 )
                 raise
             except Exception as e:
+                if is_download_start_exception(e):
+                    _, policy_reason = self._document_download_policy_for_url(
+                        current_url_val
+                    )
+                    policy_allows_download = policy_reason == "document_url_allowed"
+                    logger.warning(
+                        "Playwright: Navigation on %s triggered a file download; "
+                        "treating target as a non-HTML document.",
+                        current_url_val,
+                    )
+                    raise DocumentDownloadTriggeredError(
+                        current_url_val,
+                        reason=(
+                            "download_started_allowed"
+                            if policy_allows_download
+                            else "download_started"
+                        ),
+                        policy_allows_download=policy_allows_download,
+                    ) from e
                 logger.error(
                     "Playwright: Unexpected error on %s (attempt %s/%s): %s",
                     current_url_val,

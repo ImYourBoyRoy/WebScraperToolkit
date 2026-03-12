@@ -22,6 +22,7 @@ from playwright.async_api import Browser, BrowserContext, Page, async_playwright
 
 from ..serp_native import build_serp_client_hints, sanitize_headless_user_agent
 from .constants import BotBlockReason, NATIVE_FALLBACK_LAUNCH_ARGS, classify_bot_block
+from .page_ops import DocumentDownloadTriggeredError
 
 logger = logging.getLogger("web_scraper_toolkit.browser.playwright_handler")
 
@@ -243,6 +244,8 @@ class PlaywrightNativeAttemptsMixin:
                 )
                 if not blocked:
                     return last_result
+            except DocumentDownloadTriggeredError:
+                raise
             except Exception as exc:
                 logger.warning(
                     "Native fallback channel '%s' failed: %s",
@@ -352,6 +355,8 @@ class PlaywrightNativeAttemptsMixin:
                 if page:
                     retry_started = perf_counter()
                     logger.info("SmartFetch: Retrying in Headed mode...")
+                    retry_kwargs = dict(kwargs)
+                    retry_kwargs.pop("action_name", None)
                     content, final_url, status = await self.fetch_page_content(
                         page,
                         url,
@@ -360,7 +365,7 @@ class PlaywrightNativeAttemptsMixin:
                             if retry_with_native_only
                             else "smart_retry"
                         ),
-                        **kwargs,
+                        **retry_kwargs,
                     )
                     retry_reason = classify_bot_block(
                         status=status,
@@ -418,11 +423,13 @@ class PlaywrightNativeAttemptsMixin:
                 page, context = await self.get_new_page()
                 if page:
                     legacy_started = perf_counter()
+                    legacy_kwargs = dict(kwargs)
+                    legacy_kwargs.pop("action_name", None)
                     content, final_url, status = await self.fetch_page_content(
                         page,
                         url,
                         action_name="smart_retry_native_signals",
-                        **kwargs,
+                        **legacy_kwargs,
                     )
                     legacy_reason = classify_bot_block(
                         status=status,

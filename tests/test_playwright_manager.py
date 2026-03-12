@@ -16,6 +16,9 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from web_scraper_toolkit.browser.config import BrowserConfig
+from web_scraper_toolkit.browser._playwright_handler.page_ops import (
+    DocumentDownloadTriggeredError,
+)
 from web_scraper_toolkit.browser.playwright_handler import (
     PlaywrightManager,
     classify_bot_block,
@@ -253,6 +256,110 @@ class TestPlaywrightManager(unittest.TestCase):
         with self.assertRaises(asyncio.CancelledError):
             self.loop.run_until_complete(_run())
 
+    def test_fetch_page_content_short_circuits_direct_document_url(self) -> None:
+        pm = PlaywrightManager(BrowserConfig())
+        page = AsyncMock()
+
+        async def _run() -> None:
+            await pm.fetch_page_content(
+                page=page,
+                url="https://pressrelease.com/files/example.docx",
+            )
+
+        with self.assertRaises(DocumentDownloadTriggeredError):
+            self.loop.run_until_complete(_run())
+        page.goto.assert_not_awaited()
+
+    def test_fetch_page_content_raises_document_error_on_download_start(self) -> None:
+        pm = PlaywrightManager(BrowserConfig())
+        page = AsyncMock()
+        page.goto = AsyncMock(
+            side_effect=RuntimeError("Page.goto: Download is starting")
+        )
+
+        async def _run() -> None:
+            await pm.fetch_page_content(page=page, url="https://example.com/report")
+
+        with self.assertRaises(DocumentDownloadTriggeredError):
+            self.loop.run_until_complete(_run())
+        self.assertEqual(page.goto.await_count, 1)
+
+    def test_smart_fetch_short_circuits_document_url_without_retry_matrix(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                native_fallback_policy="always",
+            )
+        )
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=("<html>should not run</html>", "https://example.com", 200)
+        )
+        pm._smart_fetch_native_fallback = AsyncMock(  # type: ignore[method-assign]
+            return_value=("<html>should not run</html>", "https://example.com", 200)
+        )
+
+        content, final_url, status = self.loop.run_until_complete(
+            pm.smart_fetch("https://pressrelease.com/files/example.docx")
+        )
+
+        self.assertIsNone(content)
+        self.assertEqual(final_url, "https://pressrelease.com/files/example.docx")
+        self.assertIsNone(status)
+        pm._smart_fetch_standard.assert_not_awaited()
+        pm._smart_fetch_native_fallback.assert_not_awaited()
+        self.assertTrue(pm.get_last_fetch_metadata().get("download_detected"))
+
+    def test_smart_fetch_allows_document_url_when_policy_is_allow_all(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                document_download_policy="allow_all",
+                native_fallback_policy="off",
+            )
+        )
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=(None, "https://pressrelease.com/files/example.docx", None)
+        )
+        pm._smart_fetch_native_fallback = AsyncMock(  # type: ignore[method-assign]
+            return_value=(None, "https://pressrelease.com/files/example.docx", None)
+        )
+
+        self.loop.run_until_complete(
+            pm.smart_fetch("https://pressrelease.com/files/example.docx")
+        )
+
+        pm._smart_fetch_standard.assert_awaited_once()
+        pm._smart_fetch_native_fallback.assert_not_awaited()
+
+    def test_smart_fetch_download_triggered_allowed_policy_still_skips_retry_matrix(
+        self,
+    ) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                document_download_policy="allow_all",
+                native_fallback_policy="always",
+            )
+        )
+        pm._smart_fetch_standard = AsyncMock(  # type: ignore[method-assign]
+            return_value=("<html>should not run</html>", "https://example.com", 200)
+        )
+        pm._smart_fetch_native_fallback = AsyncMock(  # type: ignore[method-assign]
+            side_effect=DocumentDownloadTriggeredError(
+                "https://pressrelease.com/files/example.docx",
+                reason="download_started_allowed",
+                policy_allows_download=True,
+            )
+        )
+
+        content, final_url, status = self.loop.run_until_complete(
+            pm.smart_fetch("https://pressrelease.com/files/example.docx")
+        )
+
+        self.assertIsNone(content)
+        self.assertEqual(final_url, "https://pressrelease.com/files/example.docx")
+        self.assertIsNone(status)
+        pm._smart_fetch_standard.assert_not_awaited()
+        pm._smart_fetch_native_fallback.assert_awaited_once()
+        self.assertTrue(pm.get_last_fetch_metadata().get("download_policy_allowed"))
+
     def test_smart_fetch_honors_allow_headed_retry_false(self) -> None:
         pm = PlaywrightManager(
             BrowserConfig(
@@ -267,7 +374,7 @@ class TestPlaywrightManager(unittest.TestCase):
         pm.fetch_page_content = AsyncMock(  # type: ignore[method-assign]
             return_value=(
                 "Our systems have detected unusual traffic",
-                "https://www.google.com/sorry/index",
+                "https://example.com/challenge",
                 429,
             )
         )
@@ -276,7 +383,7 @@ class TestPlaywrightManager(unittest.TestCase):
 
         self.loop.run_until_complete(
             pm.smart_fetch(
-                "https://www.google.com/search?q=test",
+                "https://example.com/search?q=test",
                 allow_headed_retry=False,
             )
         )

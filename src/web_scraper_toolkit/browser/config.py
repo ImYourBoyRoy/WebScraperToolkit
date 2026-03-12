@@ -21,6 +21,7 @@ NativeFallbackPolicy = Literal["off", "on_blocked", "always"]
 BrowserContextMode = Literal["incognito", "persistent"]
 BrowserChannel = Literal["chromium", "chrome", "msedge"]
 HostLearningApplyMode = Literal["safe_subset"]
+DocumentDownloadPolicy = Literal["disallow", "allowlist", "allow_all"]
 
 
 def _as_bool(value: Any, default: bool) -> bool:
@@ -93,6 +94,26 @@ def _normalize_policy(
     return normalized  # type: ignore[return-value]
 
 
+def _normalize_document_download_policy(
+    value: Any,
+    default: DocumentDownloadPolicy,
+) -> DocumentDownloadPolicy:
+    text = str(value or "").strip().lower()
+    alias_map = {
+        "disallow": "disallow",
+        "block": "disallow",
+        "deny": "disallow",
+        "disabled": "disallow",
+        "allowlist": "allowlist",
+        "whitelist": "allowlist",
+        "allow_all": "allow_all",
+        "allow": "allow_all",
+        "enabled": "allow_all",
+    }
+    normalized = alias_map.get(text, default)
+    return normalized  # type: ignore[return-value]
+
+
 def _normalize_context_mode(
     value: Any, default: BrowserContextMode
 ) -> BrowserContextMode:
@@ -102,6 +123,25 @@ def _normalize_context_mode(
     if text in {"incognito", "ephemeral", "temporary", "temp"}:
         return "incognito"
     return default
+
+
+def _normalize_string_tuple(value: Any, fallback: Tuple[str, ...]) -> Tuple[str, ...]:
+    if isinstance(value, str):
+        raw_items = [part.strip() for part in value.split(",")]
+    elif isinstance(value, (list, tuple, set)):
+        raw_items = [str(part).strip() for part in value]
+    else:
+        raw_items = []
+
+    normalized: list[str] = []
+    for raw in raw_items:
+        lowered = raw.lower()
+        if lowered and lowered not in normalized:
+            normalized.append(lowered)
+
+    if not normalized:
+        return fallback
+    return tuple(normalized)
 
 
 @dataclass
@@ -134,6 +174,27 @@ class BrowserConfig:
     host_learning_promotion_threshold: int = 2
     proxy_aware_learning: bool = False
     proxy_tier: str = ""
+    document_download_policy: DocumentDownloadPolicy = "disallow"
+    document_download_allowed_domains: Tuple[str, ...] = ()
+    document_download_blocked_domains: Tuple[str, ...] = ()
+    document_download_extensions: Tuple[str, ...] = (
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+        ".xlsm",
+        ".ppt",
+        ".pptx",
+        ".pptm",
+        ".csv",
+        ".rtf",
+        ".odt",
+        ".ods",
+        ".odp",
+        ".zip",
+        ".7z",
+        ".rar",
+    )
     # Note: No user_agent field - Playwright uses native UA for stealth
 
     @classmethod
@@ -238,6 +299,39 @@ class BrowserConfig:
                 False,
             ),
             proxy_tier=str(data.get("proxy_tier", "") or "").strip().lower(),
+            document_download_policy=_normalize_document_download_policy(
+                data.get("document_download_policy"),
+                "disallow",
+            ),
+            document_download_allowed_domains=_normalize_string_tuple(
+                data.get("document_download_allowed_domains"),
+                (),
+            ),
+            document_download_blocked_domains=_normalize_string_tuple(
+                data.get("document_download_blocked_domains"),
+                (),
+            ),
+            document_download_extensions=_normalize_string_tuple(
+                data.get("document_download_extensions"),
+                (
+                    ".doc",
+                    ".docx",
+                    ".xls",
+                    ".xlsx",
+                    ".xlsm",
+                    ".ppt",
+                    ".pptx",
+                    ".pptm",
+                    ".csv",
+                    ".rtf",
+                    ".odt",
+                    ".ods",
+                    ".odp",
+                    ".zip",
+                    ".7z",
+                    ".rar",
+                ),
+            ),
         )
 
     def to_dict(self) -> dict:

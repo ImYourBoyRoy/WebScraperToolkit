@@ -60,6 +60,8 @@ Default behavior is tuned for safety + resilience:
 - OS-level anti-bot interaction is blocked in headless mode.
 - Before OS mouse takeover, toolkit warns the operator and verifies active foreground window.
 - Cloudflare Turnstile challenges are handled autonomously by dynamically disabling detection-vulnerable stealth scripts to allow native auto-validation.
+- **Google Search (SERP)** requests are automatically detected and routed through a specialized **Native Chrome Hardware Spoofing** bypass block to prevent `429 Too Many Requests (sorry/index)` bans.
+- If Google enforces a persistent soft-ban, the toolkit transparently falls back to the resilient **DuckDuckGo HTML endpoint** to guarantee unblockable organic search extraction.
 
 ---
 

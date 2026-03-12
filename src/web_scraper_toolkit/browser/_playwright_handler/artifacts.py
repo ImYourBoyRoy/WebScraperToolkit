@@ -22,6 +22,8 @@ from ...diagnostics.fetch_outcome import (
     select_preferred_outcome,
 )
 from ..host_profiles import normalize_host
+from ..serp_native import is_serp_allowlisted
+from .page_ops import DocumentDownloadTriggeredError
 
 logger = logging.getLogger("web_scraper_toolkit.browser.playwright_handler")
 
@@ -55,6 +57,13 @@ class PlaywrightSmartFetchArtifactsMixin:
             host=host,
             strategy_overrides=strategy_overrides,
         )
+
+        # Auto-escalate SERP strategy for known endpoints (make Google "just work")
+        if not is_serp_request and is_serp_allowlisted(url, provider):
+            is_serp_request = True
+            if resolved_routing.get("serp_strategy", "none") == "none":
+                resolved_routing["serp_strategy"] = "native_first"
+
         self._apply_routing_state(resolved_routing)
 
         effective_allow_headed_retry = (
@@ -70,6 +79,33 @@ class PlaywrightSmartFetchArtifactsMixin:
 
         result: Tuple[Optional[str], str, Optional[int]] = (None, url, None)
         try:
+            should_short_circuit, document_reason = (
+                self._document_download_policy_for_url(url)
+            )
+            if should_short_circuit:
+                logger.warning(
+                    "SmartFetch: Skipping document download URL %s (%s).",
+                    url,
+                    document_reason,
+                )
+                self._last_fetch_metadata = {
+                    "attempt_profile": "document_short_circuit",
+                    "stealth_engine": "none",
+                    "status": None,
+                    "final_url": url,
+                    "blocked_reason": "document_download",
+                    "elapsed_ms": 0,
+                    "download_detected": True,
+                    "download_reason": document_reason,
+                    "document_download_policy": str(
+                        getattr(self, "document_download_policy", "disallow")
+                    ),
+                    "skip_native_fallback": True,
+                    "skip_host_learning": True,
+                    "selection_reason": "document_short_circuit",
+                }
+                return result
+
             if (
                 effective_allow_native_fallback
                 and self.native_fallback_policy == "always"
@@ -120,6 +156,9 @@ class PlaywrightSmartFetchArtifactsMixin:
                 )
 
             primary_metadata = dict(self.get_last_fetch_metadata())
+            skip_native_fallback = bool(
+                primary_metadata.get("skip_native_fallback", False)
+            )
             selected_outcome = normalize_fetch_attempt(
                 content=primary_content,
                 final_url=primary_url,
@@ -130,10 +169,14 @@ class PlaywrightSmartFetchArtifactsMixin:
                 ),
             )
             result = (primary_content, primary_url, primary_status)
-            if effective_allow_native_fallback and self._should_attempt_native_fallback(
-                status=primary_status,
-                final_url=primary_url,
-                content=primary_content,
+            if (
+                effective_allow_native_fallback
+                and not skip_native_fallback
+                and self._should_attempt_native_fallback(
+                    status=primary_status,
+                    final_url=primary_url,
+                    content=primary_content,
+                )
             ):
                 logger.info(
                     "SmartFetch: invoking native fallback after primary flow (status=%s url=%s).",
@@ -186,6 +229,63 @@ class PlaywrightSmartFetchArtifactsMixin:
                 else "native_preferred"
             )
 
+            if (
+                selected_outcome.status in [403, 429]
+                and selected_outcome.final_url
+                and "sorry/index" in selected_outcome.final_url
+                and "google.com" in selected_outcome.final_url
+                and "duckduckgo.com" not in url
+            ):
+                import urllib.parse
+
+                parsed = urllib.parse.urlparse(url)
+                qs = urllib.parse.parse_qs(parsed.query)
+                query = qs.get("q", [None])[0]
+                if query:
+                    logger.warning(
+                        "SmartFetch: Google block persisted (sorry/index). Engaging DuckDuckGo HTML Fallback for query: %s",
+                        query,
+                    )
+                    ddg_url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
+
+                    ddg_kwargs = dict(kwargs)
+                    ddg_kwargs.pop("action_name", None)
+                    return await self.smart_fetch(
+                        ddg_url,
+                        is_serp_request=True,
+                        strategy_overrides={"serp_strategy": "none"},
+                        allow_headed_retry=True,
+                        allow_native_fallback=False,
+                        action_name="ddg_html_fallback",
+                        **ddg_kwargs,
+                    )
+
+            return result
+        except DocumentDownloadTriggeredError as exc:
+            logger.warning(
+                "SmartFetch: Document download target detected for %s (%s); "
+                "skipping browser retry matrix.",
+                exc.url or url,
+                exc.reason,
+            )
+            result = (None, exc.url or url, None)
+            self._last_fetch_metadata = {
+                "attempt_profile": "document_short_circuit",
+                "stealth_engine": "none",
+                "status": None,
+                "final_url": exc.url or url,
+                "blocked_reason": "document_download",
+                "elapsed_ms": 0,
+                "download_detected": True,
+                "download_reason": exc.reason,
+                "download_policy_allowed": bool(exc.policy_allows_download),
+                "document_download_policy": str(
+                    getattr(self, "document_download_policy", "disallow")
+                ),
+                "skip_native_fallback": True,
+                "skip_host_learning": True,
+                "selection_reason": "document_short_circuit",
+            }
             return result
         finally:
             metadata = self._enrich_learning_metadata(host=host)
@@ -221,6 +321,7 @@ class PlaywrightSmartFetchArtifactsMixin:
                 and self.host_learning_enabled
                 and not self.host_profiles_read_only
                 and self._host_profile_store is not None
+                and not bool(metadata.get("skip_host_learning", False))
             ):
                 content, final_url, status = result
                 is_blocked_or_failed, block_reason = self._is_blocked_or_failed(
