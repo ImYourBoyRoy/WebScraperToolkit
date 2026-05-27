@@ -2,12 +2,15 @@ import asyncio
 import logging
 import sys
 
+import pytest
+
 from web_scraper_toolkit.browser.config import BrowserConfig
 from web_scraper_toolkit.browser.playwright_handler import PlaywrightManager
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 
+@pytest.mark.integration
 async def test_google_query():
     query = "Best open source web scraping tools site:github.com"
     url = f"https://www.google.com/search?hl=en&num=15&q={query.replace(' ', '+')}"

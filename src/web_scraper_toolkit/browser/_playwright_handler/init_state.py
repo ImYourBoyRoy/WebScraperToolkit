@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Dict, Literal, Mapping, Optional, Union, 
 
 from playwright.async_api import Browser, Playwright
 
-from ..config import BrowserConfig
+from ..config import BrowserConfig, _default_native_browser_channels
 from ..host_profiles import HostProfileStore
 from .constants import (
     BASELINE_LAUNCH_ARGS,
@@ -161,12 +161,14 @@ class PlaywrightInitStateMixin:
         raw_native_channels = tuple(
             str(channel).strip().lower()
             for channel in getattr(
-                self.config, "native_browser_channels", ("chrome", "msedge")
+                self.config,
+                "native_browser_channels",
+                _default_native_browser_channels(),
             )
             if str(channel).strip()
         )
         if not raw_native_channels:
-            raw_native_channels = ("chrome", "msedge")
+            raw_native_channels = _default_native_browser_channels()
         self.native_browser_channels = raw_native_channels
         self.native_browser_headless = bool(
             getattr(self.config, "native_browser_headless", False)
@@ -303,6 +305,13 @@ class PlaywrightInitStateMixin:
             "height": self.config.viewport_height,
         }
         self.default_navigation_timeout_ms = self.config.timeout
+        self.locale = (
+            str(getattr(self.config, "locale", "en-US") or "en-US").strip() or "en-US"
+        )
+        self.timezone_id = (
+            str(getattr(self.config, "timezone_id", "America/New_York") or "").strip()
+            or "America/New_York"
+        )
         self.default_action_retries = 2
         self.proxy_manager = proxy_manager
         self._last_fetch_metadata: Dict[str, Any] = {}

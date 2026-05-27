@@ -12,6 +12,7 @@ Operational notes: keep heuristics conservative and scoped to SERP allowlisted d
 from __future__ import annotations
 
 import re
+import platform
 from typing import Literal, Optional
 
 SearchProvider = Literal["google_html", "ddg_html"]
@@ -42,9 +43,30 @@ def _extract_chrome_major_version(clean_ua: str) -> str:
     return match.group(1) if match else "131"
 
 
+def infer_client_hints_platform(clean_ua: str) -> str:
+    """Infer the most likely client-hints platform token from a desktop UA."""
+    lowered = str(clean_ua or "").strip().lower()
+    if "windows" in lowered:
+        return "Windows"
+    if "macintosh" in lowered or "mac os x" in lowered:
+        return "macOS"
+    if "linux" in lowered or "x11" in lowered:
+        return "Linux"
+
+    system = platform.system().strip().lower()
+    if system == "windows":
+        return "Windows"
+    if system == "darwin":
+        return "macOS"
+    if system == "linux":
+        return "Linux"
+    return "Windows"
+
+
 def build_serp_client_hints(clean_ua: str) -> dict[str, str]:
     """Build conservative Client-Hints header set for SERP-native requests."""
     major_version = _extract_chrome_major_version(clean_ua)
+    platform_name = infer_client_hints_platform(clean_ua)
     return {
         "Sec-Ch-Ua": (
             f'"Google Chrome";v="{major_version}", '
@@ -52,7 +74,7 @@ def build_serp_client_hints(clean_ua: str) -> dict[str, str]:
             f'"Chromium";v="{major_version}"'
         ),
         "Sec-Ch-Ua-Mobile": "?0",
-        "Sec-Ch-Ua-Platform": '"Windows"',
+        "Sec-Ch-Ua-Platform": f'"{platform_name}"',
         "Accept-Language": "en-US,en;q=0.9",
     }
 

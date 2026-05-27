@@ -528,6 +528,17 @@ class TestPlaywrightManager(unittest.TestCase):
         self.assertFalse(bool(second_kwargs["headless"]))
         pm._smart_fetch_standard.assert_not_awaited()
 
+    def test_serp_launch_channels_preserve_order_and_append_chromium(self) -> None:
+        pm = PlaywrightManager(
+            BrowserConfig(
+                native_browser_channels=("msedge", "chrome"),
+            )
+        )
+        self.assertEqual(
+            pm._serp_launch_channels(),
+            ("msedge", "chrome", "chromium"),
+        )
+
     def test_serp_native_path_does_not_use_playwright_stealth(self) -> None:
         pm = PlaywrightManager(
             BrowserConfig(

@@ -212,8 +212,8 @@ class PlaywrightPageOpsMixin:
             "viewport": self.default_viewport,
             "ignore_https_errors": True,
             "java_script_enabled": True,
-            "locale": "en-US",
-            "timezone_id": "America/New_York",
+            "locale": self.locale,
+            "timezone_id": self.timezone_id,
         }
 
         if self._experimental_serp:

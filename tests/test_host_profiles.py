@@ -56,6 +56,7 @@ class TestBrowserConfigCompatibility(unittest.TestCase):
     def test_browser_default_prefers_chromium(self) -> None:
         cfg = BrowserConfig()
         self.assertEqual(cfg.browser_type, "chromium")
+        self.assertIn("chromium", cfg.native_browser_channels)
 
 
 class TestHostProfileStore(unittest.TestCase):

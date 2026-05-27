@@ -43,6 +43,17 @@ test = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
 ]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.15.0",
+    "mypy",
+    "build",
+    "twine",
+    "types-requests",
+    "types-beautifulsoup4",
+]
+
 
 [project.urls]
 "Homepage" = "https://github.com/imyourboyroy/WebScraperToolkit"
@@ -63,6 +74,7 @@ line-length = 88
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+addopts = "-m 'not integration'"
 markers = [
     "asyncio: mark tests requiring asyncio event loop support",
     "integration: mark live network/browser integration tests that are skipped by default",

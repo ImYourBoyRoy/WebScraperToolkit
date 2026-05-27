@@ -113,6 +113,12 @@ class PlaywrightStrategySupportMixin:
             channels = ["chrome", "msedge"]
         return tuple(channels)
 
+    def _serp_launch_channels(self) -> Tuple[str, ...]:
+        channels = list(self._normalized_native_channels())
+        if "chromium" not in channels:
+            channels.append("chromium")
+        return tuple(channels or ["chromium"])
+
     def _resolve_native_profile_dir(self, channel: str) -> Tuple[str, bool]:
         """
         Resolve profile directory for native persistent context.

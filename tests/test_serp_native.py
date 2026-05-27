@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from web_scraper_toolkit.browser.serp_native import (
     build_serp_client_hints,
+    infer_client_hints_platform,
     is_serp_allowlisted,
     is_serp_blocked,
     sanitize_headless_user_agent,
@@ -30,12 +31,39 @@ def test_sanitize_headless_user_agent_preserves_version() -> None:
 
 def test_build_serp_client_hints_contains_expected_keys() -> None:
     hints = build_serp_client_hints(
-        "Mozilla/5.0 (...) Chrome/145.0.7632.117 Safari/537.36"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/145.0.7632.117 Safari/537.36"
     )
     assert hints["Sec-Ch-Ua-Mobile"] == "?0"
     assert hints["Sec-Ch-Ua-Platform"] == '"Windows"'
     assert hints["Accept-Language"] == "en-US,en;q=0.9"
     assert 'Google Chrome";v="145' in hints["Sec-Ch-Ua"]
+
+
+def test_infer_client_hints_platform_handles_common_desktop_uas() -> None:
+    assert (
+        infer_client_hints_platform(
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+        )
+        == "Linux"
+    )
+    assert (
+        infer_client_hints_platform(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+        )
+        == "macOS"
+    )
+
+
+def test_build_serp_client_hints_tracks_linux_user_agent_platform() -> None:
+    hints = build_serp_client_hints(
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/145.0.7632.117 Safari/537.36"
+    )
+    assert hints["Sec-Ch-Ua-Platform"] == '"Linux"'
 
 
 def test_is_serp_allowlisted_by_provider_or_url() -> None:

@@ -80,27 +80,33 @@ class PlaywrightSerpAttemptsMixin:
         request_tasks: Set[asyncio.Task[None]] = set()
 
         async with async_playwright() as playwright:
-            launch_kwargs: Dict[str, Any] = {
+            base_launch_kwargs: Dict[str, Any] = {
                 "headless": headless,
                 "args": SERP_NATIVE_LAUNCH_ARGS,
                 "ignore_default_args": ["--enable-automation"],
             }
-            # Try to use a native channel for SERP requests to get a real TLS fingerprint
-            preferred_channel = (
-                "chrome" if "chrome" in self._normalized_native_channels() else "msedge"
-            )
-            launch_kwargs["channel"] = preferred_channel
-
-            try:
-                browser = await playwright.chromium.launch(**launch_kwargs)
-            except Exception as e:
-                logger.warning(
-                    "SERP native: preferred channel '%s' failed, falling back to chromium. (%s)",
-                    preferred_channel,
-                    e,
-                )
-                del launch_kwargs["channel"]
-                browser = await playwright.chromium.launch(**launch_kwargs)
+            browser = None
+            launched_channel = "chromium"
+            last_launch_exc: Optional[Exception] = None
+            for preferred_channel in self._serp_launch_channels():
+                launch_kwargs = dict(base_launch_kwargs)
+                if preferred_channel != "chromium":
+                    launch_kwargs["channel"] = preferred_channel
+                try:
+                    browser = await playwright.chromium.launch(**launch_kwargs)
+                    launched_channel = preferred_channel
+                    break
+                except Exception as exc:
+                    last_launch_exc = exc
+                    logger.warning(
+                        "SERP native: channel '%s' failed, trying next option. (%s)",
+                        preferred_channel,
+                        exc,
+                    )
+            if browser is None:
+                raise RuntimeError(
+                    "SERP native: unable to launch any configured browser channel."
+                ) from last_launch_exc
             try:
                 dummy_context = await browser.new_context()
                 try:
@@ -117,8 +123,8 @@ class PlaywrightSerpAttemptsMixin:
                     "viewport": {"width": 1920, "height": 1080},
                     "screen": {"width": 1920, "height": 1080},
                     "extra_http_headers": client_hints,
-                    "locale": "en-US",
-                    "timezone_id": "America/New_York",
+                    "locale": self.locale,
+                    "timezone_id": self.timezone_id,
                     "java_script_enabled": True,
                     "ignore_https_errors": True,
                 }
@@ -216,6 +222,7 @@ class PlaywrightSerpAttemptsMixin:
             "elapsed_ms": int((perf_counter() - started) * 1000),
             "provider": provider or "",
             "headless": headless,
+            "native_channel": launched_channel,
             "ua_header": document_headers.get("user-agent", clean_ua),
             "sec_ch_ua": document_headers.get(
                 "sec-ch-ua",

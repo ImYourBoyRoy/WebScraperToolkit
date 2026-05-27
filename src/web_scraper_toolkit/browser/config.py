@@ -14,7 +14,8 @@ Operational notes:
   - We still avoid hardcoded custom UA by default to preserve native browser signals.
 """
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
+import platform
 from typing import Any, Literal, Mapping, Tuple
 
 NativeFallbackPolicy = Literal["off", "on_blocked", "always"]
@@ -22,6 +23,13 @@ BrowserContextMode = Literal["incognito", "persistent"]
 BrowserChannel = Literal["chromium", "chrome", "msedge"]
 HostLearningApplyMode = Literal["safe_subset"]
 DocumentDownloadPolicy = Literal["disallow", "allowlist", "allow_all"]
+
+
+def _default_native_browser_channels() -> Tuple[str, ...]:
+    system = platform.system().strip().lower()
+    if system == "windows":
+        return ("chrome", "msedge", "chromium")
+    return ("chrome", "chromium", "msedge")
 
 
 def _as_bool(value: Any, default: bool) -> bool:
@@ -158,8 +166,12 @@ class BrowserConfig:
     viewport_width: int = 1280
     viewport_height: int = 800
     timeout: int = 30000
+    locale: str = "en-US"
+    timezone_id: str = "America/New_York"
     native_fallback_policy: NativeFallbackPolicy = "on_blocked"
-    native_browser_channels: Tuple[str, ...] = ("chrome", "msedge")
+    native_browser_channels: Tuple[str, ...] = field(
+        default_factory=_default_native_browser_channels
+    )
     native_browser_headless: bool = False
     native_context_mode: BrowserContextMode = "incognito"
     native_profile_dir: str = ""
@@ -248,13 +260,18 @@ class BrowserConfig:
             viewport_width=int(data.get("viewport_width", 1280)),
             viewport_height=int(data.get("viewport_height", 800)),
             timeout=int(data.get("timeout", 30000)),
+            locale=str(data.get("locale", "en-US") or "en-US").strip() or "en-US",
+            timezone_id=(
+                str(data.get("timezone_id", "America/New_York") or "").strip()
+                or "America/New_York"
+            ),
             native_fallback_policy=_normalize_policy(
                 data.get("native_fallback_policy"),
                 "on_blocked",
             ),
             native_browser_channels=_normalize_channel_list(
                 data.get("native_browser_channels"),
-                ("chrome", "msedge"),
+                _default_native_browser_channels(),
             ),
             native_browser_headless=_as_bool(
                 data.get("native_browser_headless", False),
