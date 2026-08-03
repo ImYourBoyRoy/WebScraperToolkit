@@ -176,19 +176,23 @@ import asyncio
 from web_scraper_toolkit.browser.config import BrowserConfig
 from web_scraper_toolkit.browser.playwright_handler import PlaywrightManager
 
+
 async def main() -> None:
-    cfg = BrowserConfig.from_dict({
-        "headless": True,
-        "browser_type": "chromium",
-        "native_fallback_policy": "on_blocked",
-        "host_profiles_enabled": True,
-        "host_profiles_path": "./host_profiles.json",
-        "host_profiles_read_only": False,
-    })
+    cfg = BrowserConfig.from_dict(
+        {
+            "headless": True,
+            "browser_type": "chromium",
+            "native_fallback_policy": "on_blocked",
+            "host_profiles_enabled": True,
+            "host_profiles_path": "./host_profiles.json",
+            "host_profiles_read_only": False,
+        }
+    )
 
     async with PlaywrightManager(cfg) as manager:
         content, final_url, status = await manager.smart_fetch("https://example.com")
         print({"status": status, "url": final_url, "has_content": bool(content)})
+
 
 asyncio.run(main())
 ```
